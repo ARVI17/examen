@@ -1,0 +1,52 @@
+﻿[
+    {
+        "year":  "2021",
+        "file_name":  "2021_guia_orientacion_saber11.pdf",
+        "category":  "guia_orientacion",
+        "source_url":  "https://www.icfes.gov.co/wp-content/uploads/2024/11/Guia-de-orientacion-Saber-11.%C2%B0-2021-1-Pdf-accesible.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\2021\\2021_guia_orientacion_saber11.pdf",
+        "size_bytes":  864708,
+        "sha256":  "BE20B6C110244AEBED06935283BA4786AAFC10BF325ADD847D721CCBC39600E5",
+        "downloaded_at":  "2026-03-31T04:58:42"
+    },
+    {
+        "year":  "2022",
+        "file_name":  "2022_informe_nacional_resultados_saber11.pdf",
+        "category":  "informe_resultados",
+        "source_url":  "https://www.icfes.gov.co/wp-content/uploads/2024/11/Informe_nacional_de_resultados-Saber11_2022.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\2022\\2022_informe_nacional_resultados_saber11.pdf",
+        "size_bytes":  6963731,
+        "sha256":  "B2A203875DF5E4C2848C169B415A8CC778112917B5BBAF91839618766FB8C0F3",
+        "downloaded_at":  "2026-03-31T04:58:49"
+    },
+    {
+        "year":  "2023",
+        "file_name":  "2023_informe_nacional_resultados_saber11.pdf",
+        "category":  "informe_resultados",
+        "source_url":  "https://www.icfes.gov.co/wp-content/uploads/2025/04/Informe_Saber11_2023.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\2023\\2023_informe_nacional_resultados_saber11.pdf",
+        "size_bytes":  5791568,
+        "sha256":  "D0F8F1B68E71F0571CCE90EDB33FE8FE6C6B3D516112BB7CD97BF522BB6DA338",
+        "downloaded_at":  "2026-03-31T04:58:52"
+    },
+    {
+        "year":  "2024",
+        "file_name":  "2024_informe_nacional_resultados_saber11.pdf",
+        "category":  "informe_resultados",
+        "source_url":  "https://www.icfes.gov.co/wp-content/uploads/2025/09/INFORME_NACIONAL_RESULTADOS_SABER_11_2024.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\2024\\2024_informe_nacional_resultados_saber11.pdf",
+        "size_bytes":  66163421,
+        "sha256":  "8F0B18C57D55133BE3E0949D4E19F415A442E745D6124F4A85C9407A599EF41A",
+        "downloaded_at":  "2026-03-31T04:58:58"
+    },
+    {
+        "year":  "2025",
+        "file_name":  "2025_guia_orientacion_saber11_2.pdf",
+        "category":  "guia_orientacion",
+        "source_url":  "https://www.icfes.gov.co/wp-content/uploads/2025/04/30-abril-guia-orientacion-saber-11o-2025-2.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\2025\\2025_guia_orientacion_saber11_2.pdf",
+        "size_bytes":  5223620,
+        "sha256":  "D864D8F3BAE72FD2691334E6E08547873842F72229E4D841A277C4A3B1C9FF9F",
+        "downloaded_at":  "2026-03-31T04:59:00"
+    }
+]

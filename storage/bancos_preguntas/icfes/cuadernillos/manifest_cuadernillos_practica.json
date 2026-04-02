@@ -1,0 +1,142 @@
+﻿[
+    {
+        "year":  "2024",
+        "area":  "lectura_critica",
+        "kind":  "explicadas",
+        "source_url":  "http://icfes.acendra.com.co/wp-content/uploads/2024/12/01_EXPLICADAS_LECTURA.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\cuadernillos\\2024\\2024_explicadas_lectura_critica.pdf",
+        "size_bytes":  3868286,
+        "sha256":  "9474351315A69C0E946AD8E0A91AB4BC01758EE18FF7463199D077CC29B18BB0",
+        "downloaded_at":  "2026-03-31T09:06:15"
+    },
+    {
+        "year":  "2024",
+        "area":  "lectura_critica",
+        "kind":  "practica",
+        "source_url":  "http://icfes.acendra.com.co/wp-content/uploads/2024/12/02_PRACTICA_LECTURA.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\cuadernillos\\2024\\2024_practica_lectura_critica.pdf",
+        "size_bytes":  8281929,
+        "sha256":  "8983F8404E8ECE8E622AE4EC0A60C0E27A6F6B4687FAECD9D5682A67ABCB3C9F",
+        "downloaded_at":  "2026-03-31T09:06:15"
+    },
+    {
+        "year":  "2024",
+        "area":  "matematicas",
+        "kind":  "explicadas",
+        "source_url":  "http://icfes.acendra.com.co/wp-content/uploads/2024/12/03_EXPLICADAS_MATEMATICAS.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\cuadernillos\\2024\\2024_explicadas_matematicas.pdf",
+        "size_bytes":  3267799,
+        "sha256":  "14842EE290100B8918CD3313DD9654322C81BA0FA2C31CB40FE224A7F74B72E1",
+        "downloaded_at":  "2026-03-31T09:06:15"
+    },
+    {
+        "year":  "2024",
+        "area":  "matematicas",
+        "kind":  "practica",
+        "source_url":  "http://icfes.acendra.com.co/wp-content/uploads/2024/12/04_PRACTICA_MATEMATICAS.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\cuadernillos\\2024\\2024_practica_matematicas.pdf",
+        "size_bytes":  4104790,
+        "sha256":  "A5FB6A2103024D3037715240C65AE4FF3B9E24405DA13BEF9132E33CF31724DD",
+        "downloaded_at":  "2026-03-31T09:06:15"
+    },
+    {
+        "year":  "2024",
+        "area":  "sociales_ciudadanas",
+        "kind":  "explicadas",
+        "source_url":  "http://icfes.acendra.com.co/wp-content/uploads/2024/12/05_EXPLICADAS_SOCIALES.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\cuadernillos\\2024\\2024_explicadas_sociales_ciudadanas.pdf",
+        "size_bytes":  2176917,
+        "sha256":  "4826A9D9C008A04293DADBF4FB884424C12374C149087C8DB56943C1DC711BD6",
+        "downloaded_at":  "2026-03-31T09:06:15"
+    },
+    {
+        "year":  "2024",
+        "area":  "sociales_ciudadanas",
+        "kind":  "practica",
+        "source_url":  "http://icfes.acendra.com.co/wp-content/uploads/2024/12/06_PRACTICA_SOCIALES.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\cuadernillos\\2024\\2024_practica_sociales_ciudadanas.pdf",
+        "size_bytes":  3397998,
+        "sha256":  "1117639028995F7CA31ACDFA54B774A3D2D2DD2DC5D0B93BC3D320249127EFED",
+        "downloaded_at":  "2026-03-31T09:06:15"
+    },
+    {
+        "year":  "2024",
+        "area":  "ciencias_naturales",
+        "kind":  "explicadas",
+        "source_url":  "http://icfes.acendra.com.co/wp-content/uploads/2024/12/07_EXPLICADAS_CIENCIAS.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\cuadernillos\\2024\\2024_explicadas_ciencias_naturales.pdf",
+        "size_bytes":  2257084,
+        "sha256":  "B280CC3E3AAA566B74E6F52CF450C44348C32E8145C0180459B34630D1E65A0C",
+        "downloaded_at":  "2026-03-31T09:06:15"
+    },
+    {
+        "year":  "2024",
+        "area":  "ciencias_naturales",
+        "kind":  "practica",
+        "source_url":  "http://icfes.acendra.com.co/wp-content/uploads/2024/12/08_PRACTICA_CIENCIAS.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\cuadernillos\\2024\\2024_practica_ciencias_naturales.pdf",
+        "size_bytes":  4953165,
+        "sha256":  "36B7077501DC0F57A049A29504A698E9D77A8F5429F5F03CCE3644C4076E342B",
+        "downloaded_at":  "2026-03-31T09:06:15"
+    },
+    {
+        "year":  "2024",
+        "area":  "ingles",
+        "kind":  "explicadas",
+        "source_url":  "http://icfes.acendra.com.co/wp-content/uploads/2024/12/09_EXPLICADAS_INGLES.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\cuadernillos\\2024\\2024_explicadas_ingles.pdf",
+        "size_bytes":  2395889,
+        "sha256":  "21BC6846952C991CE93B80A3C5D09AC027F071BEF86F08D814FF1E35B280F490",
+        "downloaded_at":  "2026-03-31T09:06:15"
+    },
+    {
+        "year":  "2024",
+        "area":  "ingles",
+        "kind":  "practica",
+        "source_url":  "http://icfes.acendra.com.co/wp-content/uploads/2024/12/10_PRACTICA_INGLES.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\cuadernillos\\2024\\2024_practica_ingles.pdf",
+        "size_bytes":  4745241,
+        "sha256":  "03D7B903C0C3E6C2A3BA39F8AB0BB8C84C449A346D42667B084D4591E14C622F",
+        "downloaded_at":  "2026-03-31T09:06:15"
+    },
+    {
+        "year":  "2024",
+        "area":  "ingles",
+        "kind":  "cuadernillo",
+        "source_url":  "https://www.icfes.gov.co/wp-content/uploads/2025/12/16-octubre-cuadernillo-ingles-saber-11-2024.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\cuadernillos\\2024\\2024_cuadernillo_ingles_saber11.pdf",
+        "size_bytes":  2177581,
+        "sha256":  "E55934A33ED9C246C8509ACE51C285FDEA424600CEE6E89C2C84C080F704BDAF",
+        "downloaded_at":  "2026-03-31T09:06:15"
+    },
+    {
+        "year":  "2025",
+        "area":  "ciencias_naturales",
+        "kind":  "cuadernillo",
+        "source_url":  "https://www.icfes.gov.co/wp-content/uploads/2025/12/22-diciembre-cuadernillo-de-preguntas-ciencias-naturales-saber-11-2025.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\cuadernillos\\2025\\2025_cuadernillo_ciencias_naturales_saber11.pdf",
+        "size_bytes":  2816792,
+        "sha256":  "312F730010BDFA4365687B5A7B35198C9406917CD7D192E29702AD027B4DF9AF",
+        "downloaded_at":  "2026-03-31T09:06:15"
+    },
+    {
+        "year":  "2026",
+        "area":  "lectura_critica",
+        "kind":  "cuadernillo",
+        "source_url":  "https://www.icfes.gov.co/wp-content/uploads/2026/03/16-feb-cuadernillo-de-preguntas-lectura-critica-saber-11-2026.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\cuadernillos\\2026\\2026_cuadernillo_lectura_critica_saber11.pdf",
+        "size_bytes":  4489199,
+        "sha256":  "FCAF7BE0B06490BD071D5BF307EC2DAFDF3602BF0B4A036700C01AA93CCC73AC",
+        "downloaded_at":  "2026-03-31T09:06:15"
+    },
+    {
+        "year":  "2026",
+        "area":  "ciencias_naturales",
+        "kind":  "cuadernillo",
+        "source_url":  "https://www.icfes.gov.co/wp-content/uploads/2026/03/24-feb-cuadernillo-preguntas-ciencias-naturales-saber-11-2026.pdf",
+        "local_path":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\bancos_preguntas\\icfes\\cuadernillos\\2026\\2026_cuadernillo_ciencias_naturales_saber11.pdf",
+        "size_bytes":  2816456,
+        "sha256":  "87897059D816FD69420CA074BA914003CC97FF461A55748ECBF977C70DC0174D",
+        "downloaded_at":  "2026-03-31T09:06:15"
+    }
+]

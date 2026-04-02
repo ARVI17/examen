@@ -1,0 +1,52 @@
+﻿[
+    {
+        "year":  "2021",
+        "total":  3,
+        "guias":  1,
+        "cuadernillos":  0,
+        "practicas":  0,
+        "informes":  1,
+        "marcos":  1,
+        "infografias":  0
+    },
+    {
+        "year":  "2022",
+        "total":  5,
+        "guias":  0,
+        "cuadernillos":  0,
+        "practicas":  0,
+        "informes":  1,
+        "marcos":  4,
+        "infografias":  0
+    },
+    {
+        "year":  "2023",
+        "total":  2,
+        "guias":  0,
+        "cuadernillos":  0,
+        "practicas":  0,
+        "informes":  1,
+        "marcos":  0,
+        "infografias":  1
+    },
+    {
+        "year":  "2024",
+        "total":  11,
+        "guias":  0,
+        "cuadernillos":  1,
+        "practicas":  10,
+        "informes":  0,
+        "marcos":  0,
+        "infografias":  0
+    },
+    {
+        "year":  "2025",
+        "total":  9,
+        "guias":  2,
+        "cuadernillos":  1,
+        "practicas":  0,
+        "informes":  0,
+        "marcos":  0,
+        "infografias":  6
+    }
+]

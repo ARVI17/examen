@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: saber11-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: saber11
+      POSTGRES_PASSWORD: saber11password
+      POSTGRES_DB: saber11db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U saber11 -d saber11db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: saber11-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://saber11:saber11password@db:5432/saber11db?schema=public"
+      PORT: "4000"
+      HOST: "0.0.0.0"
+      PUBLIC_BASE_URL: ""
+      PUBLIC_HOSTNAME: "17-ARVI-LAPTOP:4000"
+      JWT_SECRET: "change_this_secret"
+      JWT_EXPIRES_IN: "8h"
+      CORS_ORIGINS: "http://localhost:3000,http://localhost:5173"
+      CORS_ALLOW_PRIVATE_NETWORK: "true"
+      TRUST_PROXY: "false"
+      RATE_LIMIT_WINDOW_MS: "60000"
+      RATE_LIMIT_MAX_REQUESTS: "120"
+      AUTH_RATE_LIMIT_WINDOW_MS: "60000"
+      AUTH_RATE_LIMIT_MAX_REQUESTS: "20"
+      AUTH_LOGIN_MAX_WRONG_BY_IP: "50"
+      AUTH_LOGIN_MAX_WRONG_BY_USER_IP: "8"
+      AUTH_LOGIN_BLOCK_DURATION_SECONDS: "900"
+      STORAGE_ROOT: "storage"
+      FILE_MAX_SIZE_MB: "20"
+      FILE_ALLOWED_MIME_TYPES: "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/json,text/csv,image/png,image/jpeg"
+      FILE_ALLOWED_EXTENSIONS: ".pdf,.doc,.docx,.xls,.xlsx,.json,.csv,.png,.jpg,.jpeg"
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./storage:/app/storage
+    command: sh -c "npx prisma migrate deploy && npm run start"
+
+volumes:
+  db-data:
+

@@ -1,0 +1,804 @@
+﻿{
+    "info":  {
+                 "name":  "Saber11 Backend API",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+                 "description":  "Coleccion base para probar autenticacion, estudiantes, preguntas, pruebas, intentos, reportes y files. Register es admin-only."
+             },
+    "variable":  [
+                     {
+                         "key":  "baseUrl",
+                         "value":  "http://localhost:4000"
+                     },
+                     {
+                         "key":  "token",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "studentId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "studentDocument",
+                         "value":  "123456789"
+                     },
+                     {
+                         "key":  "questionId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "examId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "attemptId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "performanceLevelId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "fileId",
+                         "value":  ""
+                     }
+                 ],
+    "item":  [
+                 {
+                     "name":  "Auth",
+                     "item":  [
+                                  {
+                                      "name":  "Register",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"name\": \"Docente Demo\",\n  \"email\": \"docente.demo@saber11.com\",\n  \"password\": \"admin12345\",\n  \"role\": \"DOCENTE\"\n}"
+                                                               },
+                                                      "url":  "{{baseUrl}}/api/auth/register"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Login",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"email\": \"admin@saber11.com\",\n  \"password\": \"admin123\"\n}"
+                                                               },
+                                                      "url":  "{{baseUrl}}/api/auth/login"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Me",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/auth/me"
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Students",
+                     "item":  [
+                                  {
+                                      "name":  "Create Student",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"nombres\": \"Maria\",\n  \"apellidos\": \"Lopez\",\n  \"tipo_identificacion\": \"TI\",\n  \"numero_identificacion\": \"{{studentDocument}}\",\n  \"grado\": \"11\"\n}"
+                                                               },
+                                                      "url":  "{{baseUrl}}/api/students"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "List Students",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/students?page=1\u0026limit=20\u0026grado=11"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Get Student By Document",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/students/document/{{studentDocument}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Get Student By ID",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/students/{{studentId}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Update Student",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"grado\": \"11A\"\n}"
+                                                               },
+                                                      "url":  "{{baseUrl}}/api/students/{{studentId}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Student History By Document",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/students/document/{{studentDocument}}/history"
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Questions",
+                     "item":  [
+                                  {
+                                      "name":  "Create Question",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"codigo_interno\": \"MAT-001\",\n  \"area\": \"MATEMATICAS\",\n  \"competencia\": \"Resolucion de problemas\",\n  \"componente\": \"Algebra\",\n  \"nivel_dificultad\": \"MEDIO\",\n  \"nivel_cognitivo\": \"Analisis\",\n  \"enunciado\": \"Si 2x + 4 = 10, el valor de x es:\",\n  \"tipo_pregunta\": \"SELECCION_UNICA\",\n  \"grado_objetivo\": \"11\",\n  \"opciones\": [\n    { \"texto_opcion\": \"2\", \"es_correcta\": false, \"orden\": 1 },\n    { \"texto_opcion\": \"3\", \"es_correcta\": true, \"orden\": 2 },\n    { \"texto_opcion\": \"4\", \"es_correcta\": false, \"orden\": 3 },\n    { \"texto_opcion\": \"5\", \"es_correcta\": false, \"orden\": 4 }\n  ]\n}"
+                                                               },
+                                                      "url":  "{{baseUrl}}/api/questions"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "List Questions",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/questions?page=1\u0026limit=20\u0026area=MATEMATICAS\u0026nivel_dificultad=MEDIO\u0026grado_objetivo=11"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Get Question By ID",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/questions/{{questionId}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Update Question",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"nivel_dificultad\": \"ALTO\"\n}"
+                                                               },
+                                                      "url":  "{{baseUrl}}/api/questions/{{questionId}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Disable Question",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/questions/{{questionId}}"
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Exams",
+                     "item":  [
+                                  {
+                                      "name":  "Create Exam",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"nombre\": \"Simulacro General 11-01\",\n  \"descripcion\": \"Simulacro integral para grado 11\",\n  \"tipo_prueba\": \"simulacro\",\n  \"grado_objetivo\": \"11\",\n  \"estado\": \"DRAFT\",\n  \"tiempo_limite_minutos\": 180,\n  \"total_preguntas\": 0,\n  \"puntaje_maximo\": 100,\n  \"instrucciones\": \"Lea atentamente cada pregunta\"\n}"
+                                                               },
+                                                      "url":  "{{baseUrl}}/api/exams"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "List Exams",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/exams?page=1\u0026limit=20\u0026grado_objetivo=11"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Add Questions To Exam",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"questions\": [\n    { \"pregunta_id\": \"{{questionId}}\", \"orden\": 1, \"puntaje_pregunta\": 5 }\n  ]\n}"
+                                                               },
+                                                      "url":  "{{baseUrl}}/api/exams/{{examId}}/questions"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Get Exam Questions",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/exams/{{examId}}/questions"
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Attempts",
+                     "item":  [
+                                  {
+                                      "name":  "Start Attempt",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"prueba_id\": \"{{examId}}\",\n  \"estudiante\": {\n    \"nombres\": \"Maria\",\n    \"apellidos\": \"Lopez\",\n    \"tipo_identificacion\": \"TI\",\n    \"numero_identificacion\": \"{{studentDocument}}\",\n    \"grado\": \"11\"\n  }\n}"
+                                                               },
+                                                      "url":  "{{baseUrl}}/api/attempts/start"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Answer Question",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"pregunta_id\": \"{{questionId}}\",\n  \"opcion_id_seleccionada\": \"REEMPLAZAR_OPCION_ID\",\n  \"tiempo_respuesta_segundos\": 45\n}"
+                                                               },
+                                                      "url":  "{{baseUrl}}/api/attempts/{{attemptId}}/answer"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Submit Attempt",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/attempts/{{attemptId}}/submit"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Get Attempt By ID",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/attempts/{{attemptId}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Attempts By Student Document",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/attempts/student/{{studentDocument}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Attempts By Exam",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/attempts/exam/{{examId}}"
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Reports",
+                     "item":  [
+                                  {
+                                      "name":  "Student Summary",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/reports/student/{{studentDocument}}/summary"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Student Areas",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/reports/student/{{studentDocument}}/areas"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Exam Summary",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/reports/exam/{{examId}}/summary"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Exam Ranking",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/reports/exam/{{examId}}/ranking"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Dashboard Overview",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/reports/dashboard/overview?grado=11"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Files Coverage",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/reports/files/coverage?year_from=2021\u0026year_to=2025\u0026only_saber11=true"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Files Coverage CSV",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/reports/files/coverage/export.csv?year_from=2021\u0026year_to=2025\u0026only_saber11=true"
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Performance Levels",
+                     "item":  [
+                                  {
+                                      "name":  "Create Level",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"nombre\": \"Excelente\",\n  \"minimo\": 90,\n  \"maximo\": 100,\n  \"scope\": \"GLOBAL\",\n  \"is_active\": true\n}"
+                                                               },
+                                                      "url":  "{{baseUrl}}/api/performance-levels"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "List Levels",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/performance-levels"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Update Level",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"maximo\": 99.99\n}"
+                                                               },
+                                                      "url":  "{{baseUrl}}/api/performance-levels/{{performanceLevelId}}"
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Files",
+                     "item":  [
+                                  {
+                                      "name":  "Upload File",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "formdata",
+                                                                   "formdata":  [
+                                                                                    {
+                                                                                        "key":  "file",
+                                                                                        "type":  "file",
+                                                                                        "src":  ""
+                                                                                    },
+                                                                                    {
+                                                                                        "key":  "categoria",
+                                                                                        "type":  "text",
+                                                                                        "value":  "SIMULACROS"
+                                                                                    },
+                                                                                    {
+                                                                                        "key":  "grado_objetivo",
+                                                                                        "type":  "text",
+                                                                                        "value":  "11"
+                                                                                    },
+                                                                                    {
+                                                                                        "key":  "area",
+                                                                                        "type":  "text",
+                                                                                        "value":  "MATEMATICAS"
+                                                                                    },
+                                                                                    {
+                                                                                        "key":  "tipo_prueba",
+                                                                                        "type":  "text",
+                                                                                        "value":  "Saber 11"
+                                                                                    },
+                                                                                    {
+                                                                                        "key":  "descripcion",
+                                                                                        "type":  "text",
+                                                                                        "value":  "Archivo de prueba"
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                      "url":  "{{baseUrl}}/api/files/upload"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "List Files",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/files?page=1\u0026limit=20\u0026categoria=SIMULACROS\u0026sort_by=created_at\u0026sort_order=desc"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Search Files",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/files/search?q=simulacro\u0026nombre=mate\u0026limit=20"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Get File By ID",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/files/{{fileId}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Download File By ID",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/files/{{fileId}}/download"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Update File Metadata",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"descripcion\": \"Version ajustada\",\n  \"tipo_prueba\": \"Simulacro dirigido\",\n  \"is_current\": true\n}"
+                                                               },
+                                                      "url":  "{{baseUrl}}/api/files/{{fileId}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "New File Version",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "formdata",
+                                                                   "formdata":  [
+                                                                                    {
+                                                                                        "key":  "file",
+                                                                                        "type":  "file",
+                                                                                        "src":  ""
+                                                                                    },
+                                                                                    {
+                                                                                        "key":  "descripcion",
+                                                                                        "type":  "text",
+                                                                                        "value":  "Nueva version"
+                                                                                    }
+                                                                                ]
+                                                               },
+                                                      "url":  "{{baseUrl}}/api/files/{{fileId}}/new-version"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Duplicate File",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"nombre_original\": \"copia-simulacro.pdf\",\n  \"categoria\": \"SIMULACROS\",\n  \"grado_objetivo\": \"11\"\n}"
+                                                               },
+                                                      "url":  "{{baseUrl}}/api/files/{{fileId}}/duplicate"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Delete File (Soft)",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "{{baseUrl}}/api/files/{{fileId}}"
+                                                  }
+                                  }
+                              ]
+                 }
+             ]
+}
