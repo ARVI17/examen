@@ -14,12 +14,17 @@
     "prisma:push": "prisma db push",
     "seed": "ts-node prisma/seed.ts",
     "bootstrap:admin": "ts-node scripts/bootstrap_admin.ts",
+    "backup:db": "ts-node scripts/db_backup.ts",
+    "backup:db:restore-test": "ts-node scripts/db_restore_test.ts",
     "test:integration": "ts-node --files tests/integration/run.ts",
     "ingest:icfes:cuadernillos": "ts-node scripts/ingest_icfes_cuadernillos.ts",
     "download:icfes:pasados": "ts-node scripts/download_icfes_examenes_pasados.ts",
     "extract:icfes:questions": "ts-node scripts/extract_icfes_questions.ts",
     "ingest:icfes:questions": "ts-node scripts/ingest_icfes_questions.ts",
-    "pipeline:icfes:questions": "npm run extract:icfes:questions && npm run ingest:icfes:questions -- --apply"
+    "pipeline:icfes:questions": "npm run extract:icfes:questions && npm run ingest:icfes:questions -- --apply",
+    "ingest:kb": "ts-node scripts/ingest_knowledge_base.ts",
+    "ingest:kb:apply": "ts-node scripts/ingest_knowledge_base.ts --apply",
+    "mcp:server": "ts-node scripts/mcp_exam_server.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -35,12 +40,15 @@
     "express-rate-limit": "^8.3.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
+    "mammoth": "^1.10.0",
     "multer": "^2.0.2",
+    "node-xlsx": "^0.24.0",
     "pdf-parse": "^1.1.1",
     "pino": "^9.4.0",
     "pino-http": "^10.3.0",
     "rate-limiter-flexible": "^5.0.4",
     "swagger-ui-express": "^5.0.1",
+    "tesseract.js": "^6.0.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {
