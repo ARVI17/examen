@@ -212,13 +212,9 @@ npm run ingest:kb:apply
 npm run mcp:server
 
 # Backup PostgreSQL (archivo .sql.gz + manifest)
-npm run backup:db
-
-# Restore test del ultimo backup (o -- --file=storage/backups/postgres/<archivo>.sql.gz)
-npm run backup:db:restore-test
-
-# Alternativa recomendada en Windows sin Node local:
 powershell -ExecutionPolicy Bypass -File .\scripts\db_backup.ps1
+
+# Restore test del ultimo backup
 powershell -ExecutionPolicy Bypass -File .\scripts\db_restore_test.ps1
 ```
 
@@ -250,8 +246,8 @@ El log `storage/reportes/ingestion_kb_log.json` incluye metricas de clasificacio
   - `SLOW_QUERY_WARN_MS` alerta en logs para queries lentas de Prisma
   - `GET /health/ready` verifica conectividad real a DB
 - Backups/restore:
-  - `npm run backup:db`
-  - `npm run backup:db:restore-test`
+  - `powershell -ExecutionPolicy Bypass -File .\scripts\db_backup.ps1`
+  - `powershell -ExecutionPolicy Bypass -File .\scripts\db_restore_test.ps1`
 
 ## Acceso de estudiantes por IP local
 
