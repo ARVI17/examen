@@ -1,0 +1,667 @@
+{
+  "generatedAt": "2026-05-03T21:30:01.164Z",
+  "stats": {
+    "mode": "apply",
+    "imageKeyOcrEnabled": true,
+    "imageQuestionOcrEnabled": true,
+    "minUncertainKeyAnswers": 12,
+    "scannedFiles": 347,
+    "processedFiles": 347,
+    "unreadableFiles": 0,
+    "sourceCreatedOrUpdated": 347,
+    "keyFilesProcessed": 49,
+    "keyMapsBuilt": 13,
+    "keyImageOcrFilesProcessed": 32,
+    "keyFilesClassifiedAsKeyTable": 13,
+    "keyFilesClassifiedAsStatement": 22,
+    "keyFilesClassifiedAsUncertain": 14,
+    "keyFilesSkippedByClassification": 36,
+    "keyFilesAcceptedFromUncertain": 0,
+    "questionCandidateFiles": 346,
+    "filesWithoutQuestionExtraction": 1,
+    "parsedQuestions": 1825,
+    "parsedQuestionsWithAnswer": 315,
+    "insertedQuestions": 0,
+    "insertedActiveQuestions": 0,
+    "insertedInactiveQuestions": 0,
+    "updatedExistingQuestions": 0,
+    "updatedExistingActivated": 0,
+    "skippedDuplicates": 1825,
+    "skippedInvalid": 0,
+    "unresolvedWithoutKey": 1448,
+    "errors": 0,
+    "filesWithQuestions": 142
+  },
+  "parsedByExtension": {
+    ".docx": 11,
+    ".pdf": 170,
+    ".jsonl": 1,
+    ".md": 2,
+    ".json": 112,
+    ".xls": 14,
+    ".png": 26,
+    ".jpg": 10
+  },
+  "keyContexts": [
+    {
+      "logicalPath": "storage/claves/2003/grado_11/area_ciencias_naturales/tipo_saber_11/1775882869966-3c43a4ec-940b-460a-ba2c-a9e0703e12cf-respuestas_biologia.xls",
+      "year": "2003",
+      "area": "CIENCIAS_NATURALES",
+      "answersCount": 35
+    },
+    {
+      "logicalPath": "storage/claves/2003/grado_11/area_ciencias_naturales/tipo_saber_11/1775882870022-d31894e9-e3f8-4468-af4e-ba79daf7e3f2-respuestas_fisica_profundizacion.xls",
+      "year": "2003",
+      "area": null,
+      "answersCount": 20
+    },
+    {
+      "logicalPath": "storage/claves/2003/grado_11/area_ciencias_naturales/tipo_saber_11/1775882870132-fc202bea-40ec-4a7f-a2f7-0b70a28b1e08-respuestas_quimica_profundizacion.xls",
+      "year": "2003",
+      "area": "CIENCIAS_NATURALES",
+      "answersCount": 19
+    },
+    {
+      "logicalPath": "storage/claves/2003/grado_11/area_ciencias_naturales/tipo_saber_11/1775882870158-377d5f95-4030-4f36-8e04-5ed8180ee0e5-respuestas_quimica.xls",
+      "year": "2003",
+      "area": "CIENCIAS_NATURALES",
+      "answersCount": 69
+    },
+    {
+      "logicalPath": "storage/claves/2003/grado_11/area_ingles/tipo_saber_11/1775882870101-1cd695fd-d3a9-4b41-82ae-94ac57262823-respuestas_ingles.xls",
+      "year": "2003",
+      "area": "INGLES",
+      "answersCount": 10
+    },
+    {
+      "logicalPath": "storage/claves/2003/grado_11/area_lectura_critica/tipo_saber_11/1775882869995-0886e61e-5d88-409a-963d-d2ffe260e2bf-respuestas_filosofia_profundizacion.xls",
+      "year": "2003",
+      "area": null,
+      "answersCount": 20
+    },
+    {
+      "logicalPath": "storage/claves/2003/grado_11/area_sociales_ciudadanas/tipo_saber_11/1775882870047-3181a0dd-4bce-4976-b35e-8b919c17dbeb-respuestas_geografia.xls",
+      "year": "2003",
+      "area": "SOCIALES_CIUDADANAS",
+      "answersCount": 35
+    },
+    {
+      "logicalPath": "storage/claves/2003/grado_11/area_sociales_ciudadanas/tipo_saber_11/1775882870075-27fe3481-24e1-438f-bb66-daf3425ab0b8-respuestas_historia.xls",
+      "year": "2003",
+      "area": "SOCIALES_CIUDADANAS",
+      "answersCount": 70
+    },
+    {
+      "logicalPath": "storage/claves/2003/grado_11/tipo_saber_11/1775882869887-5cf0e996-3907-41bb-afb7-f26759bc0432-respuestas.xls",
+      "year": "2003",
+      "area": null,
+      "answersCount": 5
+    },
+    {
+      "logicalPath": "storage/claves/2006/grado_11/area_matematicas/tipo_saber_11/1775882870430-9c320031-7183-4f69-a61e-bc2ad2a80c87-respuestas1.xls",
+      "year": "2006",
+      "area": "MATEMATICAS",
+      "answersCount": 12
+    },
+    {
+      "logicalPath": "storage/claves/2006/grado_11/area_sociales_ciudadanas/tipo_saber_11/1775882870292-7d870c76-8243-4255-8d7a-77883b5f6112-respuestas_profundizacion_1.xls",
+      "year": "2006",
+      "area": "SOCIALES_CIUDADANAS",
+      "answersCount": 20
+    },
+    {
+      "logicalPath": "storage/claves/2006/grado_11/tipo_saber_11/1775882870336-8f300c49-4da1-4024-9e59-bd56fd81a561-respuestas_1.xls",
+      "year": "2006",
+      "area": null,
+      "answersCount": 15
+    },
+    {
+      "logicalPath": "storage/claves/2006/grado_11/tipo_saber_11/1775882870359-4b1fc10b-874c-42b8-93d8-e3d0b3dfcba9-respuestas_2.xls",
+      "year": "2006",
+      "area": null,
+      "answersCount": 15
+    }
+  ],
+  "keyClassifications": [
+    {
+      "file": "storage/claves/2003/grado_11/area_ciencias_naturales/tipo_saber_11/1775882869966-3c43a4ec-940b-460a-ba2c-a9e0703e12cf-respuestas_biologia.xls",
+      "extension": ".xls",
+      "kind": "key_table",
+      "confidence": 10,
+      "answersCount": 35,
+      "questionStarts": 0,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": true
+    },
+    {
+      "file": "storage/claves/2003/grado_11/area_ciencias_naturales/tipo_saber_11/1775882870022-d31894e9-e3f8-4468-af4e-ba79daf7e3f2-respuestas_fisica_profundizacion.xls",
+      "extension": ".xls",
+      "kind": "key_table",
+      "confidence": 10,
+      "answersCount": 20,
+      "questionStarts": 0,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": true
+    },
+    {
+      "file": "storage/claves/2003/grado_11/area_ciencias_naturales/tipo_saber_11/1775882870132-fc202bea-40ec-4a7f-a2f7-0b70a28b1e08-respuestas_quimica_profundizacion.xls",
+      "extension": ".xls",
+      "kind": "key_table",
+      "confidence": 10,
+      "answersCount": 19,
+      "questionStarts": 0,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": true
+    },
+    {
+      "file": "storage/claves/2003/grado_11/area_ciencias_naturales/tipo_saber_11/1775882870158-377d5f95-4030-4f36-8e04-5ed8180ee0e5-respuestas_quimica.xls",
+      "extension": ".xls",
+      "kind": "key_table",
+      "confidence": 10,
+      "answersCount": 69,
+      "questionStarts": 0,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": true
+    },
+    {
+      "file": "storage/claves/2003/grado_11/area_ingles/tipo_saber_11/1775882870101-1cd695fd-d3a9-4b41-82ae-94ac57262823-respuestas_ingles.xls",
+      "extension": ".xls",
+      "kind": "key_table",
+      "confidence": 10,
+      "answersCount": 10,
+      "questionStarts": 0,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": true
+    },
+    {
+      "file": "storage/claves/2003/grado_11/area_lectura_critica/tipo_saber_11/1775882869995-0886e61e-5d88-409a-963d-d2ffe260e2bf-respuestas_filosofia_profundizacion.xls",
+      "extension": ".xls",
+      "kind": "key_table",
+      "confidence": 10,
+      "answersCount": 20,
+      "questionStarts": 0,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": true
+    },
+    {
+      "file": "storage/claves/2003/grado_11/area_sociales_ciudadanas/tipo_saber_11/1775882870047-3181a0dd-4bce-4976-b35e-8b919c17dbeb-respuestas_geografia.xls",
+      "extension": ".xls",
+      "kind": "key_table",
+      "confidence": 10,
+      "answersCount": 35,
+      "questionStarts": 0,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": true
+    },
+    {
+      "file": "storage/claves/2003/grado_11/area_sociales_ciudadanas/tipo_saber_11/1775882870075-27fe3481-24e1-438f-bb66-daf3425ab0b8-respuestas_historia.xls",
+      "extension": ".xls",
+      "kind": "key_table",
+      "confidence": 10,
+      "answersCount": 70,
+      "questionStarts": 0,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": true
+    },
+    {
+      "file": "storage/claves/2003/grado_11/tipo_saber_11/1775882869887-5cf0e996-3907-41bb-afb7-f26759bc0432-respuestas.xls",
+      "extension": ".xls",
+      "kind": "key_table",
+      "confidence": 10,
+      "answersCount": 5,
+      "questionStarts": 0,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": true
+    },
+    {
+      "file": "storage/claves/2006/grado_11/area_matematicas/tipo_saber_11/1775882870430-9c320031-7183-4f69-a61e-bc2ad2a80c87-respuestas1.xls",
+      "extension": ".xls",
+      "kind": "key_table",
+      "confidence": 10,
+      "answersCount": 12,
+      "questionStarts": 0,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": true
+    },
+    {
+      "file": "storage/claves/2006/grado_11/area_sociales_ciudadanas/tipo_saber_11/1775882870292-7d870c76-8243-4255-8d7a-77883b5f6112-respuestas_profundizacion_1.xls",
+      "extension": ".xls",
+      "kind": "key_table",
+      "confidence": 10,
+      "answersCount": 20,
+      "questionStarts": 0,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": true
+    },
+    {
+      "file": "storage/claves/2006/grado_11/tipo_saber_11/1775882870336-8f300c49-4da1-4024-9e59-bd56fd81a561-respuestas_1.xls",
+      "extension": ".xls",
+      "kind": "key_table",
+      "confidence": 10,
+      "answersCount": 15,
+      "questionStarts": 0,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": true
+    },
+    {
+      "file": "storage/claves/2006/grado_11/tipo_saber_11/1775882870359-4b1fc10b-874c-42b8-93d8-e3d0b3dfcba9-respuestas_2.xls",
+      "extension": ".xls",
+      "kind": "key_table",
+      "confidence": 10,
+      "answersCount": 15,
+      "questionStarts": 0,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": true
+    },
+    {
+      "file": "storage/claves/2018/grado_11/tipo_saber_11/1775882870460-19b38712-e398-4723-8ed0-8190809d311e-2018-2_con_respuestas.pdf",
+      "extension": ".pdf",
+      "kind": "uncertain",
+      "confidence": 0,
+      "answersCount": 0,
+      "questionStarts": 0,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2021/grado_11/area_ciencias_naturales/tipo_saber_11/1775882870616-eba8cba7-542b-43d6-8a9b-cc32ebb18c20-naturales_marcadas.pdf",
+      "extension": ".pdf",
+      "kind": "uncertain",
+      "confidence": 0,
+      "answersCount": 0,
+      "questionStarts": 0,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882871596-6b4b2557-4545-4ef6-9cb9-896fee2ab865-04.png",
+      "extension": ".png",
+      "kind": "question_statement",
+      "confidence": 5.5,
+      "answersCount": 0,
+      "questionStarts": 3,
+      "optionLines": 12,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882871647-1b70c742-aa49-4b57-b8ff-d81e81432837-05.png",
+      "extension": ".png",
+      "kind": "question_statement",
+      "confidence": 5.5,
+      "answersCount": 0,
+      "questionStarts": 3,
+      "optionLines": 12,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882871698-c4b98923-e477-478a-8454-b905c8369977-11.png",
+      "extension": ".png",
+      "kind": "question_statement",
+      "confidence": 4,
+      "answersCount": 0,
+      "questionStarts": 1,
+      "optionLines": 10,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882871753-cf25b850-f021-41f3-a4fc-c9792cf37039-15.png",
+      "extension": ".png",
+      "kind": "question_statement",
+      "confidence": 5.5,
+      "answersCount": 0,
+      "questionStarts": 3,
+      "optionLines": 16,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882871805-6547ea8a-2f56-4616-a631-f45c3d399a3a-16.png",
+      "extension": ".png",
+      "kind": "uncertain",
+      "confidence": 3,
+      "answersCount": 0,
+      "questionStarts": 1,
+      "optionLines": 4,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882871856-c3389e16-8327-4e22-b3f1-ccb067fc8777-23.png",
+      "extension": ".png",
+      "kind": "question_statement",
+      "confidence": 7,
+      "answersCount": 0,
+      "questionStarts": 6,
+      "optionLines": 17,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882871898-3d517d39-eed3-477c-b517-b7d81c10134f-26.png",
+      "extension": ".png",
+      "kind": "question_statement",
+      "confidence": 7,
+      "answersCount": 0,
+      "questionStarts": 6,
+      "optionLines": 8,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882871949-d17555e4-aa75-4a59-8328-9cc3313f4ae3-31.png",
+      "extension": ".png",
+      "kind": "question_statement",
+      "confidence": 5,
+      "answersCount": 0,
+      "questionStarts": 2,
+      "optionLines": 8,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882871999-2f6c6f9f-7ccc-43b1-964e-b423ef619fff-33.png",
+      "extension": ".png",
+      "kind": "question_statement",
+      "confidence": 5.5,
+      "answersCount": 0,
+      "questionStarts": 3,
+      "optionLines": 12,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882872050-6a352aaa-f57f-41c5-9967-8446271e9d2a-34.png",
+      "extension": ".png",
+      "kind": "uncertain",
+      "confidence": 2,
+      "answersCount": 0,
+      "questionStarts": 1,
+      "optionLines": 8,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882872110-f83a38a4-5c4d-4e49-aedb-25084753a1b1-40.png",
+      "extension": ".png",
+      "kind": "question_statement",
+      "confidence": 5.5,
+      "answersCount": 0,
+      "questionStarts": 3,
+      "optionLines": 14,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882872164-0992a464-b4c8-4f5a-93e0-2fb9f2b6ad13-42.png",
+      "extension": ".png",
+      "kind": "question_statement",
+      "confidence": 5,
+      "answersCount": 0,
+      "questionStarts": 2,
+      "optionLines": 8,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882872227-d3c56e08-bff6-436c-ba95-c84c9a049626-r._primera_sesion_page-0001.jpg",
+      "extension": ".jpg",
+      "kind": "uncertain",
+      "confidence": 3,
+      "answersCount": 0,
+      "questionStarts": 1,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882872326-dc08be1c-4b2f-40da-a223-19773828b754-r._primera_sesion_page-0007.jpg",
+      "extension": ".jpg",
+      "kind": "uncertain",
+      "confidence": 2,
+      "answersCount": 0,
+      "questionStarts": 1,
+      "optionLines": 6,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882872427-f6d62ca4-efd2-494e-ae69-7827fcca81c5-r._primera_sesion_page-0018.jpg",
+      "extension": ".jpg",
+      "kind": "question_statement",
+      "confidence": 5,
+      "answersCount": 0,
+      "questionStarts": 3,
+      "optionLines": 6,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882872521-c9ae5cf9-b779-4bfc-b78e-e678adedb0d7-r._primera_sesion_page-0022.jpg",
+      "extension": ".jpg",
+      "kind": "question_statement",
+      "confidence": 5.5,
+      "answersCount": 0,
+      "questionStarts": 3,
+      "optionLines": 10,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882872613-1df13c36-a8f6-4564-b49c-be33fbecd168-r._primera_sesion_page-0026.jpg",
+      "extension": ".jpg",
+      "kind": "uncertain",
+      "confidence": 2,
+      "answersCount": 0,
+      "questionStarts": 1,
+      "optionLines": 8,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882872746-72f92a30-f2bd-42e1-9443-783190742a07-r._primera_sesion_page-0028.jpg",
+      "extension": ".jpg",
+      "kind": "question_statement",
+      "confidence": 5.5,
+      "answersCount": 0,
+      "questionStarts": 3,
+      "optionLines": 8,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882872871-3e286353-4db4-402e-b729-698cb18104c5-r._primera_sesion_page-0029.jpg",
+      "extension": ".jpg",
+      "kind": "question_statement",
+      "confidence": 5,
+      "answersCount": 0,
+      "questionStarts": 2,
+      "optionLines": 5,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882872990-7ee6f5c0-5796-4b40-9cd6-d0e8dcd5f468-r._primera_sesion_page-0030.jpg",
+      "extension": ".jpg",
+      "kind": "question_statement",
+      "confidence": 5,
+      "answersCount": 0,
+      "questionStarts": 2,
+      "optionLines": 6,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882873104-36a721ad-2251-47de-a279-c245aff1e26c-r._primera_sesion_page-0034.jpg",
+      "extension": ".jpg",
+      "kind": "question_statement",
+      "confidence": 5,
+      "answersCount": 0,
+      "questionStarts": 2,
+      "optionLines": 6,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882873218-613af46d-59e2-4c51-be80-2163384830ea-r._primera_sesion_page-0035.jpg",
+      "extension": ".jpg",
+      "kind": "uncertain",
+      "confidence": 3,
+      "answersCount": 0,
+      "questionStarts": 1,
+      "optionLines": 3,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882873327-8e0d9ec8-b4d3-4379-bedb-3f3726e33c9c-01.png",
+      "extension": ".png",
+      "kind": "uncertain",
+      "confidence": 3,
+      "answersCount": 0,
+      "questionStarts": 1,
+      "optionLines": 3,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882873382-75767e25-b503-4327-aa04-f38301c75490-10.png",
+      "extension": ".png",
+      "kind": "question_statement",
+      "confidence": 5,
+      "answersCount": 0,
+      "questionStarts": 3,
+      "optionLines": 5,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882873428-8ecd72ba-e7d1-4a80-9df3-eaf7d81d5642-12.png",
+      "extension": ".png",
+      "kind": "question_statement",
+      "confidence": 5.5,
+      "answersCount": 0,
+      "questionStarts": 3,
+      "optionLines": 9,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882873481-fff3fee8-3945-4d96-983b-9e11d6d0c538-15.png",
+      "extension": ".png",
+      "kind": "question_statement",
+      "confidence": 5,
+      "answersCount": 0,
+      "questionStarts": 3,
+      "optionLines": 6,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882873524-ac74c746-8e6b-4b23-8ebd-6ed897dfd35d-19.png",
+      "extension": ".png",
+      "kind": "uncertain",
+      "confidence": 3,
+      "answersCount": 0,
+      "questionStarts": 1,
+      "optionLines": 3,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882873567-cf98925b-61bb-4d31-ba0c-dadce564f10c-20.png",
+      "extension": ".png",
+      "kind": "uncertain",
+      "confidence": 3,
+      "answersCount": 0,
+      "questionStarts": 1,
+      "optionLines": 4,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882873612-e94cc837-77ca-4066-ad28-d97b36e4c908-25.png",
+      "extension": ".png",
+      "kind": "question_statement",
+      "confidence": 4,
+      "answersCount": 1,
+      "questionStarts": 2,
+      "optionLines": 4,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882873654-069dc578-51d9-4463-819f-a356beb21f2b-27.png",
+      "extension": ".png",
+      "kind": "uncertain",
+      "confidence": 2,
+      "answersCount": 1,
+      "questionStarts": 1,
+      "optionLines": 7,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882873693-9cf32aaa-31f5-43dc-96b6-3fc40590b15f-28.png",
+      "extension": ".png",
+      "kind": "question_statement",
+      "confidence": 5,
+      "answersCount": 0,
+      "questionStarts": 3,
+      "optionLines": 5,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2025/grado_11/tipo_saber_11/1775882873734-f46880e6-5990-47c7-8a5b-286fc9747fbf-31.png",
+      "extension": ".png",
+      "kind": "uncertain",
+      "confidence": 3,
+      "answersCount": 0,
+      "questionStarts": 1,
+      "optionLines": 1,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2026/grado_11/area_ciencias_naturales/tipo_saber_11/1775882868638-9a9a6aaa-cb07-479b-821a-a9555057fd15-ciencias_naturales_preicfes_resuelto.docx",
+      "extension": ".docx",
+      "kind": "uncertain",
+      "confidence": 3,
+      "answersCount": 0,
+      "questionStarts": 0,
+      "optionLines": 0,
+      "keyTerms": 0,
+      "accepted": false
+    },
+    {
+      "file": "storage/claves/2026/grado_11/area_ciencias_naturales/tipo_saber_11/1775882868696-0ac85d8b-2650-49da-80fd-98d0f5624174-ciencias_naturales_preicfes_resuelto.pdf",
+      "extension": ".pdf",
+      "kind": "question_statement",
+      "confidence": 10,
+      "answersCount": 0,
+      "questionStarts": 43,
+      "optionLines": 64,
+      "keyTerms": 0,
+      "accepted": false
+    }
+  ],
+  "errors": []
+}

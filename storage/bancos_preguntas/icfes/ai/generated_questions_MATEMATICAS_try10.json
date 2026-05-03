@@ -1,0 +1,56 @@
+{
+  "generatedAt": "2026-04-14T02:35:47.316Z",
+  "provider": "openai_compatible",
+  "model": "qwen2.5:3b-instruct-q4_K_M",
+  "endpoint": "http://ollama:11434/v1/chat/completions",
+  "targetCount": 10,
+  "selectedChunks": 8,
+  "selectedAreas": [
+    "MATEMATICAS"
+  ],
+  "quality": {
+    "minQualityScore": 78,
+    "similarityThreshold": 0.88,
+    "dbCheck": true
+  },
+  "validCount": 1,
+  "invalidCount": 0,
+  "qualityAcceptedCount": 1,
+  "qualityRejectedCount": 0,
+  "invalid": [],
+  "questions": [
+    {
+      "area": "MATEMATICAS",
+      "competencia": "SIMULACROS",
+      "componente": "K7 MATEMATICAS II",
+      "nivel_dificultad": "MEDIO",
+      "nivel_cognitivo": "COMPRENSIÓN Y APLICACIÓN",
+      "enunciado": "La gráfica que presenta la cantidad total de personas atendidas a causa de estas enfermedades durante los tres años observados es\nLa gráfica muestra información sobre las quejas que se reciben en un punto de servicio al cliente en una compañía de telefonía celular.\n¿Cuál de las siguientes tablas muestra la cantidad de personas y el porcentaje acumulado por cada tipo de queja?",
+      "contexto_texto_base": "La encuesta realizada para conocer la cantidad de pacientes atendidos por varicela, sarampión y rubeola en el país durante tres años se presentó de la siguiente manera:\n\n| Año | Varicela (en miles) | Sarampion (en miles) | Rubeola (en miles) |\n|----|-------------------|--------------------|---------------|\n| 2015| 6.500 | 4.500 | 3.500 |\n| 2016| 7.500 | 5.000 | 4.000 |\n| 2017| 8.000 | 5.500 | 4.500 |\n\nLa gráfica que presenta la cantidad total de personas atendidas a causa de estas enfermedades durante los tres años observados es",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "Para responder esta pregunta, primero debemos sumar las cifras de cada año para obtener la cantidad total de pacientes atendidos por varicela, sarampión y rubeola en el país durante los tres años observados. Luego, podemos presentar estas cantidades totales en una tabla que muestre tanto la cantidad de personas como el porcentaje acumulado correspondiente a cada enfermedad. Aquí está cómo se haría la tabla:\n\n| Enfermedad | Total (en miles) | Porcentaje Acumulado |\n|-----------|------------------|-----------------------|\n| Varicela | 26,000 | 57% |\n| Sarampion | 19,000 | 43% |\n| Rubeola | 13,000 | 28% |\n\nLuego de sumar los datos para cada enfermedad y calcular el porcentaje acumulado, podemos presentar la información en una tabla que muestre tanto la cantidad total como el porcentaje acumulado correspondiente a cada tipo de queja. Por ejemplo:\n\n| Tipo de Queja | Cantidad Total (en miles) | Porcentaje Acumulado |\n|--------------|--------------------------|-----------------------|\n| Queja 1 | 26,000 | 57% |\n| Queja 2 | 19,000 | 43% |\n\nEsta tabla muestra la cantidad de personas y el porcentaje acumulado correspondiente a cada tipo de queja.",
+      "opciones": [
+        {
+          "texto_opcion": "A",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "B",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "C",
+          "es_correcta": true
+        },
+        {
+          "texto_opcion": "D",
+          "es_correcta": false
+        }
+      ],
+      "fuente_chunk_ids": [
+        "15066D5466B3-2",
+        "15066D5466B3-15"
+      ]
+    }
+  ]
+}

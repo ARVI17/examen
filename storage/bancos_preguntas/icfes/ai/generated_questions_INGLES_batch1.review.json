@@ -1,0 +1,31 @@
+{
+  "generatedAt": "2026-04-14T08:06:42.229Z",
+  "quality": {
+    "minQualityScore": 70,
+    "similarityThreshold": 0.9
+  },
+  "invalid": [],
+  "review": [
+    {
+      "index": 0,
+      "area": "INGLES",
+      "score": 100,
+      "accepted": true,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 0,
+      "reasons": [],
+      "preview": "¿Cuántas sílabas se pronuncian en el adjetivo 'Interesting'?"
+    },
+    {
+      "index": 1,
+      "area": "INGLES",
+      "score": 100,
+      "accepted": true,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 0.3226,
+      "reasons": [],
+      "preview": "¿Cuál es la oración comparativa correcta para el adjetivo 'Funny'?"
+    }
+  ],
+  "rejected": []
+}

@@ -1,0 +1,55 @@
+{
+  "generatedAt": "2026-04-14T02:21:47.691Z",
+  "provider": "openai_compatible",
+  "model": "qwen2.5:3b-instruct-q4_K_M",
+  "endpoint": "http://ollama:11434/v1/chat/completions",
+  "targetCount": 5,
+  "selectedChunks": 8,
+  "selectedAreas": [
+    "LECTURA_CRITICA"
+  ],
+  "quality": {
+    "minQualityScore": 78,
+    "similarityThreshold": 0.88,
+    "dbCheck": true
+  },
+  "validCount": 1,
+  "invalidCount": 0,
+  "qualityAcceptedCount": 1,
+  "qualityRejectedCount": 0,
+  "invalid": [],
+  "questions": [
+    {
+      "area": "LECTURA_CRITICA",
+      "competencia": "SOLUCIONARIO EVALUACIÓN UNIDAD 2",
+      "componente": "ANALIZAR-INTERPRETAR LÉXICO CONTEXTUAL",
+      "nivel_dificultad": "BAJO",
+      "nivel_cognitivo": "RECOGER Y COMPRENDER",
+      "enunciado": "¿Cuál de los siguientes enunciados corresponde a un objetivo indicado por el autor del fragmento?",
+      "contexto_texto_base": "C) diferente y propositiva. D) novedosa y utópica. E) crítica y atemporal.",
+      "grado_objetivo": "1",
+      "explicacion_respuesta": "La opción correcta es la C: 'diferente y propositiva'. Este enunciado se alinea con el contenido del fragmento, que sugiere una perspectiva diferente y orientada a mejorar o transformar algo.",
+      "opciones": [
+        {
+          "texto_opcion": "A) Eliminar la pobreza sin un aumento notable en la calidad de la educación.",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "B) Menguar la insuficiencia de capital humano para elevar la competitividad del país.",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "C) Condicionar la competitividad de nuestro país al crecimiento de su capital humano.",
+          "es_correcta": true
+        },
+        {
+          "texto_opcion": "D) Plantear políticas públicas según el enfoque presentado en una secuencia lógica anterior.",
+          "es_correcta": false
+        }
+      ],
+      "fuente_chunk_ids": [
+        "20D588B4C102-34"
+      ]
+    }
+  ]
+}

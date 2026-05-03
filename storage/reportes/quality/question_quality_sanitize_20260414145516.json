@@ -1,0 +1,1450 @@
+{
+  "generatedAt": "2026-04-14T14:55:16.776Z",
+  "apply": true,
+  "depublishEmptyExams": true,
+  "filters": {
+    "grade": null,
+    "area": null,
+    "includeInactiveQuestions": true,
+    "limit": null
+  },
+  "totals": {
+    "questionsScanned": 67,
+    "invalidBefore": 23,
+    "invalidAfter": 23,
+    "questionsTouched": 23,
+    "examsScanned": 51,
+    "examsWithZeroValidQuestions": 25,
+    "examsDepublished": 25
+  },
+  "depublishedExamIds": [
+    "bca97f93-8dac-4c48-b931-35ea7f960d9a",
+    "8975815b-f4d6-4ad9-be34-03d0477c19e4",
+    "452240e7-abc8-4747-853c-701ac7bb05a5",
+    "bd4fbc9c-a78c-4f54-b5ac-0f18a4af7feb",
+    "39c92f50-0756-41ba-a231-38c6708487c2",
+    "34452b0e-6d03-4f29-a604-361df3ad578f",
+    "ba770eba-8330-410e-88a2-dd0b4012dcbf",
+    "fe42ccf0-5c2d-409e-b5f3-52d9167b15f2",
+    "3969eb7c-6951-4ffa-9a1d-aa2c6066a6b8",
+    "85d883ec-d570-45ca-b47c-d1052c2f905e",
+    "bf79f9ef-7fdb-4fa1-9cb0-45d7349b5855",
+    "554da4f8-56b3-4d88-a898-a1eb90f0f8ef",
+    "4b09d652-94fc-49d2-8b6f-982b5d45c8cc",
+    "5a140946-3555-475d-871e-315363c6e14d",
+    "4e19cc4b-a062-4fd8-9369-fe1a03f35c69",
+    "8d20835f-97ed-4bfd-b3a2-7860e7f36664",
+    "b8185f9c-e43a-42bb-a2f4-b5a4f984d0a3",
+    "aaa2c899-ba2e-43bb-91f8-e28529fe4e3a",
+    "745fcfda-a3a1-409b-80c6-778a2d3b5855",
+    "b964dc86-c261-4d09-b84f-26d817617105",
+    "4e7ca905-170a-4acd-8133-0cdd686614a2",
+    "5dbe0f05-9e49-4816-9e89-b7b3b2687ca8",
+    "3fbf4c5f-1640-4800-b743-b713bede5d28",
+    "45a8f7d4-e050-45bc-9a23-a0b1fb8df366",
+    "98e73875-3c2d-41c5-9041-8ffe4c0f41f8"
+  ],
+  "invalidAfter": [
+    {
+      "questionId": "6f9f0523-e6ef-47df-a086-22399fa0cb1a",
+      "codigoInterno": "IT-Q-1775882808909",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "12c13fbb-8e38-42a0-8eae-d8c68fdf8800",
+      "codigoInterno": "MATE-0001",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "76418e9a-d4f9-4b4a-9f29-c3cc2c1afca2",
+      "codigoInterno": "IT-Q-1775881453123",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "80c02a15-b4b8-4076-b63a-ece6fcb26130",
+      "codigoInterno": "IT-Q-1776130316485",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "14ae9a62-beac-4b7d-923b-604357be1594",
+      "codigoInterno": "IT-Q-1775051899380",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "cefdaf7d-f3fb-4cc7-831d-6898e9d28abe",
+      "codigoInterno": "IT-Q-1776130548175",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "32897d83-ab1f-4e02-b843-40ca1f5332f2",
+      "codigoInterno": "IT-Q-1775051836772",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "4c2057b1-e846-4202-8a0c-d7eb4a592e56",
+      "codigoInterno": "IT-Q-1776130156168",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "3f0e0e14-f054-479c-89a0-dcd769aea3e7",
+      "codigoInterno": "IT-Q-1776128691593",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "263ccbeb-7719-4fce-8881-95ffccf68e83",
+      "codigoInterno": "IT-Q-1776128772295",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "ccae7c54-dd31-4626-9d49-d175cc10ceea",
+      "codigoInterno": "IT-Q-1775049412406",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "fd40bca9-c9f9-4dd6-a39c-53767ef69113",
+      "codigoInterno": "IT-Q-1776130904179",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "5c80a5f3-8e40-478e-9f65-4199f3552a01",
+      "codigoInterno": "IT-Q-1776130191678",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "a0faf4fb-a611-462b-9d23-c045e150d037",
+      "codigoInterno": "IT-Q-1776130716594",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "292751fe-11de-4e11-bfc6-cda18213d8ed",
+      "codigoInterno": "IT-Q-1775881485741",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "0458f697-1b53-40c0-ad55-2405311a8c5a",
+      "codigoInterno": "IT-Q-1776129597817",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "f575a63f-6984-426e-b7f3-34bf4c6aecd5",
+      "codigoInterno": "IT-Q-1775964186670",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "deb448cd-e2be-4221-82ca-dbe462c31758",
+      "codigoInterno": "IT-Q-1775881622455",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "a2e9e895-3d54-4edd-b254-792450ba3377",
+      "codigoInterno": "IT-Q-1775960421338",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "3493957f-2e76-429b-ba8e-cb6c80d86c93",
+      "codigoInterno": "IT-Q-1775961179146",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "7dd04b42-5494-4e92-8eae-e24127e87fde",
+      "codigoInterno": "IT-Q-1776130387832",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "d6fc4234-c1f1-4b3d-84de-eb31ed807d70",
+      "codigoInterno": "IT-Q-1775881304324",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "aa222b98-fc23-476a-910c-dcdc490b8f55",
+      "codigoInterno": "IT-Q-1775049453390",
+      "quality": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    }
+  ],
+  "actions": [
+    {
+      "questionId": "6f9f0523-e6ef-47df-a086-22399fa0cb1a",
+      "codigoInterno": "IT-Q-1775882808909",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "12c13fbb-8e38-42a0-8eae-d8c68fdf8800",
+      "codigoInterno": "MATE-0001",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "76418e9a-d4f9-4b4a-9f29-c3cc2c1afca2",
+      "codigoInterno": "IT-Q-1775881453123",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "80c02a15-b4b8-4076-b63a-ece6fcb26130",
+      "codigoInterno": "IT-Q-1776130316485",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "14ae9a62-beac-4b7d-923b-604357be1594",
+      "codigoInterno": "IT-Q-1775051899380",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "cefdaf7d-f3fb-4cc7-831d-6898e9d28abe",
+      "codigoInterno": "IT-Q-1776130548175",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "32897d83-ab1f-4e02-b843-40ca1f5332f2",
+      "codigoInterno": "IT-Q-1775051836772",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "4c2057b1-e846-4202-8a0c-d7eb4a592e56",
+      "codigoInterno": "IT-Q-1776130156168",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "3f0e0e14-f054-479c-89a0-dcd769aea3e7",
+      "codigoInterno": "IT-Q-1776128691593",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "263ccbeb-7719-4fce-8881-95ffccf68e83",
+      "codigoInterno": "IT-Q-1776128772295",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "ccae7c54-dd31-4626-9d49-d175cc10ceea",
+      "codigoInterno": "IT-Q-1775049412406",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "fd40bca9-c9f9-4dd6-a39c-53767ef69113",
+      "codigoInterno": "IT-Q-1776130904179",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "5c80a5f3-8e40-478e-9f65-4199f3552a01",
+      "codigoInterno": "IT-Q-1776130191678",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "a0faf4fb-a611-462b-9d23-c045e150d037",
+      "codigoInterno": "IT-Q-1776130716594",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "292751fe-11de-4e11-bfc6-cda18213d8ed",
+      "codigoInterno": "IT-Q-1775881485741",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "0458f697-1b53-40c0-ad55-2405311a8c5a",
+      "codigoInterno": "IT-Q-1776129597817",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "f575a63f-6984-426e-b7f3-34bf4c6aecd5",
+      "codigoInterno": "IT-Q-1775964186670",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "deb448cd-e2be-4221-82ca-dbe462c31758",
+      "codigoInterno": "IT-Q-1775881622455",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "a2e9e895-3d54-4edd-b254-792450ba3377",
+      "codigoInterno": "IT-Q-1775960421338",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "3493957f-2e76-429b-ba8e-cb6c80d86c93",
+      "codigoInterno": "IT-Q-1775961179146",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "7dd04b42-5494-4e92-8eae-e24127e87fde",
+      "codigoInterno": "IT-Q-1776130387832",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "d6fc4234-c1f1-4b3d-84de-eb31ed807d70",
+      "codigoInterno": "IT-Q-1775881304324",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    },
+    {
+      "questionId": "aa222b98-fc23-476a-910c-dcdc490b8f55",
+      "codigoInterno": "IT-Q-1775049453390",
+      "actions": [
+        "deactivate_question_unrecoverable"
+      ],
+      "before": {
+        "valid": false,
+        "issues": [
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      },
+      "after": {
+        "valid": false,
+        "issues": [
+          "QUESTION_INACTIVE",
+          "INVALID_OPTION_COUNT",
+          "EMPTY_OPTION_TEXT"
+        ],
+        "activeOptions": 3,
+        "activeNonEmptyOptions": 3,
+        "activeCorrectOptions": 1
+      }
+    }
+  ],
+  "examQuality": [
+    {
+      "examId": "bca97f93-8dac-4c48-b931-35ea7f960d9a",
+      "nombre": "Simulacro Saber 11 ICFES 2026",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "8975815b-f4d6-4ad9-be34-03d0477c19e4",
+      "nombre": "IT EXAM 1775049329314",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 0,
+      "validQuestions": 0,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "452240e7-abc8-4747-853c-701ac7bb05a5",
+      "nombre": "IT EXAM 1775049412406",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "bd4fbc9c-a78c-4f54-b5ac-0f18a4af7feb",
+      "nombre": "IT EXAM 1775049453390",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "39c92f50-0756-41ba-a231-38c6708487c2",
+      "nombre": "IT EXAM 1775051836772",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "34452b0e-6d03-4f29-a604-361df3ad578f",
+      "nombre": "IT EXAM 1775051899380",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "ba770eba-8330-410e-88a2-dd0b4012dcbf",
+      "nombre": "IT EXAM 1775881304324",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "fe42ccf0-5c2d-409e-b5f3-52d9167b15f2",
+      "nombre": "IT EXAM 1775881453123",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "3969eb7c-6951-4ffa-9a1d-aa2c6066a6b8",
+      "nombre": "IT EXAM 1775881485741",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "85d883ec-d570-45ca-b47c-d1052c2f905e",
+      "nombre": "IT EXAM 1775881622455",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "bf79f9ef-7fdb-4fa1-9cb0-45d7349b5855",
+      "nombre": "IT EXAM 1775882808909",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "554da4f8-56b3-4d88-a898-a1eb90f0f8ef",
+      "nombre": "IT EXAM 1775960421338",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "4b09d652-94fc-49d2-8b6f-982b5d45c8cc",
+      "nombre": "IT EXAM 1775961179146",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "5a140946-3555-475d-871e-315363c6e14d",
+      "nombre": "IT EXAM 1775964186670",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "4e19cc4b-a062-4fd8-9369-fe1a03f35c69",
+      "nombre": "IT EXAM 1776128691593",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "8d20835f-97ed-4bfd-b3a2-7860e7f36664",
+      "nombre": "IT EXAM 1776128772295",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "b8185f9c-e43a-42bb-a2f4-b5a4f984d0a3",
+      "nombre": "IT EXAM 1776129597817",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "aaa2c899-ba2e-43bb-91f8-e28529fe4e3a",
+      "nombre": "IT EXAM 1776130156168",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "745fcfda-a3a1-409b-80c6-778a2d3b5855",
+      "nombre": "IT EXAM 1776130191678",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "b964dc86-c261-4d09-b84f-26d817617105",
+      "nombre": "IT EXAM 1776130316485",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "4e7ca905-170a-4acd-8133-0cdd686614a2",
+      "nombre": "IT EXAM 1776130387832",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "5dbe0f05-9e49-4816-9e89-b7b3b2687ca8",
+      "nombre": "IT EXAM 1776130548175",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "3fbf4c5f-1640-4800-b743-b713bede5d28",
+      "nombre": "IT EXAM 1776130716594",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "45a8f7d4-e050-45bc-9a23-a0b1fb8df366",
+      "nombre": "IT EXAM 1776130904179",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 0,
+      "invalidQuestions": 1
+    },
+    {
+      "examId": "935c4566-0a3f-4fc0-809b-0f66f22cb478",
+      "nombre": "IT EXAM 1776131050893",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "1f8a9c30-77ef-47ac-a7d7-e432a191ba15",
+      "nombre": "IT EXAM 1776131129124",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "a754984b-f055-4bb7-aade-4d823bcf3fff",
+      "nombre": "IT EXAM 1776132382977",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "8ec05805-e3fa-450e-ac27-973f23406708",
+      "nombre": "IT EXAM 1776137849559",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "4727adec-4abc-46ad-9b5d-1a1e16f1945a",
+      "nombre": "IT EXAM 1776153725747",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "2409d911-2154-4a66-a19b-580665d0869a",
+      "nombre": "IT EXAM 1776154619511",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "50084298-3fd2-4df2-aee6-68aa0e813b81",
+      "nombre": "IT EXAM 1776154783091",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "37326833-1d60-4065-98ce-cae30a19b273",
+      "nombre": "IT EXAM 1776156092383",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "98e73875-3c2d-41c5-9041-8ffe4c0f41f8",
+      "nombre": "S11 REAL 2290",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 0,
+      "validQuestions": 0,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "1195a87c-dc49-4a5a-bfd4-4399ff34547d",
+      "nombre": "IT EXAM 1776157075692",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "ba0a68e3-1c31-4435-b2bd-33937d6c547e",
+      "nombre": "IT EXAM 1776157128708",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "c1359823-52f1-4a9b-adc0-b142bede2f9b",
+      "nombre": "IT EXAM 1776157251540",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "46615bb4-31b2-4ac8-af3e-54311f9f131e",
+      "nombre": "IT EXAM 1776158707708",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "a6f0cc66-d597-4d47-baa0-9688ac696b63",
+      "nombre": "STRICT SABER11 1776158921778",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 2,
+      "validQuestions": 2,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "ed779120-b85e-4c8d-868a-b00db8ddb8d3",
+      "nombre": "IT EXAM 1776158969324",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "fdda0b58-3092-4f38-aaa3-bf1e25218913",
+      "nombre": "STRICT SABER11 1776159003329",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 2,
+      "validQuestions": 2,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "413b7735-66fc-4b93-9c87-5bf177564584",
+      "nombre": "IT EXAM 1776159074210",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "e151b7b5-70fc-4435-9655-03430ba08c48",
+      "nombre": "IT EXAM 1776159107950",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "e5a986e3-d95a-4dc8-bcae-8c52853e3bb1",
+      "nombre": "IT EXAM STRICT 1776159107950",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 2,
+      "validQuestions": 2,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "3bc35ab0-bb99-4a63-a93a-2a33bf4ba02f",
+      "nombre": "IT EXAM 1776159256720",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "01e786b6-eb8e-4e34-b00e-8bf31a1a3621",
+      "nombre": "IT EXAM STRICT 1776159256720",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 2,
+      "validQuestions": 2,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "6b2dcf7d-6a03-464b-9787-49ae4d337dc9",
+      "nombre": "IT EXAM 1776171615836",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "921e9265-10bf-4f44-aa38-3ca1380a29a4",
+      "nombre": "IT EXAM STRICT 1776171615836",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 2,
+      "validQuestions": 2,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "c8f63277-ff40-43e7-82e2-71a320426981",
+      "nombre": "IT EXAM 1776173628839",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "5d16591e-b5d3-4d75-b22a-8c85b4efcad6",
+      "nombre": "IT EXAM STRICT 1776173628839",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 2,
+      "validQuestions": 2,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "06359a9c-bbfc-4aeb-a60c-339dfdc9bfbf",
+      "nombre": "IT EXAM 1776173685739",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "487330aa-086a-4835-9e3f-5d5561529908",
+      "nombre": "IT EXAM STRICT 1776173685739",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 2,
+      "validQuestions": 2,
+      "invalidQuestions": 0
+    }
+  ]
+}

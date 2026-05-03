@@ -1,0 +1,241 @@
+{
+  "generatedAt": "2026-04-14T14:57:12.082Z",
+  "apply": false,
+  "depublishEmptyExams": true,
+  "filters": {
+    "grade": null,
+    "area": null,
+    "includeInactiveQuestions": false,
+    "limit": null
+  },
+  "totals": {
+    "questionsScanned": 44,
+    "invalidBefore": 0,
+    "invalidAfter": 0,
+    "questionsTouched": 0,
+    "examsScanned": 27,
+    "examsWithZeroValidQuestions": 0,
+    "examsDepublished": 0
+  },
+  "depublishedExamIds": [],
+  "invalidAfter": [],
+  "actions": [],
+  "examQuality": [
+    {
+      "examId": "935c4566-0a3f-4fc0-809b-0f66f22cb478",
+      "nombre": "IT EXAM 1776131050893",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "1f8a9c30-77ef-47ac-a7d7-e432a191ba15",
+      "nombre": "IT EXAM 1776131129124",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "a754984b-f055-4bb7-aade-4d823bcf3fff",
+      "nombre": "IT EXAM 1776132382977",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "8ec05805-e3fa-450e-ac27-973f23406708",
+      "nombre": "IT EXAM 1776137849559",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "4727adec-4abc-46ad-9b5d-1a1e16f1945a",
+      "nombre": "IT EXAM 1776153725747",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "2409d911-2154-4a66-a19b-580665d0869a",
+      "nombre": "IT EXAM 1776154619511",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "50084298-3fd2-4df2-aee6-68aa0e813b81",
+      "nombre": "IT EXAM 1776154783091",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "37326833-1d60-4065-98ce-cae30a19b273",
+      "nombre": "IT EXAM 1776156092383",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "1195a87c-dc49-4a5a-bfd4-4399ff34547d",
+      "nombre": "IT EXAM 1776157075692",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "ba0a68e3-1c31-4435-b2bd-33937d6c547e",
+      "nombre": "IT EXAM 1776157128708",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "c1359823-52f1-4a9b-adc0-b142bede2f9b",
+      "nombre": "IT EXAM 1776157251540",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "46615bb4-31b2-4ac8-af3e-54311f9f131e",
+      "nombre": "IT EXAM 1776158707708",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "a6f0cc66-d597-4d47-baa0-9688ac696b63",
+      "nombre": "STRICT SABER11 1776158921778",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 2,
+      "validQuestions": 2,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "ed779120-b85e-4c8d-868a-b00db8ddb8d3",
+      "nombre": "IT EXAM 1776158969324",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "fdda0b58-3092-4f38-aaa3-bf1e25218913",
+      "nombre": "STRICT SABER11 1776159003329",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 2,
+      "validQuestions": 2,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "413b7735-66fc-4b93-9c87-5bf177564584",
+      "nombre": "IT EXAM 1776159074210",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "e151b7b5-70fc-4435-9655-03430ba08c48",
+      "nombre": "IT EXAM 1776159107950",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "e5a986e3-d95a-4dc8-bcae-8c52853e3bb1",
+      "nombre": "IT EXAM STRICT 1776159107950",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 2,
+      "validQuestions": 2,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "3bc35ab0-bb99-4a63-a93a-2a33bf4ba02f",
+      "nombre": "IT EXAM 1776159256720",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "01e786b6-eb8e-4e34-b00e-8bf31a1a3621",
+      "nombre": "IT EXAM STRICT 1776159256720",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 2,
+      "validQuestions": 2,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "6b2dcf7d-6a03-464b-9787-49ae4d337dc9",
+      "nombre": "IT EXAM 1776171615836",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "921e9265-10bf-4f44-aa38-3ca1380a29a4",
+      "nombre": "IT EXAM STRICT 1776171615836",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 2,
+      "validQuestions": 2,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "c8f63277-ff40-43e7-82e2-71a320426981",
+      "nombre": "IT EXAM 1776173628839",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "5d16591e-b5d3-4d75-b22a-8c85b4efcad6",
+      "nombre": "IT EXAM STRICT 1776173628839",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 2,
+      "validQuestions": 2,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "06359a9c-bbfc-4aeb-a60c-339dfdc9bfbf",
+      "nombre": "IT EXAM 1776173685739",
+      "tipoPrueba": "SIMULACRO",
+      "totalQuestions": 1,
+      "validQuestions": 1,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "487330aa-086a-4835-9e3f-5d5561529908",
+      "nombre": "IT EXAM STRICT 1776173685739",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 2,
+      "validQuestions": 2,
+      "invalidQuestions": 0
+    },
+    {
+      "examId": "38b6dc34-0b29-4b6f-b6a7-e48123fba0e9",
+      "nombre": "Simulacro ICFES Jornadas Base 11",
+      "tipoPrueba": "SABER_11",
+      "totalQuestions": 42,
+      "validQuestions": 42,
+      "invalidQuestions": 0
+    }
+  ]
+}

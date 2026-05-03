@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-04-14T03:06:18.732Z",
+  "provider": "openai_compatible",
+  "model": "qwen2.5:3b-instruct-q4_K_M",
+  "endpoint": "http://ollama:11434/v1/chat/completions",
+  "targetCount": 8,
+  "selectedChunks": 6,
+  "selectedAreas": [
+    "MATEMATICAS"
+  ],
+  "quality": {
+    "minQualityScore": 78,
+    "similarityThreshold": 0.88,
+    "dbCheck": true
+  },
+  "validCount": 0,
+  "invalidCount": 1,
+  "qualityAcceptedCount": 0,
+  "qualityRejectedCount": 0,
+  "invalid": [
+    {
+      "index": 0,
+      "reason": "opcion_correcta_invalida"
+    }
+  ],
+  "questions": []
+}

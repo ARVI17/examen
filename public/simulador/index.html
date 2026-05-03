@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Saber11 Simulador Estudiante</title>
+    <style>
+      :root {
+        --bg: #f5f9f7;
+        --card: #ffffff;
+        --line: #cfe1d7;
+        --ink: #112118;
+        --muted: #547063;
+        --brand: #156c4d;
+        --brand-2: #1f8a63;
+        --warn: #8d5a12;
+        --bad: #8b2330;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 12% -8%, #d8eee2 0, transparent 30%),
+          radial-gradient(circle at 88% -10%, #f3e8d6 0, transparent 30%),
+          var(--bg);
+      }
+      .wrap { width: min(1180px, calc(100vw - 24px)); margin: 12px auto 24px; }
+      .hero {
+        background: linear-gradient(140deg, #103327 0%, #185e44 60%, #21835b 100%);
+        color: #eafff2;
+        border: 1px solid #2e7c5f;
+        border-radius: 16px;
+        padding: 16px;
+      }
+      .hero h1 { margin: 0; font-size: clamp(1.3rem, 2.3vw, 1.9rem); }
+      .hero p { margin: 7px 0 0; color: #d6f7e7; }
+      .hero-grid {
+        margin-top: 12px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 10px;
+      }
+      .hero-box {
+        border: 1px solid #91d7b543;
+        border-radius: 12px;
+        background: #0f3a2b66;
+        padding: 10px;
+      }
+      .mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin-top: 12px; }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 12px;
+        box-shadow: 0 8px 20px rgba(19, 52, 37, 0.08);
+      }
+      .card h2, .card h3 { margin: 0 0 8px; font-size: 1.05rem; }
+      .row2, .row3 { display: grid; gap: 8px; }
+      .row2 { grid-template-columns: 1fr 1fr; }
+      .row3 { grid-template-columns: repeat(3, 1fr); }
+      label { display: block; margin-bottom: 3px; font-size: 12px; color: var(--muted); }
+      input, select, button { width: 100%; font: inherit; }
+      input, select {
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        background: #f8fcfa;
+        color: var(--ink);
+        padding: 8px 9px;
+      }
+      button {
+        border: 0;
+        border-radius: 9px;
+        padding: 9px 10px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .btn { background: linear-gradient(120deg, var(--brand), var(--brand-2)); color: #fff; }
+      .btn.alt { background: #e8f3ee; color: #0d563b; }
+      .btn.warn { background: #f7edd9; color: #7e530d; }
+      .inline { display: flex; gap: 8px; flex-wrap: wrap; }
+      .inline button { width: auto; }
+      .status {
+        margin-top: 8px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        background: #f4faf7;
+        padding: 7px 9px;
+        font-size: 13px;
+      }
+      .ok { border-color: #b7deca; color: #0f6a39; }
+      .warn { border-color: #ebd199; color: var(--warn); }
+      .bad { border-color: #f0bfc6; color: var(--bad); }
+      .hidden { display: none; }
+      .sim-layout { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 10px; }
+      .qnav { display: flex; gap: 6px; flex-wrap: wrap; }
+      .qnav button {
+        width: 36px;
+        padding: 6px 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #f7fbf9;
+        color: var(--ink);
+      }
+      .qnav button.current { border-color: transparent; background: var(--brand); color: #fff; }
+      .option-list { display: grid; gap: 8px; }
+      .option-item {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #f8fcfa;
+        padding: 8px;
+      }
+      .option-item.selected { border-color: #71ba96; background: #e9f7ef; }
+      .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 8px; }
+      .kpi { border: 1px solid var(--line); border-radius: 10px; background: #f8fcfa; padding: 8px; }
+      .kpi .label { color: var(--muted); font-size: 12px; }
+      .kpi .value { font-size: 1.15rem; font-weight: 700; margin-top: 2px; }
+      .bar-list { display: grid; gap: 6px; }
+      .bar-row { display: grid; grid-template-columns: 180px 1fr 52px; gap: 8px; align-items: center; font-size: 12px; }
+      .bar-track { height: 10px; border-radius: 999px; overflow: hidden; background: #e4efe9; }
+      .bar-fill { height: 100%; background: linear-gradient(120deg, #1b8d62, #62c2a0); }
+      .timer-box {
+        border: 1px dashed #7db99a;
+        border-radius: 10px;
+        background: #eef9f2;
+        padding: 8px;
+      }
+      .timer-main { font-size: 1.5rem; font-weight: 800; letter-spacing: 0.02em; }
+      pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #f8fcfa;
+        max-height: 280px;
+        overflow: auto;
+        padding: 8px;
+        font-size: 12px;
+      }
+      @media (max-width: 980px) { .sim-layout { grid-template-columns: 1fr; } }
+      @media (max-width: 720px) {
+        .row2, .row3 { grid-template-columns: 1fr; }
+        .wrap { width: calc(100vw - 14px); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="hero">
+        <h1>Simulador Saber11</h1>
+        <p>Ingresa con tu tipo y numero de identificacion. Si no estas registrado, te pediremos el registro una sola vez.</p>
+        <div class="hero-grid">
+          <div class="hero-box">
+            <div><strong>API</strong></div>
+            <div id="apiText" class="mono"></div>
+          </div>
+          <div class="hero-box">
+            <div><strong>LAN</strong></div>
+            <div id="lanText" class="mono"></div>
+          </div>
+          <div class="hero-box">
+            <div><strong>Estado</strong></div>
+            <div id="policyText">Sin intento activo</div>
+          </div>
+        </div>
+      </header>
+
+      <div class="grid">
+        <article class="card">
+          <h2>1) Identificacion</h2>
+          <div class="row2">
+            <div>
+              <label>Tipo de identificacion</label>
+              <select id="stTipo"><option>TI</option><option>CC</option><option>CE</option><option>PASAPORTE</option><option>OTRO</option></select>
+            </div>
+            <div>
+              <label>Numero de identificacion</label>
+              <input id="stDocumento" />
+            </div>
+          </div>
+
+          <div id="registerPanel" class="hidden" style="margin-top:10px">
+            <div class="status warn">No estas registrado. Completa estos datos para registrarte y continuar.</div>
+            <div class="row2" style="margin-top:8px">
+              <div><label>Nombres</label><input id="stNombres" /></div>
+              <div><label>Apellidos</label><input id="stApellidos" /></div>
+            </div>
+            <div class="row3" style="margin-top:8px">
+              <div><label>Grado</label><input id="stGrado" value="11" /></div>
+              <div><label>Grupo</label><input id="stGrupo" /></div>
+              <div><label>Institucion</label><input id="stInstitucion" /></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>2) Prueba</h2>
+          <div class="row2">
+            <div><label>Prueba disponible</label><select id="examSelect"></select></div>
+            <div><label>Detalle</label><input id="examInfo" readonly value="Cargando..." /></div>
+          </div>
+          <div class="inline" style="margin-top:8px">
+            <button id="loadExamsBtn" class="btn alt">Cargar pruebas</button>
+            <button id="startBtn" class="btn">Iniciar simulacion</button>
+            <button id="refreshAttemptBtn" class="btn alt">Actualizar estado intento</button>
+          </div>
+          <div id="startStatus" class="status warn">Carga pruebas para iniciar.</div>
+        </article>
+
+        <article class="card">
+          <h2>3) Cronometro y jornada</h2>
+          <div class="timer-box">
+            <div id="sessionLabel"><strong>Jornada:</strong> Sin jornada activa</div>
+            <div id="sessionRange" style="margin-top:4px">Preguntas: -</div>
+            <div id="sessionTime" style="margin-top:4px">Tiempo de jornada: -</div>
+            <div id="timerMain" class="timer-main" style="margin-top:6px">--:--</div>
+            <div id="timerHint" class="mono" style="margin-top:4px">El cronometro se activa al iniciar.</div>
+          </div>
+        </article>
+      </div>
+
+      <article class="card" style="margin-top:12px">
+        <div class="sim-layout">
+          <div>
+            <h3>Navegacion</h3>
+            <div id="qNav" class="qnav"></div>
+            <div class="inline" style="margin-top:8px">
+              <button id="prevBtn" class="btn alt">Anterior</button>
+              <button id="nextBtn" class="btn alt">Siguiente</button>
+            </div>
+            <div class="inline" style="margin-top:8px">
+              <button id="saveBtn" class="btn warn">Guardar respuesta</button>
+              <button id="submitBtn" class="btn">Enviar y calificar</button>
+            </div>
+            <div class="inline" style="margin-top:8px">
+              <button id="stopBtn" class="btn alt">Detener prueba</button>
+              <button id="restartBtn" class="btn">Reiniciar prueba</button>
+            </div>
+          </div>
+          <div>
+            <h3 id="questionTitle">Pregunta</h3>
+            <div id="questionBody" class="status">Sin intento activo.</div>
+            <div id="options" class="option-list" style="margin-top:8px"></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card" style="margin-top:12px">
+        <h2>Resultado</h2>
+        <div id="resultKpis" class="kpis"></div>
+        <div id="resultBars" class="bar-list" style="margin-top:10px"></div>
+        <pre id="resultOut">{}</pre>
+      </article>
+
+      <article class="card" style="margin-top:12px">
+        <h2>Bitacora cliente</h2>
+        <pre id="clientLogOut">Sin eventos.</pre>
+      </article>
+    </div>
+
+    <script src="/simulador/app.js"></script>
+  </body>
+</html>

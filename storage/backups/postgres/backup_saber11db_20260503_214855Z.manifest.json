@@ -1,0 +1,9 @@
+﻿{
+    "createdAt":  "2026-05-03T21:48:56.6552533Z",
+    "service":  "db",
+    "dbUser":  "saber11",
+    "dbName":  "saber11db",
+    "backupFile":  "C:\\Users\\ARMAN\\OneDrive\\Documents\\examen\\storage\\backups\\postgres\\backup_saber11db_20260503_214855Z.sql.gz",
+    "sizeBytes":  1081012,
+    "sha256":  "abc82832b205adfb690d22eaf650a3d697b6ee1d732c65a87123aaa07bf00c49"
+}

@@ -1,0 +1,159 @@
+{
+  "generatedAt": "2026-04-14T03:46:50.326Z",
+  "provider": "openai_compatible",
+  "model": "qwen2.5:3b-instruct-q4_K_M",
+  "endpoint": "http://ollama:11434/v1/chat/completions",
+  "targetCount": 4,
+  "selectedChunks": 3,
+  "selectedAreas": [
+    "SOCIALES_CIUDADANAS"
+  ],
+  "quality": {
+    "minQualityScore": 75,
+    "similarityThreshold": 0.9,
+    "dbCheck": true
+  },
+  "validCount": 4,
+  "invalidCount": 0,
+  "qualityAcceptedCount": 4,
+  "qualityRejectedCount": 0,
+  "invalid": [],
+  "questions": [
+    {
+      "area": "SOCIALES_CIUDADANAS",
+      "competencia": "Pensamiento social",
+      "componente": "Historia",
+      "nivel_dificultad": "ALTO",
+      "nivel_cognitivo": "ANALISIS",
+      "enunciado": "El cuadro anterior muestra la producción cafetera en Colombia entre 1923 y 1932. De acuerdo con el gráfico, podemos inferir que durante este periodo:",
+      "contexto_texto_base": "comercio desplazÛ a la agricultura y fue ganando preferencia como actividad econÛmica",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "La opción correcta es C. aumentÛ el aporte de la pequeña propiedad cafetera y disminuyÛ el de la gran hacienda. La interpretación del gráfico muestra que hubo un aumento en las pequeñas propiedades, lo cual sugiere una disminución en las grandes haciendas.",
+      "opciones": [
+        {
+          "texto_opcion": "A. la producción cafetera se vio beneficiada porque aumentó el número de fincas",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "B. se duplicó el número de grandes fincas productoras de café en Colombia",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "C. aumentó el aporte de la pequeña propiedad cafetera y disminuyó el de la gran hacienda",
+          "es_correcta": true
+        },
+        {
+          "texto_opcion": "D. la producción cafetera del país se concentró en pequeñas fincas de menos de 3 hectáreas",
+          "es_correcta": false
+        }
+      ],
+      "fuente_chunk_ids": [
+        "5BCF18F8D416-5",
+        "7A46D0DC975B-26",
+        "48B5F097E799-7"
+      ]
+    },
+    {
+      "area": "SOCIALES_CIUDADANAS",
+      "competencia": "Pensamiento social",
+      "componente": "Historia",
+      "nivel_dificultad": "ALTO",
+      "nivel_cognitivo": "ANALISIS",
+      "enunciado": "Durante las guerras de independencia en Hispanoamérica, hubo tres exigencias básicas: libertad política, autonomía administrativa y autonomía económica para las colonias. El primer factor implicaba la separación de las metrópolis europeas, el segundo la participación de los criollos en el gobierno de los territorios y el tercero la supresión de las obligaciones fiscales y comerciales adquiridas con España. Como objetivo económico de los criollos se podría deducir que:",
+      "contexto_texto_base": "Durante las guerras de independencia en Hispanoamérica hubo tres exigencias básicas: libertad política, autonomía administrativa y autonomía económica para las colonias.",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "La opción correcta es A. privilegiaban la exportación de productos primarios. La interpretación del texto sugiere que los criollos buscaban beneficios económicos al favorecer la producción de bienes básicos y no manufacturados.",
+      "opciones": [
+        {
+          "texto_opcion": "A. privilegiaban la exportación de productos primarios",
+          "es_correcta": true
+        },
+        {
+          "texto_opcion": "B. pretendían organizar la economía de cada nación bajo un Estado independiente",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "C. querían favorecerse de las importaciones baratas",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "D. defendían la producción nacional de manufacturas",
+          "es_correcta": false
+        }
+      ],
+      "fuente_chunk_ids": [
+        "5BCF18F8D416-5",
+        "7A46D0DC975B-26",
+        "48B5F097E799-7"
+      ]
+    },
+    {
+      "area": "SOCIALES_CIUDADANAS",
+      "competencia": "Pensamiento social",
+      "componente": "Geografía",
+      "nivel_dificultad": "MEDIO",
+      "nivel_cognitivo": "COMPRENSION",
+      "enunciado": "El comercio desplazó a la agricultura y fue ganando preferencia como actividad económica. De acuerdo con esto, podemos inferir que:",
+      "contexto_texto_base": "comercio desplazÛ a la agricultura y fue ganando preferencia como actividad econÛmica",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "La opción correcta es B. La vida urbana existió porque las ciudades ofrecían actividades económicas más rentables. El texto sugiere que la migración hacia las ciudades fue motivada por mejores oportunidades de trabajo y comercio.",
+      "opciones": [
+        {
+          "texto_opcion": "A. La producción cafetera se vio beneficiada porque aumentó el número de fincas",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "B. Se duplicó el número de grandes fincas productoras de café en Colombia",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "C. Aumentó el aporte de la pequeña propiedad cafetera y disminuyó el de la gran hacienda",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "D. La producción cafetera del país se concentró en pequeñas fincas de menos de 3 hectáreas",
+          "es_correcta": true
+        }
+      ],
+      "fuente_chunk_ids": [
+        "5BCF18F8D416-5",
+        "7A46D0DC975B-26",
+        "48B5F097E799-7"
+      ]
+    },
+    {
+      "area": "SOCIALES_CIUDADANAS",
+      "competencia": "Pensamiento social",
+      "componente": "Constitución y democracia",
+      "nivel_dificultad": "BAJO",
+      "nivel_cognitivo": "COMPRENSION",
+      "enunciado": "La navegación fue una actividad marginal, debido a los escasos conocimientos técnicos. De acuerdo con esto, podemos inferir que:",
+      "contexto_texto_base": "la navegaciÛn fue una actividad marginal, debido a los escasos conocimientos tÈcnicos",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "La opción correcta es D. La producción cafetera del país se concentró en pequeñas fincas de menos de 3 hectáreas. El texto sugiere que la navegación era poco relevante debido a las limitaciones tecnológicas.",
+      "opciones": [
+        {
+          "texto_opcion": "A. La producción cafetera se vio beneficiada porque aumentó el número de fincas",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "B. Se duplicó el número de grandes fincas productoras de café en Colombia",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "C. Aumentó el aporte de la pequeña propiedad cafetera y disminuyó el de la gran hacienda",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "D. La producción cafetera del país se concentró en pequeñas fincas de menos de 3 hectáreas",
+          "es_correcta": true
+        }
+      ],
+      "fuente_chunk_ids": [
+        "5BCF18F8D416-5",
+        "7A46D0DC975B-26",
+        "48B5F097E799-7"
+      ]
+    }
+  ]
+}

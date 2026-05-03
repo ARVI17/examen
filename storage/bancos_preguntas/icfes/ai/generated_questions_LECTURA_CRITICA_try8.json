@@ -1,0 +1,56 @@
+{
+  "generatedAt": "2026-04-14T02:43:56.694Z",
+  "provider": "openai_compatible",
+  "model": "qwen2.5:3b-instruct-q4_K_M",
+  "endpoint": "http://ollama:11434/v1/chat/completions",
+  "targetCount": 8,
+  "selectedChunks": 6,
+  "selectedAreas": [
+    "LECTURA_CRITICA"
+  ],
+  "quality": {
+    "minQualityScore": 78,
+    "similarityThreshold": 0.88,
+    "dbCheck": true
+  },
+  "validCount": 1,
+  "invalidCount": 0,
+  "qualityAcceptedCount": 1,
+  "qualityRejectedCount": 0,
+  "invalid": [],
+  "questions": [
+    {
+      "area": "LECTURA_CRITICA",
+      "competencia": "Relacionar e interpretar informacion",
+      "componente": "Sintactico",
+      "nivel_dificultad": "BAJO",
+      "nivel_cognitivo": "Comprensión",
+      "enunciado": "En el texto Transformaciones urbanas en la ciudad de hoy, se afirma que las nuevas formas de producción, consumo, gestión y pensamiento son consecuencias de:",
+      "contexto_texto_base": "Las ciudades y sociedades de todo el mundo estan experimentando en este fin del siglo XX una profunda transformación histórica estructural. En el centro de dicha transformación se halla una revolución tecnológica, organizada alrededor de las tecnologías de la información.",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "La respuesta correcta es B. Las nuevas formas de producción, consumo, gestión y pensamiento son consecuencias de las nuevas formas de expresión del urbano. Este enunciado se relaciona directamente con la información proporcionada en el texto.",
+      "opciones": [
+        {
+          "texto_opcion": "los procesos de globalización de la economía y la comunicación son el resultado de la constitución de nuevos lenguajes tecnológicos.",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "las nuevas formas de producción, consumo, gestión y pensamiento son consecuencias de las nuevas formas de expresión del urbano.",
+          "es_correcta": true
+        },
+        {
+          "texto_opcion": "las tecnologías de la información y comunicación influyen en el desarrollo de todos los lenguajes a través de los cuales se expresa lo urbano.",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "los procesos de globalización, las nuevas tecnologías y las nuevas formas de vida son los nuevos lenguajes a través de los cuales se expresa lo urbano.",
+          "es_correcta": false
+        }
+      ],
+      "fuente_chunk_ids": [
+        "2700C89E06B4-14",
+        "2700C89E06B4-7"
+      ]
+    }
+  ]
+}

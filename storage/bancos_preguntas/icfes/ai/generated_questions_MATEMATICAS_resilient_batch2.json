@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-04-14T03:03:32.917Z",
+  "provider": "openai_compatible",
+  "model": "qwen2.5:3b-instruct-q4_K_M",
+  "endpoint": "http://ollama:11434/v1/chat/completions",
+  "targetCount": 8,
+  "selectedChunks": 6,
+  "selectedAreas": [
+    "MATEMATICAS"
+  ],
+  "quality": {
+    "minQualityScore": 78,
+    "similarityThreshold": 0.88,
+    "dbCheck": true
+  },
+  "validCount": 1,
+  "invalidCount": 0,
+  "qualityAcceptedCount": 0,
+  "qualityRejectedCount": 1,
+  "invalid": [],
+  "questions": []
+}

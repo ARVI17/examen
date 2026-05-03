@@ -1,0 +1,57 @@
+{
+  "generatedAt": "2026-04-14T01:19:44.566Z",
+  "provider": "ollama",
+  "model": "qwen2.5:3b-instruct-q4_K_M",
+  "endpoint": "http://ollama:11434",
+  "targetCount": 2,
+  "selectedChunks": 4,
+  "selectedAreas": [
+    "CIENCIAS_NATURALES",
+    "SOCIALES_CIUDADANAS",
+    "LECTURA_CRITICA"
+  ],
+  "quality": {
+    "minQualityScore": 75,
+    "similarityThreshold": 0.88,
+    "dbCheck": true
+  },
+  "validCount": 2,
+  "invalidCount": 0,
+  "qualityAcceptedCount": 1,
+  "qualityRejectedCount": 1,
+  "invalid": [],
+  "questions": [
+    {
+      "area": "CIENCIAS_NATURALES",
+      "competencia": "Explicación de fenómenos",
+      "componente": "Químico",
+      "nivel_dificultad": "ALTO",
+      "nivel_cognitivo": "ANALISIS",
+      "enunciado": "En un experimento de destilación, si la temperatura del matraz es igual a la temperatura de ebullición de X y en el matraz hay una mezcla de X y W, ¿cuál será la gráfica que se obtendrá?",
+      "contexto_texto_base": "Durante la destilación, empleando solo un montaje con dos mecheros, si la temperatura del matraz es igual a la temperatura de ebullición de X y en el matraz hay una mezcla de X y W, lo más probable es que se obtenga la gráfica...",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "La respuesta correcta es C. La temperatura del matraz igual a la de ebullición de X y en el matraz hay una mezcla de X y W, generará una gráfica que muestra un punto de inflexión o bifurcación en la línea de la mezcla (X y W) al alcanzar su punto de ebullición. Esto indica que se formará primero una parte pura de X y luego una parte pura de W.",
+      "opciones": [
+        {
+          "texto_opcion": "La gráfica mostrará un aumento constante en la temperatura sin cambios en el contenido.",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "La gráfica mostrará dos picos consecutivos, uno para X y otro para W.",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "La gráfica mostrará un punto de inflexión donde la mezcla (X y W) se separa en partes puras de X y W.",
+          "es_correcta": true
+        },
+        {
+          "texto_opcion": "La gráfica no mostrará cambios significativos en el contenido del matraz durante toda la destilación.",
+          "es_correcta": false
+        }
+      ],
+      "fuente_chunk_ids": [
+        "2995F4F8184F-10"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "generatedAt": "2026-04-14T02:35:47.325Z",
+  "quality": {
+    "minQualityScore": 78,
+    "similarityThreshold": 0.88
+  },
+  "invalid": [],
+  "review": [
+    {
+      "index": 0,
+      "area": "MATEMATICAS",
+      "score": 80,
+      "accepted": true,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 0,
+      "reasons": [
+        "opciones_muy_cortas"
+      ],
+      "preview": "La gráfica que presenta la cantidad total de personas atendidas a causa de estas enfermedades durante los tres años observados es\nLa gráfica muestra información sobre las quejas qu"
+    }
+  ],
+  "rejected": []
+}

@@ -1,0 +1,120 @@
+{
+  "generatedAt": "2026-04-14T03:25:23.444Z",
+  "provider": "openai_compatible",
+  "model": "qwen2.5:3b-instruct-q4_K_M",
+  "endpoint": "http://ollama:11434/v1/chat/completions",
+  "targetCount": 8,
+  "selectedChunks": 6,
+  "selectedAreas": [
+    "CIENCIAS_NATURALES"
+  ],
+  "quality": {
+    "minQualityScore": 78,
+    "similarityThreshold": 0.88,
+    "dbCheck": true
+  },
+  "validCount": 3,
+  "invalidCount": 0,
+  "qualityAcceptedCount": 3,
+  "qualityRejectedCount": 0,
+  "invalid": [],
+  "questions": [
+    {
+      "area": "CIENCIAS_NATURALES",
+      "competencia": "QUÍMICA",
+      "componente": "QUÍMICA_FUNDAMENTAL",
+      "nivel_dificultad": "MEDIO",
+      "nivel_cognitivo": "APLICACION",
+      "enunciado": "Dos recipientes contienen dos mezclas distintas. El recipiente 1 contiene agua y aceite, mientras que el recipiente 2 contiene metanol y gasolina. Al combinar los contenidos de los dos recipientes, ¿cuánto número de fases se obtiene según los datos de la tabla?",
+      "contexto_texto_base": "Dos recipientes contienen dos mezclas distintas. El recipiente 1 contiene agua y aceite, mientras que el recipiente 2 contiene metanol y gasolina. Al combinar los contenidos de los dos recipientes, el número de fases que se obtiene de acuerdo con los datos de la tabla es",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "El problema se resuelve combinando los datos de las mezclas en cada recipiente. En el recipiente 1, la mezcla de agua y aceite forma dos fases: una fase líquida (agua) y otra fase sólida (aceite). En el recipiente 2, la mezcla de metanol y gasolina también forma dos fases: una fase líquida (metanol) y otra fase sólida (gasolina). Al combinar ambos recipientes, se forman cuatro fases en total: agua, aceite, metanol y gasolina. Por lo tanto, la respuesta correcta es 4.",
+      "opciones": [
+        {
+          "texto_opcion": "1",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "2",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "3",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "4",
+          "es_correcta": true
+        }
+      ],
+      "fuente_chunk_ids": [
+        "BC5DBBB89C07-18",
+        "8BC404FCB251-9"
+      ]
+    },
+    {
+      "area": "CIENCIAS_NATURALES",
+      "competencia": "BIOLÓGICA",
+      "componente": "ANATOMÍA_Y_FISIOLOGÍA_ANIMAL",
+      "nivel_dificultad": "MEDIO",
+      "nivel_cognitivo": "APLICACION",
+      "enunciado": "Según la información dada en la tabla, ¿cuál de las siguientes gráficas mejor describe el crecimiento poblacional de estas dos especies?",
+      "contexto_texto_base": "La siguiente tabla presenta los datos de crecimiento poblacional de dos especies de animales.",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "El problema se resuelve comparando los datos de crecimiento poblacional de las dos especies. La tabla muestra que la primera especie tiene un crecimiento poblacional constante, mientras que la segunda especie experimenta un crecimiento exponencial. Por lo tanto, la gráfica que mejor describe este comportamiento es una gráfica en forma de 'S'. Por lo tanto, la respuesta correcta es 1.",
+      "opciones": [
+        {
+          "texto_opcion": "1",
+          "es_correcta": true
+        },
+        {
+          "texto_opcion": "2",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "3",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "4",
+          "es_correcta": false
+        }
+      ],
+      "fuente_chunk_ids": [
+        "2E48059A0FFD-15"
+      ]
+    },
+    {
+      "area": "CIENCIAS_NATURALES",
+      "competencia": "QUÍMICA",
+      "componente": "QUÍMICA_FUNDAMENTAL",
+      "nivel_dificultad": "MEDIO",
+      "nivel_cognitivo": "APLICACION",
+      "enunciado": "En un experimento de laboratorio se lleva a cabo el siguiente procedimiento: 1. Se utiliza 2L de agua y las mismas cantidades de sal. Al combinar los contenidos, ¿cuál de las siguientes gráficas representa correctamente la variación de la concentración de sal disuelta en función de la cantidad de sal adicionada?",
+      "contexto_texto_base": "En un experimento de laboratorio se lleva a cabo el siguiente procedimiento: 1. Se utiliza 2L de agua y las mismas cantidades de sal. Al combinar los contenidos, ¿cuál de las siguientes gráficas representa correctamente la variación de la concentración de sal disuelta en función de la cantidad de sal adicionada?",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "El problema se resuelve comparando los datos del experimento con las gráficas proporcionadas. La gráfica que representa correctamente la variación de la concentración de sal disuelta en función de la cantidad de sal adicionada es una gráfica que muestra una línea recta ascendente desde el origen, indicando que la concentración aumenta progresivamente con cada adición de sal. Por lo tanto, la respuesta correcta es 4.",
+      "opciones": [
+        {
+          "texto_opcion": "1",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "2",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "3",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "4",
+          "es_correcta": true
+        }
+      ],
+      "fuente_chunk_ids": [
+        "8BC404FCB251-9"
+      ]
+    }
+  ]
+}

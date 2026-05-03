@@ -1,0 +1,114 @@
+{
+  "generatedAt": "2026-04-14T07:50:03.879Z",
+  "manifestPath": "/app/storage/bancos_preguntas/icfes/material_local/manifest_material_local.json",
+  "filters": {
+    "priorities": [
+      "alta",
+      "media",
+      "baja"
+    ],
+    "categories": [
+      "examenes",
+      "simulacros",
+      "bancos_preguntas",
+      "materiales_apoyo"
+    ],
+    "extensions": [
+      ".pdf",
+      ".docx",
+      ".txt",
+      ".csv",
+      ".json"
+    ],
+    "includeMultiArea": true,
+    "minChars": 120,
+    "maxFiles": 0,
+    "chunkSize": 1100,
+    "overlap": 140,
+    "maxPdfPages": 30,
+    "maxPdfMb": 120
+  },
+  "totals": {
+    "filesInManifest": 164,
+    "filesSelected": 110,
+    "filesExtracted": 100,
+    "chunksGenerated": 4245,
+    "uniqueChunkHashes": 4245
+  },
+  "byArea": [
+    {
+      "area": "SOCIALES_CIUDADANAS",
+      "count": 1726
+    },
+    {
+      "area": "MATEMATICAS",
+      "count": 901
+    },
+    {
+      "area": "LECTURA_CRITICA",
+      "count": 752
+    },
+    {
+      "area": "CIENCIAS_NATURALES",
+      "count": 740
+    },
+    {
+      "area": "MULTI_AREA",
+      "count": 65
+    },
+    {
+      "area": "INGLES",
+      "count": 61
+    }
+  ],
+  "byCategory": [
+    {
+      "categoria": "MATERIALES_APOYO",
+      "count": 2252
+    },
+    {
+      "categoria": "SIMULACROS",
+      "count": 1056
+    },
+    {
+      "categoria": "EXAMENES",
+      "count": 489
+    },
+    {
+      "categoria": "BANCOS_PREGUNTAS",
+      "count": 448
+    }
+  ],
+  "byPriority": [
+    {
+      "priority": "baja",
+      "count": 2252
+    },
+    {
+      "priority": "alta",
+      "count": 1545
+    },
+    {
+      "priority": "media",
+      "count": 448
+    }
+  ],
+  "skippedReasons": [
+    {
+      "reason": "DUPLICATE_CHUNK_HASH",
+      "count": 12
+    },
+    {
+      "reason": "TEXT_TOO_SHORT",
+      "count": 8
+    },
+    {
+      "reason": "PDF_TOO_LARGE_474990795_BYTES",
+      "count": 1
+    },
+    {
+      "reason": "PDF_TOO_LARGE_456350534_BYTES",
+      "count": 1
+    }
+  ]
+}

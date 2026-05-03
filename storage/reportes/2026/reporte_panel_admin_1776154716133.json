@@ -1,0 +1,220 @@
+{
+  "generatedAt": "2026-04-14T08:18:36.129Z",
+  "readiness": {
+    "filters": {
+      "gradoObjetivo": "11",
+      "targetPerArea": 120,
+      "includeInactive": false
+    },
+    "totals": {
+      "totalQuestions": 47,
+      "totalTarget": 600,
+      "totalDeficit": 553,
+      "overallCoveragePercent": 7.83
+    },
+    "byArea": [
+      {
+        "area": "LECTURA_CRITICA",
+        "totalQuestions": 2,
+        "target": 120,
+        "deficit": 118,
+        "coveragePercent": 1.67,
+        "readinessLevel": "CRITICO",
+        "byDifficulty": [
+          {
+            "difficulty": "BAJO",
+            "count": 1,
+            "target": 40,
+            "deficit": 39,
+            "coveragePercent": 2.5
+          },
+          {
+            "difficulty": "MEDIO",
+            "count": 0,
+            "target": 40,
+            "deficit": 40,
+            "coveragePercent": 0
+          },
+          {
+            "difficulty": "ALTO",
+            "count": 1,
+            "target": 40,
+            "deficit": 39,
+            "coveragePercent": 2.5
+          }
+        ]
+      },
+      {
+        "area": "MATEMATICAS",
+        "totalQuestions": 32,
+        "target": 120,
+        "deficit": 88,
+        "coveragePercent": 26.67,
+        "readinessLevel": "CRITICO",
+        "byDifficulty": [
+          {
+            "difficulty": "BAJO",
+            "count": 0,
+            "target": 40,
+            "deficit": 40,
+            "coveragePercent": 0
+          },
+          {
+            "difficulty": "MEDIO",
+            "count": 30,
+            "target": 40,
+            "deficit": 10,
+            "coveragePercent": 75
+          },
+          {
+            "difficulty": "ALTO",
+            "count": 2,
+            "target": 40,
+            "deficit": 38,
+            "coveragePercent": 5
+          }
+        ]
+      },
+      {
+        "area": "SOCIALES_CIUDADANAS",
+        "totalQuestions": 4,
+        "target": 120,
+        "deficit": 116,
+        "coveragePercent": 3.33,
+        "readinessLevel": "CRITICO",
+        "byDifficulty": [
+          {
+            "difficulty": "BAJO",
+            "count": 1,
+            "target": 40,
+            "deficit": 39,
+            "coveragePercent": 2.5
+          },
+          {
+            "difficulty": "MEDIO",
+            "count": 1,
+            "target": 40,
+            "deficit": 39,
+            "coveragePercent": 2.5
+          },
+          {
+            "difficulty": "ALTO",
+            "count": 2,
+            "target": 40,
+            "deficit": 38,
+            "coveragePercent": 5
+          }
+        ]
+      },
+      {
+        "area": "CIENCIAS_NATURALES",
+        "totalQuestions": 3,
+        "target": 120,
+        "deficit": 117,
+        "coveragePercent": 2.5,
+        "readinessLevel": "CRITICO",
+        "byDifficulty": [
+          {
+            "difficulty": "BAJO",
+            "count": 0,
+            "target": 40,
+            "deficit": 40,
+            "coveragePercent": 0
+          },
+          {
+            "difficulty": "MEDIO",
+            "count": 3,
+            "target": 40,
+            "deficit": 37,
+            "coveragePercent": 7.5
+          },
+          {
+            "difficulty": "ALTO",
+            "count": 0,
+            "target": 40,
+            "deficit": 40,
+            "coveragePercent": 0
+          }
+        ]
+      },
+      {
+        "area": "INGLES",
+        "totalQuestions": 6,
+        "target": 120,
+        "deficit": 114,
+        "coveragePercent": 5,
+        "readinessLevel": "CRITICO",
+        "byDifficulty": [
+          {
+            "difficulty": "BAJO",
+            "count": 4,
+            "target": 40,
+            "deficit": 36,
+            "coveragePercent": 10
+          },
+          {
+            "difficulty": "MEDIO",
+            "count": 2,
+            "target": 40,
+            "deficit": 38,
+            "coveragePercent": 5
+          },
+          {
+            "difficulty": "ALTO",
+            "count": 0,
+            "target": 40,
+            "deficit": 40,
+            "coveragePercent": 0
+          }
+        ]
+      }
+    ],
+    "priorityGaps": [
+      {
+        "area": "LECTURA_CRITICA",
+        "deficit": 118,
+        "readinessLevel": "CRITICO"
+      },
+      {
+        "area": "CIENCIAS_NATURALES",
+        "deficit": 117,
+        "readinessLevel": "CRITICO"
+      },
+      {
+        "area": "SOCIALES_CIUDADANAS",
+        "deficit": 116,
+        "readinessLevel": "CRITICO"
+      },
+      {
+        "area": "INGLES",
+        "deficit": 114,
+        "readinessLevel": "CRITICO"
+      },
+      {
+        "area": "MATEMATICAS",
+        "deficit": 88,
+        "readinessLevel": "CRITICO"
+      }
+    ],
+    "generatedAt": "2026-04-14T08:18:36.098Z"
+  },
+  "materialCoverageTotals": {
+    "totalAssets": 164,
+    "uniqueLogicalPaths": 164,
+    "expectedFromManifest": 164,
+    "missingForExpected": 0,
+    "coveragePercent": 100,
+    "missingPriorityCount": 0,
+    "missingShaCount": 0,
+    "duplicateLogicalPathGroups": 0,
+    "duplicateShaGroups": 0
+  },
+  "classroomTotals": {
+    "cohortStudents": 32,
+    "studentsWithAttempts": 31,
+    "studentsWithoutAttempts": 1,
+    "totalAttempts": 31,
+    "averageGlobalPercentage": 93.55,
+    "averageGlobalScore": 0.97
+  }
+}

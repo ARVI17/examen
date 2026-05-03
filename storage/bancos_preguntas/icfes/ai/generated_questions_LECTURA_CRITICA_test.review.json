@@ -1,0 +1,21 @@
+{
+  "generatedAt": "2026-04-14T02:21:47.701Z",
+  "quality": {
+    "minQualityScore": 78,
+    "similarityThreshold": 0.88
+  },
+  "invalid": [],
+  "review": [
+    {
+      "index": 0,
+      "area": "LECTURA_CRITICA",
+      "score": 100,
+      "accepted": true,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 0,
+      "reasons": [],
+      "preview": "¿Cuál de los siguientes enunciados corresponde a un objetivo indicado por el autor del fragmento?"
+    }
+  ],
+  "rejected": []
+}

@@ -1,0 +1,108 @@
+{
+  "generatedAt": "2026-04-14T02:32:23.026Z",
+  "quality": {
+    "minQualityScore": 78,
+    "similarityThreshold": 0.88
+  },
+  "invalid": [],
+  "review": [
+    {
+      "index": 0,
+      "area": "LECTURA_CRITICA",
+      "score": 90,
+      "accepted": true,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 0,
+      "reasons": [
+        "sin_fuentes"
+      ],
+      "preview": "¿Qué conclusión se puede extraer del texto sobre la relación entre el hombre y la muerte basándose en las descripciones de los personajes mencionados?"
+    },
+    {
+      "index": 1,
+      "area": "LECTURA_CRITICA",
+      "score": 45,
+      "accepted": false,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 1,
+      "reasons": [
+        "sin_fuentes",
+        "muy_parecida_a_generada_en_lote"
+      ],
+      "preview": "¿Qué conclusión se puede extraer del texto sobre la relación entre el hombre y la muerte basándose en las descripciones de los personajes mencionados?"
+    },
+    {
+      "index": 2,
+      "area": "LECTURA_CRITICA",
+      "score": 45,
+      "accepted": false,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 1,
+      "reasons": [
+        "sin_fuentes",
+        "muy_parecida_a_generada_en_lote"
+      ],
+      "preview": "¿Qué conclusión se puede extraer del texto sobre la relación entre el hombre y la muerte basándose en las descripciones de los personajes mencionados?"
+    },
+    {
+      "index": 3,
+      "area": "LECTURA_CRITICA",
+      "score": 45,
+      "accepted": false,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 1,
+      "reasons": [
+        "sin_fuentes",
+        "muy_parecida_a_generada_en_lote"
+      ],
+      "preview": "¿Qué conclusión se puede extraer del texto sobre la relación entre el hombre y la muerte basándose en las descripciones de los personajes mencionados?"
+    },
+    {
+      "index": 4,
+      "area": "LECTURA_CRITICA",
+      "score": 45,
+      "accepted": false,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 1,
+      "reasons": [
+        "sin_fuentes",
+        "muy_parecida_a_generada_en_lote"
+      ],
+      "preview": "¿Qué conclusión se puede extraer del texto sobre la relación entre el hombre y la muerte basándose en las descripciones de los personajes mencionados?"
+    }
+  ],
+  "rejected": [
+    {
+      "index": 1,
+      "reasons": [
+        "sin_fuentes",
+        "muy_parecida_a_generada_en_lote"
+      ],
+      "score": 45
+    },
+    {
+      "index": 2,
+      "reasons": [
+        "sin_fuentes",
+        "muy_parecida_a_generada_en_lote"
+      ],
+      "score": 45
+    },
+    {
+      "index": 3,
+      "reasons": [
+        "sin_fuentes",
+        "muy_parecida_a_generada_en_lote"
+      ],
+      "score": 45
+    },
+    {
+      "index": 4,
+      "reasons": [
+        "sin_fuentes",
+        "muy_parecida_a_generada_en_lote"
+      ],
+      "score": 45
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "generatedAt": "2026-04-14T08:13:44.561Z",
+  "provider": "openai_compatible",
+  "model": "qwen2.5:3b-instruct-q4_K_M",
+  "endpoint": "http://ollama:11434/v1/chat/completions",
+  "targetCount": 12,
+  "selectedChunks": 10,
+  "selectedAreas": [
+    "INGLES"
+  ],
+  "quality": {
+    "minQualityScore": 60,
+    "similarityThreshold": 0.92,
+    "dbCheck": true
+  },
+  "validCount": 3,
+  "invalidCount": 0,
+  "qualityAcceptedCount": 3,
+  "qualityRejectedCount": 0,
+  "invalid": [],
+  "questions": [
+    {
+      "area": "INGLES",
+      "competencia": "GRAMÁTICA",
+      "componente": "PRESENT PERFECT (PRESENTE PERFECTO)",
+      "nivel_dificultad": "BAJO",
+      "nivel_cognitivo": "RECOGIDA",
+      "enunciado": "¿Cómo se forman las oraciones del presente perfecto en inglés?",
+      "contexto_texto_base": "Para formar el presente perfecto es necesario conjugar el verbo auxiliar 'have' + el participio pasado del verbo principal. Recordaremos que el participio pasado de los verbos regulares se forma añadiendo –ed al verbo y que el participio pasadode los irregulares no sigue una norma si no que está en la lista de verbos irregulares, en la tercera columna.",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "El presente perfecto se forma conjugando el verbo auxiliar 'have' (tú tienes, él tiene, etc.) con el participio pasado del verbo principal. Por ejemplo: I've finished (he acabé), You've spoken (tú hablaste). Los verbos irregulares tienen sus propios participios pasados que no siguen una regla general.",
+      "opciones": [
+        {
+          "texto_opcion": "Conjugar el verbo auxiliar 'have' con el presente del verbo principal",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "Conjugar el verbo auxiliar 'do' con el participio pasado del verbo principal",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "Conjugar el verbo auxiliar 'have' con el participio pasado del verbo principal",
+          "es_correcta": true
+        },
+        {
+          "texto_opcion": "Conjugar el verbo auxiliar 'be' con el participio pasado del verbo principal",
+          "es_correcta": false
+        }
+      ],
+      "fuente_chunk_ids": [
+        "1C335B7B6EB6-1"
+      ]
+    },
+    {
+      "area": "INGLES",
+      "competencia": "GRAMÁTICA",
+      "componente": "PRESENT PERFECT (PRESENTE PERFECTO)",
+      "nivel_dificultad": "BAJO",
+      "nivel_cognitivo": "RECOGIDA",
+      "enunciado": "¿Cuáles son los participios pasados de los verbos 'have' y 'go' en el presente perfecto?",
+      "contexto_texto_base": "Para formar el presente perfecto es necesario conjugar el verbo auxiliar 'have' + el participio pasado del verbo principal. Recordaremos que el participio pasado de los verbos regulares se forma añadiendo –ed al verbo y que el participio pasadode los irregulares no sigue una norma si no que está en la lista de verbos irregulares, en la tercera columna.",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "El verbo 'have' tiene el participio pasado como 'had', mientras que 'go' tiene el participio pasado como 'gone'. Por ejemplo: I've had a good day (he tenido un buen día), You've gone to the store (tú fuiste al supermercado).",
+      "opciones": [
+        {
+          "texto_opcion": "'have' -> 'haved', 'go' -> 'gong'",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "'have' -> 'had', 'go' -> 'gone'",
+          "es_correcta": true
+        },
+        {
+          "texto_opcion": "'have' -> 'haved', 'go' -> 'gone'",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "'have' -> 'had', 'go' -> 'gong'",
+          "es_correcta": false
+        }
+      ],
+      "fuente_chunk_ids": [
+        "1C335B7B6EB6-1"
+      ]
+    },
+    {
+      "area": "INGLES",
+      "competencia": "GRAMÁTICA",
+      "componente": "PRESENT PERFECT (PRESENTE PERFECTO)",
+      "nivel_dificultad": "MEDIO",
+      "nivel_cognitivo": "APLICACIÓN",
+      "enunciado": "¿Cómo se dice 'I have been to the store' en español?",
+      "contexto_texto_base": "",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "La traducción al español sería: 'He estado en el supermercado'. En inglés, 'have been to' se usa para indicar que alguien ha estado en un lugar antes y ya no está allí.",
+      "opciones": [
+        {
+          "texto_opcion": "'He estado en el supermercado'",
+          "es_correcta": true
+        },
+        {
+          "texto_opcion": "'Tengo que ir al supermercado'",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "'He ido al supermercado'",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "'Estuve en el supermercado'",
+          "es_correcta": false
+        }
+      ],
+      "fuente_chunk_ids": [
+        "1C335B7B6EB6-1"
+      ]
+    }
+  ]
+}

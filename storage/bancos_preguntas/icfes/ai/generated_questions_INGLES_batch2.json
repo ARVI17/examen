@@ -1,0 +1,55 @@
+{
+  "generatedAt": "2026-04-14T08:10:07.684Z",
+  "provider": "openai_compatible",
+  "model": "qwen2.5:3b-instruct-q4_K_M",
+  "endpoint": "http://ollama:11434/v1/chat/completions",
+  "targetCount": 10,
+  "selectedChunks": 9,
+  "selectedAreas": [
+    "INGLES"
+  ],
+  "quality": {
+    "minQualityScore": 68,
+    "similarityThreshold": 0.9,
+    "dbCheck": true
+  },
+  "validCount": 3,
+  "invalidCount": 0,
+  "qualityAcceptedCount": 1,
+  "qualityRejectedCount": 2,
+  "invalid": [],
+  "questions": [
+    {
+      "area": "INGLES",
+      "competencia": "VOCABULARIO BÁSICO DE LA LENGUA INGLESA",
+      "componente": "Números cardinales",
+      "nivel_dificultad": "BAJO",
+      "nivel_cognitivo": "SIMPLE",
+      "enunciado": "¿Cuál de las siguientes expresiones se refiere a números cardinales en inglés?",
+      "contexto_texto_base": "Expresiones para la comunicación oral\nSaludos y felicitaciones. Para dirigirse a un desconocido.\nPresentaciones\nCuando no entendemos algo bien\nPara preguntar la hora",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "Las opciones de texto base mencionan saludos, presentaciones y cómo preguntar la hora. Ninguna de estas menciona números cardinales.",
+      "opciones": [
+        {
+          "texto_opcion": "Para pedir una bebida en un restaurante",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "Para saludar a alguien que conocemos bien",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "Para preguntar la hora",
+          "es_correcta": true
+        },
+        {
+          "texto_opcion": "Para presentarse en una reunión",
+          "es_correcta": false
+        }
+      ],
+      "fuente_chunk_ids": [
+        "1C335B7B6EB6-1"
+      ]
+    }
+  ]
+}

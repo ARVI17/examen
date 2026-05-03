@@ -1,0 +1,168 @@
+{
+  "generatedAt": "2026-04-14T01:43:54.610Z",
+  "provider": "ollama",
+  "model": "qwen2.5:3b-instruct-q4_K_M",
+  "endpoint": "http://ollama:11434/v1/chat/completions",
+  "ollamaHost": "http://ollama:11434",
+  "targetCount": 8,
+  "chunkLimit": 6,
+  "grade": "11",
+  "selectedAreas": [
+    "LECTURA_CRITICA",
+    "MATEMATICAS",
+    "INGLES"
+  ],
+  "quality": {
+    "minQualityScore": 75,
+    "similarityThreshold": 0.88,
+    "dbCheck": true,
+    "includeInactiveCheck": false
+  },
+  "selectedChunks": [
+    {
+      "id": "2700C89E06B4-14",
+      "source_relative_path": "07. ICFES FILTRADOS\\2003\\Marzo\\Lenguaje Profundizacion.pdf",
+      "area": "LECTURA_CRITICA",
+      "categoria": "EXAMENES",
+      "chunk_chars": 1146
+    },
+    {
+      "id": "2700C89E06B4-7",
+      "source_relative_path": "07. ICFES FILTRADOS\\2003\\Marzo\\Lenguaje Profundizacion.pdf",
+      "area": "LECTURA_CRITICA",
+      "categoria": "EXAMENES",
+      "chunk_chars": 1024
+    },
+    {
+      "id": "8E94DBB7AA41-2",
+      "source_relative_path": "04. SIMULACROS\\MATEMATICAS\\General\\06\\RESPUESTAS S11-B.pdf",
+      "area": "MATEMATICAS",
+      "categoria": "SIMULACROS",
+      "chunk_chars": 1386
+    },
+    {
+      "id": "8E94DBB7AA41-10",
+      "source_relative_path": "04. SIMULACROS\\MATEMATICAS\\General\\06\\RESPUESTAS S11-B.pdf",
+      "area": "MATEMATICAS",
+      "categoria": "SIMULACROS",
+      "chunk_chars": 1350
+    },
+    {
+      "id": "8C02E4E74167-9",
+      "source_relative_path": "07. ICFES FILTRADOS\\2006\\Filosofía\\2.pdf",
+      "area": "LECTURA_CRITICA",
+      "categoria": "EXAMENES",
+      "chunk_chars": 1022
+    },
+    {
+      "id": "8C02E4E74167-3",
+      "source_relative_path": "07. ICFES FILTRADOS\\2006\\Filosofía\\2.pdf",
+      "area": "LECTURA_CRITICA",
+      "categoria": "EXAMENES",
+      "chunk_chars": 1020
+    }
+  ],
+  "prompts": {
+    "systemPrompt": "Eres un docente senior experto en evaluacion Saber 11 (ICFES).\nTu tarea es crear preguntas nuevas de alta calidad usando SOLO el contexto suministrado.\nReglas obligatorias:\n1. No inventes datos fuera del contexto.\n2. Redacta en espanol claro y academico.\n3. Cada pregunta debe tener exactamente 4 opciones y una sola correcta.\n4. Las opciones incorrectas deben ser plausibles, pedagogicas y no absurdas.\n5. No uses 'todas las anteriores' ni 'ninguna de las anteriores'.\n6. Evita pistas de respuesta por longitud, literalidad o redaccion evidente.\n7. No repitas preguntas ni parafrasis cercanas entre si.\n8. Mantener nivel de grado 11.\n9. Cada pregunta debe incluir explicacion_respuesta con: fundamento, descarte de distractor y habilidad evaluada.\n10. Usa las areas permitidas: LECTURA_CRITICA, MATEMATICAS, SOCIALES_CIUDADANAS, CIENCIAS_NATURALES, INGLES.\n11. Devuelve unicamente JSON valido; no agregues texto fuera del JSON.\n12. fuente_chunk_ids debe incluir entre 1 y 3 IDs reales del contexto, sin inventar.\n13. competencia, componente y nivel_cognitivo deben ser especificos y coherentes con el area.\n14. Si el contexto no alcanza para la cantidad solicitada, devuelve menos preguntas en lugar de inventar.\n15. No incluyas contenido ofensivo, discriminatorio o ajeno al objetivo academico.\n16. No incluyas la letra de la respuesta (A/B/C/D) en el enunciado ni en la explicacion.\n17. El enunciado debe contener solo la situacion/pregunta; las opciones van exclusivamente en el arreglo opciones.\n18. Varia la posicion de la opcion correcta entre las 4 opciones; evita patron fijo.\n19. Manten estilo de evaluacion por competencias tipo Saber 11: lectura cuidadosa, distractores verosimiles y foco en razonamiento.\n20. Sigue enfoque de diseno centrado en evidencias: competencia, afirmacion implicita y evidencia observable en la respuesta.\n21. Cada item debe respetar formato de seleccion multiple con unica respuesta (enunciado/tarea/opciones).",
+    "userPrompt": "Genera 8 preguntas tipo ICFES para grado 11.\nAreas objetivo: LECTURA_CRITICA, MATEMATICAS, INGLES.\nDistribuye las preguntas de forma equilibrada entre las areas disponibles del contexto.\nUsa la guia pedagogica por area para elegir competencia/componente/nivel_cognitivo.\nEn competencia/componente evita valores genericos como 'General'.\nSi una pregunta usa un contexto textual, llena contexto_texto_base; si no, deja cadena vacia.\nEvita casi-duplicados semanticos dentro del lote; cambia situacion, datos y razonamiento.\nNo pongas opciones A/B/C/D dentro del enunciado: solo en el arreglo opciones.\nDistribuye la opcion correcta entre posiciones 1, 2, 3 y 4 de forma balanceada en el lote.\nUsa solo IDs reales en fuente_chunk_ids y no repitas IDs innecesariamente.\nIDs validos de fuente_chunk_ids: 2700C89E06B4-14, 2700C89E06B4-7, 8E94DBB7AA41-2, 8E94DBB7AA41-10, 8C02E4E74167-9, 8C02E4E74167-3.\nDevuelve JSON valido segun el schema.\n\nGuia pedagogica por area:\n- LECTURA_CRITICA:\n  competencias sugeridas: Identificar y ubicar informacion local, Relacionar e interpretar informacion, Evaluar y reflexionar sobre contenido y forma del texto\n  componentes sugeridos: Semantico, Sintactico, Pragmatico\n  niveles_cognitivos sugeridos: Comprension, Analisis, Evaluacion\n  distribucion orientativa (guia ICFES): Afirmaciones: identificar/ubicar informacion local 25%, relacionar/interpretar 42%, evaluar/reflexionar 33%\n- MATEMATICAS:\n  competencias sugeridas: Interpretacion y representacion, Formulacion y ejecucion, Argumentacion\n  componentes sugeridos: Numerico variacional, Geometrico metrico, Aleatorio, Algebraico\n  niveles_cognitivos sugeridos: Aplicacion, Analisis, Razonamiento cuantitativo\n  distribucion orientativa (guia ICFES): Interpretacion/representacion 34%, Formulacion/ejecucion 43%, Argumentacion 23%\n- INGLES:\n  competencias sugeridas: Comunicativa lectora, Comunicativa linguistica, Pragmatica\n  componentes sugeridos: Vocabulary, Grammar, Reading comprehension, Language use\n  niveles_cognitivos sugeridos: Literal, Inferencial, Critico\n  distribucion orientativa (guia ICFES): Partes de la prueba: 1) completar avisos/anuncios cortos 11%, 2) conversaciones cortas 11%, 3) monologos/dialogos 11%, 4) lectura literal 18%, 5) lectura inferencial 16%, 6) uso gramatical en contexto 11%, 7) uso gramatical y lexical con 4 opciones 22%\n\nContexto disponible:\n### CHUNK 2700C89E06B4-14\n- area_origen: LECTURA_CRITICA\n- categoria: EXAMENES\n- tipo_prueba: SABER_11\n- ruta: material/07. ICFES FILTRADOS/2003/Marzo/Lenguaje Profundizacion.pdf\n- contenido:\neducativo.\nD. Pensar la ciudad hoy y maÒana.\n112. A partir de la lectura de los textos Ciudad\ny literatura y Transformaciones urbanas en la ciu-\ndad de hoy, podemos afirmar que\nA. los procesos de globalizaciÛn de la econo-\nmÌa y la comunicaciÛn son el resultado de\nla constituciÛn de nuevos lenguajes tec-\nnolÛgicos.\nB. las nuevas formas de producir, consumir,\ngestionar, informar y pensar son conse-\ncuencias de las nuevas formas de expre-\nsiÛn de lo urbano.\nC. las tecnologÌas de la informaciÛn y la co-\nmunicaciÛn influyen en el desarrollo de to-\ndos los lenguajes a travÈs de los cuales\nse expresa lo urbano.\nD. los procesos de globalizaciÛn, las nuevas\ntecnologÌas y las nuevas formas de vida\nson los nuevos lenguajes a travÈs de los\ncuales se expresa lo urbano.\n113. Si, como se afirma en el texto Transfor-\nmaciones urbanas en la ciudad de hoy, ìLas ciu-\ndades y sociedades de todo el mundo est·n ex-\nperimentando en este fin del siglo XX una\nprofunda transformaciÛn histÛrica estructuralî y,\ncomo se dice en el texto Ciudad y literatura, la\nliteratura expresa dicha transformaciÛn a travÈs\nde sus propios lenguajes, podrÌa pensarse que\nA.\n\n### CHUNK 2700C89E06B4-7\n- area_origen: LECTURA_CRITICA\n- categoria: EXAMENES\n- tipo_prueba: SABER_11\n- ruta: material/07. ICFES FILTRADOS/2003/Marzo/Lenguaje Profundizacion.pdf\n- contenido:\nS, Juan Carlos; ORDUZ, Luis Fernando; MORENO, Danilo. Reflejos, fantasmas,\ndesarraigos. Bogot· recorrida. Bogot·: Arango Editores, Instituto Distrital de Cultura y Turismo, 1999.)\n\n29AC - 106 - 6\nI\nTEXTO 3: TRANSFORMACIONES URBANAS EN LA CIUDAD DE HOY\nLas ciudades y sociedades de todo el mundo est·n experimentando en este fin del siglo XX una profun-\nda transformaciÛn histÛrica estructural. En el centro de dicha transformaciÛn se halla una revoluciÛn\ntecnolÛgica, organizada en torno a las tecnologÌas de la informaciÛn. Bas·ndose en la nueva infraes-\ntructura tecnolÛgica, el proceso de globalizaciÛn de la economÌa y la comunicaciÛn ha cambiado nues-\ntras formas de producir, consumir, gestionar, informar y pensar. No toda la actividad econÛmica o cultu-\nral en el mundo es global. En realidad, la inmensa mayorÌa de dicha actividad, en proporciÛn de personas\nparticipantes, en todos los planos, est· organizada en redes globales de decisiÛn e intercambio, desde\nlos mercados financieros a los mensajes audiovisuales.\n\n### CHUNK 8E94DBB7AA41-2\n- area_origen: MATEMATICAS\n- categoria: SIMULACROS\n- tipo_prueba: SIMULACRO\n- ruta: material/04. SIMULACROS/MATEMATICAS/General/06/RESPUESTAS S11-B.pdf\n- contenido:\nntas\nPromedio \nprueba\n58\n46\nDificultad de la prueba\nCONVENCIONES\nCLASIFICACIÓN Y COMPONENTE\nB: Biología\nBD: Teoría celular.BE: Evolución biológica.BF: Seres vivos.BC: Ecosistémico.\nQ: Química\nQE: Materia y energía.QF: Estructura atómica y enlaces químicos.QG: Funciones químicas.QH: Reacciones y ecuaciones químicas.QI: Gases ideales.QJ: Soluciones.\nCT: Ciencia, tecnología y sociedad\nCTB: Salud y vida.CTC: Medio ambiente.\nFA: Mecánica clásica.FE: Trabajo, potencia y energía.FD: Eventos electromagnéticos.FB: Termodinámica.FC: Eventos ondulatorios.\nCOMPETENCIAS\n1: Uso comprensivo del conocimiento cientifico.2: Explicación de fenómenos.3: Indagación.\nBaja\nAlta\nINC: Investigación ciencias\nINCA: Formulación de problemas.INCB: Planteamiento de hipótesis.INCC: Experimentación.INCD: Resultados.\nF: Física\n\n5019\n38461952\nABCD\nN. R.\n52\n51\n13\n30 52\n4\n0\n42\n52\n42\n27 23\n8\n0\n88\n53\n4\n88\n4\n4\n0\n42\n54\n23\n42 19 15\n0\n27\n55\n46\n12 15 27\n0\n54\n56\n15\n31 54\n0\n0\n54\n57\n27\n8\n54 12\n0\n46\n58\n46\n23 15 15\n0\n35\n59\n27\n35 31\n8\n0\n81\n60\n4\n8\n81\n8\n0\n46\n61\n15\n19 46 19\n0\n38\n62\n12\n31 38 19\n0\n77\n63\n4\n77\n8\n12\n0\n50\n64\n15\n19 15 50\n0\n85\n65\n85\n4\n8\n4\n0\n27\n66\n27\n15 31 27\n0\n35\n67\n15\n19 35 31\n0\n73\n68\n4\n19\n4\n73\n0\n38\n69\n27\n12 23 38\n0\n42\n70\n19\n27 42 12\n0\n23\n71\n58\n8\n23 12\n0\n70\n72\n17\n0\n9\n70\n4\n43\n73\n9 354313 0\n62\n74\n19\n8\n62 12\n0\n72\n75\n12\n72\n4\n12\n0\n15\n76\n31\n15 23 31\n0\n54\n77\n19\n54 19\n8\n0\n65\n78\n0 126523 0\n40\n79\n16\n40 36\n8\n0\nPREG.\n\n### CHUNK 8E94DBB7AA41-10\n- area_origen: MATEMATICAS\n- categoria: SIMULACROS\n- tipo_prueba: SIMULACRO\n- ruta: material/04. SIMULACROS/MATEMATICAS/General/06/RESPUESTAS S11-B.pdf\n- contenido:\n5\n104\n15\n42 42\n0\n0\n35\n105\n58\n35\n8\n0\n0\n46\n106\n19\n46 35\n0\n0\n54\n107\n31\n15 54\n0\n0\n62\n108\n15\n23 62\n0\n0\n62\n109\n62\n15 23\n0\n0\n58\n110\n27\n58 15\n0\n0\n23\n111\n23\n23 54\n0\n0\n31\n112\n27\n42 31\n0\n0\n69\n113\n27\n69\n4\n0\n0\n38\n114\n38\n38 23\n0\n0\n35\n115\n35\n54 12\n0\n0\n58\n116\n31\n12 58\n0\n0\n23\n117\n50\n23 23\n4\n0\n50\n118\n23\n50 27\n0\n0\n15\n119\n50\n15 35\n0\n0\n31\n120\n12\n31 42 15\n0\n8\n121\n15\n42 35\n8\n0\n31\n122\n31\n23 31 15\n0\n69\n123\n8 126912\n0\n38\n124\n12\n19 38 31\n0\n81\n125\n4\n81\n0\n15\n0\n50\n126\n23\n19\n8\n50\n0\n35\n127\n35\n35 19 12\n0\n0\n128\n35\n46\n0\n19\n0\n23\n129\n12\n27 23 38\n0\n35\n130\n8\n35 54\n4\n0\n15\n131\n15\n23 31 31\n0\n12\n132\n0 122762\n0\n54\n133\n19\n4\n54 23\n0\n27\n134\n27\n35 12 27\n0\nIF IF IF IF IF \nIB \nIC IC IC \nPREG.\nDIFICULTAD\nCOMPONENTE\n% POR OPCIÓN\nIA IA IA IA IA \nA\nlta\nIB IB IB IB \nBaja\nI1 I1 I1 I1 I1 I2 I2 I2 I2 I2 I1 I1 I1 I1 I1 I1 I1 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 I2 \nIC IC IC IC \nID ID ID ID ID \nIE IE \nID ID ID ID \nIE IE IE IE IE \nID ID ID ID ID ID ID IG \nI2 \nIG \nI2 \nIG \nI2 \nIG \nI2 \nIG \nI2 \nIG \nI2 \nIG \nI2 \nIG \nI2 \nIG \nI2 \nIG \nI2 \n11 \nNúmero de \nevaluados\n26\nNúmero de \npreguntas\nPromedio \nprueba\n55\n39\nDificultad de la prueba\nCONVENCIONES\nCOMPONENTES\nIA: Parte 1, Interpretación de avisos.IB: Parte 2, Relaciones.IC: Parte 3, Dialogos.ID: Parte 4, Completar.IE: Parte 5, Comprensión de textos.IF: Parte 6, Completar.IG: Parte 7, Comprensión de textos.\n\n### CHUNK 8C02E4E74167-9\n- area_origen: LECTURA_CRITICA\n- categoria: EXAMENES\n- tipo_prueba: SABER_11\n- ruta: material/07. ICFES FILTRADOS/2006/Filosofía/2.pdf\n- contenido:\nvolucionarias porque cuestionan al sujeto y le hacen reconocer la\nsituaciÛn de esclavitud disfrazada en la que se encuentra al interior de las relaciones econÛmicas capi-\ntalistas. Esta teorÌa estÈtica es justa con las obras de arte, ya que reconoce que ellas no son ̇nicamente\nuna fuente de placer sino que son tambiÈn y ante todo\n1. medios comunicativos diseÒados para enseÒar y entretener al mismo tiempo.\n2. herramientas que pueden contribuir en el desarrollo hacia una sociedad m·s equitativa.\n3. creaciones que amplÌan el horizonte de posibilidades vitales de las personas.\n4. objetos que refuerzan la rentabilidad de las relaciones de intercambio en el capitalismo.\n95. En filosofÌa ha sido imposible establecer definitivamente cu·l es la direcciÛn del tiempo. Algunos\nfilÛsofos opinan que el tiempo fluye desde el pasado hacia el futuro. Otros, por su parte, argumentan que\nel tiempo fluye desde el futuro hacia el pasado, ya que es un futuro que se va actualizando en el presen-\nte y se va convirtiendo en pasado.\n\n### CHUNK 8C02E4E74167-3\n- area_origen: LECTURA_CRITICA\n- categoria: EXAMENES\n- tipo_prueba: SABER_11\n- ruta: material/07. ICFES FILTRADOS/2006/Filosofía/2.pdf\n- contenido:\no de los individuos.\nC. el hombre irracional es el ̇nico que causa el rompimiento con la divinidad.\nD. sÛlo es mala la persona que sacrifica los bienes superiores a los inferiores.\n87. Un principio fundamental de la teorÌa de\nHegel es que la parte no manifiesta su verdad\nm·s que en el todo y por tanto, debe renunciar a\nplantearse aisladamente. De esta forma, la uni-\ndad dialÈctica es la relaciÛn de lo particular con\nla totalidad. La dialÈctica en consecuencia, es la\nforma en que se manifiesta la realidad misma,\nporque\nA. demuestra que los cambios del mundo son\nun solo proceso de movimiento.\nB. afirma que la realidad es simplemente la\napariencia de las contradicciones.\nC. devela completamente la esencia exacta y\narmÛnica del mundo en que vivimos.\nD. es sÛlo a partir de ella que nos hacemos\nconscientes de lo caÛtico de la realidad.\n88. Para los empiristas modernos como John\nLocke, la mente es como una hoja en blanco so-\nbre la cual se escriben y organizan los datos pro-\nvenientes de la experiencia sensible."
+  },
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "questions": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 8,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "area": {
+              "type": "string",
+              "enum": [
+                "LECTURA_CRITICA",
+                "MATEMATICAS",
+                "SOCIALES_CIUDADANAS",
+                "CIENCIAS_NATURALES",
+                "INGLES"
+              ]
+            },
+            "competencia": {
+              "type": "string"
+            },
+            "componente": {
+              "type": "string"
+            },
+            "nivel_dificultad": {
+              "type": "string",
+              "enum": [
+                "BAJO",
+                "MEDIO",
+                "ALTO"
+              ]
+            },
+            "nivel_cognitivo": {
+              "type": "string"
+            },
+            "enunciado": {
+              "type": "string"
+            },
+            "contexto_texto_base": {
+              "type": "string"
+            },
+            "grado_objetivo": {
+              "type": "string"
+            },
+            "explicacion_respuesta": {
+              "type": "string"
+            },
+            "opciones": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "texto_opcion": {
+                    "type": "string"
+                  },
+                  "es_correcta": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "texto_opcion",
+                  "es_correcta"
+                ]
+              }
+            },
+            "fuente_chunk_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "area",
+            "competencia",
+            "componente",
+            "nivel_dificultad",
+            "nivel_cognitivo",
+            "enunciado",
+            "contexto_texto_base",
+            "grado_objetivo",
+            "explicacion_respuesta",
+            "opciones",
+            "fuente_chunk_ids"
+          ]
+        }
+      }
+    },
+    "required": [
+      "questions"
+    ]
+  }
+}

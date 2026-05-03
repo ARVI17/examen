@@ -1,0 +1,41 @@
+{
+  "generatedAt": "2026-04-14T01:19:44.574Z",
+  "quality": {
+    "minQualityScore": 75,
+    "similarityThreshold": 0.88
+  },
+  "invalid": [],
+  "review": [
+    {
+      "index": 0,
+      "area": "CIENCIAS_NATURALES",
+      "score": 100,
+      "accepted": true,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 0,
+      "reasons": [],
+      "preview": "En un experimento de destilación, si la temperatura del matraz es igual a la temperatura de ebullición de X y en el matraz hay una mezcla de X y W, ¿cuál será la gráfica que se obt"
+    },
+    {
+      "index": 1,
+      "area": "SOCIALES_CIUDADANAS",
+      "score": 70,
+      "accepted": false,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 0,
+      "reasons": [
+        "explicacion_no_coincide_con_opcion_correcta"
+      ],
+      "preview": "¿Cuál de las siguientes afirmaciones mejor describe la relación entre el comercio y la agricultura en la historia de Colombia?"
+    }
+  ],
+  "rejected": [
+    {
+      "index": 1,
+      "reasons": [
+        "explicacion_no_coincide_con_opcion_correcta"
+      ],
+      "score": 70
+    }
+  ]
+}

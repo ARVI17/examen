@@ -1,0 +1,1380 @@
+{
+  "generatedAt": "2026-04-14T03:47:05.332Z",
+  "readinessStatus": 200,
+  "materialCoverageStatus": 200,
+  "classroomStatus": 200,
+  "readiness": {
+    "filters": {
+      "gradoObjetivo": "11",
+      "targetPerArea": 120,
+      "includeInactive": false
+    },
+    "totals": {
+      "totalQuestions": 39,
+      "totalTarget": 600,
+      "totalDeficit": 561,
+      "overallCoveragePercent": 6.5
+    },
+    "byArea": [
+      {
+        "area": "LECTURA_CRITICA",
+        "totalQuestions": 2,
+        "target": 120,
+        "deficit": 118,
+        "coveragePercent": 1.67,
+        "readinessLevel": "CRITICO",
+        "byDifficulty": [
+          {
+            "difficulty": "BAJO",
+            "count": 1,
+            "target": 40,
+            "deficit": 39,
+            "coveragePercent": 2.5
+          },
+          {
+            "difficulty": "MEDIO",
+            "count": 0,
+            "target": 40,
+            "deficit": 40,
+            "coveragePercent": 0
+          },
+          {
+            "difficulty": "ALTO",
+            "count": 1,
+            "target": 40,
+            "deficit": 39,
+            "coveragePercent": 2.5
+          }
+        ]
+      },
+      {
+        "area": "MATEMATICAS",
+        "totalQuestions": 30,
+        "target": 120,
+        "deficit": 90,
+        "coveragePercent": 25,
+        "readinessLevel": "CRITICO",
+        "byDifficulty": [
+          {
+            "difficulty": "BAJO",
+            "count": 0,
+            "target": 40,
+            "deficit": 40,
+            "coveragePercent": 0
+          },
+          {
+            "difficulty": "MEDIO",
+            "count": 28,
+            "target": 40,
+            "deficit": 12,
+            "coveragePercent": 70
+          },
+          {
+            "difficulty": "ALTO",
+            "count": 2,
+            "target": 40,
+            "deficit": 38,
+            "coveragePercent": 5
+          }
+        ]
+      },
+      {
+        "area": "SOCIALES_CIUDADANAS",
+        "totalQuestions": 4,
+        "target": 120,
+        "deficit": 116,
+        "coveragePercent": 3.33,
+        "readinessLevel": "CRITICO",
+        "byDifficulty": [
+          {
+            "difficulty": "BAJO",
+            "count": 1,
+            "target": 40,
+            "deficit": 39,
+            "coveragePercent": 2.5
+          },
+          {
+            "difficulty": "MEDIO",
+            "count": 1,
+            "target": 40,
+            "deficit": 39,
+            "coveragePercent": 2.5
+          },
+          {
+            "difficulty": "ALTO",
+            "count": 2,
+            "target": 40,
+            "deficit": 38,
+            "coveragePercent": 5
+          }
+        ]
+      },
+      {
+        "area": "CIENCIAS_NATURALES",
+        "totalQuestions": 3,
+        "target": 120,
+        "deficit": 117,
+        "coveragePercent": 2.5,
+        "readinessLevel": "CRITICO",
+        "byDifficulty": [
+          {
+            "difficulty": "BAJO",
+            "count": 0,
+            "target": 40,
+            "deficit": 40,
+            "coveragePercent": 0
+          },
+          {
+            "difficulty": "MEDIO",
+            "count": 3,
+            "target": 40,
+            "deficit": 37,
+            "coveragePercent": 7.5
+          },
+          {
+            "difficulty": "ALTO",
+            "count": 0,
+            "target": 40,
+            "deficit": 40,
+            "coveragePercent": 0
+          }
+        ]
+      },
+      {
+        "area": "INGLES",
+        "totalQuestions": 0,
+        "target": 120,
+        "deficit": 120,
+        "coveragePercent": 0,
+        "readinessLevel": "CRITICO",
+        "byDifficulty": [
+          {
+            "difficulty": "BAJO",
+            "count": 0,
+            "target": 40,
+            "deficit": 40,
+            "coveragePercent": 0
+          },
+          {
+            "difficulty": "MEDIO",
+            "count": 0,
+            "target": 40,
+            "deficit": 40,
+            "coveragePercent": 0
+          },
+          {
+            "difficulty": "ALTO",
+            "count": 0,
+            "target": 40,
+            "deficit": 40,
+            "coveragePercent": 0
+          }
+        ]
+      }
+    ],
+    "priorityGaps": [
+      {
+        "area": "INGLES",
+        "deficit": 120,
+        "readinessLevel": "CRITICO"
+      },
+      {
+        "area": "LECTURA_CRITICA",
+        "deficit": 118,
+        "readinessLevel": "CRITICO"
+      },
+      {
+        "area": "CIENCIAS_NATURALES",
+        "deficit": 117,
+        "readinessLevel": "CRITICO"
+      },
+      {
+        "area": "SOCIALES_CIUDADANAS",
+        "deficit": 116,
+        "readinessLevel": "CRITICO"
+      },
+      {
+        "area": "MATEMATICAS",
+        "deficit": 90,
+        "readinessLevel": "CRITICO"
+      }
+    ],
+    "generatedAt": "2026-04-14T03:47:05.303Z"
+  },
+  "materialCoverage": {
+    "filters": {
+      "includeDeleted": false,
+      "includeWithoutPriority": false
+    },
+    "totals": {
+      "totalAssets": 164,
+      "uniqueLogicalPaths": 164,
+      "expectedFromManifest": 164,
+      "missingForExpected": 0,
+      "coveragePercent": 100,
+      "missingPriorityCount": 0,
+      "missingShaCount": 0,
+      "duplicateLogicalPathGroups": 0,
+      "duplicateShaGroups": 0
+    },
+    "byPriority": [
+      {
+        "name": "baja",
+        "count": 100
+      },
+      {
+        "name": "alta",
+        "count": 51
+      },
+      {
+        "name": "media",
+        "count": 13
+      }
+    ],
+    "byCategory": [
+      {
+        "name": "MATERIALES_APOYO",
+        "count": 51
+      },
+      {
+        "name": "CLAVES",
+        "count": 49
+      },
+      {
+        "name": "EXAMENES",
+        "count": 30
+      },
+      {
+        "name": "SIMULACROS",
+        "count": 21
+      },
+      {
+        "name": "BANCOS_PREGUNTAS",
+        "count": 13
+      }
+    ],
+    "byArea": [
+      {
+        "name": "MULTI_AREA",
+        "count": 48
+      },
+      {
+        "name": "SOCIALES_CIUDADANAS",
+        "count": 39
+      },
+      {
+        "name": "CIENCIAS_NATURALES",
+        "count": 30
+      },
+      {
+        "name": "MATEMATICAS",
+        "count": 27
+      },
+      {
+        "name": "LECTURA_CRITICA",
+        "count": 12
+      },
+      {
+        "name": "INGLES",
+        "count": 8
+      }
+    ],
+    "byConfidence": [
+      {
+        "name": "alta",
+        "count": 114
+      },
+      {
+        "name": "media",
+        "count": 45
+      },
+      {
+        "name": "baja",
+        "count": 5
+      }
+    ],
+    "coverageByPriority": [
+      {
+        "priority": "alta",
+        "expected": 51,
+        "loaded": 51,
+        "coveragePercent": 100
+      },
+      {
+        "priority": "baja",
+        "expected": 100,
+        "loaded": 100,
+        "coveragePercent": 100
+      },
+      {
+        "priority": "media",
+        "expected": 13,
+        "loaded": 13,
+        "coveragePercent": 100
+      }
+    ],
+    "duplicateSamples": {
+      "logicalPaths": [],
+      "sha256": []
+    },
+    "samples": [
+      {
+        "id": "274d7138-3613-4af2-817f-8b62bf563f04",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Temas/Ciencias sociales y ciudadanas/9.5 Segunda guerra mundial.pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "SOCIALES_CIUDADANAS",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "9.5 Segunda guerra mundial.pdf",
+        "tipoPrueba": "PRACTICA",
+        "createdAt": "2026-04-11T04:48:13.923Z"
+      },
+      {
+        "id": "a140f4af-2a0f-4ad1-8808-fd9897d6092e",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Temas/Ciencias sociales y ciudadanas/9.2 Guerra de la Independencia española.pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "SOCIALES_CIUDADANAS",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "9.2 Guerra de la Independencia española.pdf",
+        "tipoPrueba": "PRACTICA",
+        "createdAt": "2026-04-11T04:48:13.784Z"
+      },
+      {
+        "id": "3e7a6482-bdc4-4e31-a131-69b25f84482c",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Temas/Ciencias sociales y ciudadanas/7. Geografía.pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "SOCIALES_CIUDADANAS",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "7. Geografía.pdf",
+        "tipoPrueba": "PRACTICA",
+        "createdAt": "2026-04-11T04:48:13.734Z"
+      },
+      {
+        "id": "a9400d7e-239f-4a35-85f9-dfe1730ae752",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Resúmenes por área/Lectura crítica/10. Historia de la filosofía_ versión extensa.pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "LECTURA_CRITICA",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "10. Historia de la filosofía_ versión extensa.pdf",
+        "tipoPrueba": "PRACTICA",
+        "createdAt": "2026-04-11T04:48:13.686Z"
+      },
+      {
+        "id": "62e0acf2-2f86-4bf0-8025-28548c6a37a5",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Resúmenes por área/Inglés/9.5 Vocabulario.PDF",
+        "categoria": "MATERIALES_APOYO",
+        "area": "INGLES",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "9.5 Vocabulario.PDF",
+        "tipoPrueba": "PRACTICA",
+        "createdAt": "2026-04-11T04:48:13.463Z"
+      },
+      {
+        "id": "f8d61b81-68b2-4661-b447-d6ee5bbcd30e",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Resúmenes por área/Inglés/9.3 Presente perfecto.pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "INGLES",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "9.3 Presente perfecto.pdf",
+        "tipoPrueba": "PRACTICA",
+        "createdAt": "2026-04-11T04:48:13.434Z"
+      },
+      {
+        "id": "12c5e632-ac58-4e3e-916d-b6164b9714e4",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Resúmenes por área/Inglés/9. Pasado continuo.pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "INGLES",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "9. Pasado continuo.pdf",
+        "tipoPrueba": "PRACTICA",
+        "createdAt": "2026-04-11T04:48:13.407Z"
+      },
+      {
+        "id": "5f2fa0d4-c206-47ea-af71-6be0c8f29378",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Resúmenes por área/Inglés/3. Adjetivos_explicación y lista.pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "INGLES",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "3. Adjetivos_explicación y lista.pdf",
+        "tipoPrueba": "PRACTICA",
+        "createdAt": "2026-04-11T04:48:13.377Z"
+      },
+      {
+        "id": "5cbb62e7-c2f3-4f04-9125-625f7456e9f6",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Resúmenes por área/Inglés/2. Sustantivos_lista..pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "INGLES",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "2. Sustantivos_lista..pdf",
+        "tipoPrueba": "PRACTICA",
+        "createdAt": "2026-04-11T04:48:13.348Z"
+      },
+      {
+        "id": "06b9934f-578f-4cc0-82bf-b24d2c1855e0",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Resúmenes por área/Ciencias sociales y ciudadanas/6. Los derechos humanos.pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "SOCIALES_CIUDADANAS",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "6. Los derechos humanos.pdf",
+        "tipoPrueba": "PRACTICA",
+        "createdAt": "2026-04-11T04:48:13.327Z"
+      },
+      {
+        "id": "5eb2647f-22b2-4337-8145-e73995258346",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Resúmenes por área/Ciencias sociales y ciudadanas/5. El Estado y sus formas de gobierno.pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "SOCIALES_CIUDADANAS",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "5. El Estado y sus formas de gobierno.pdf",
+        "tipoPrueba": "PRACTICA",
+        "createdAt": "2026-04-11T04:48:13.292Z"
+      },
+      {
+        "id": "f3c4043a-5451-4250-a547-25f2404927c2",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Resúmenes por área/Ciencias sociales y ciudadanas/3. La independencia.pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "SOCIALES_CIUDADANAS",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "3. La independencia.pdf",
+        "tipoPrueba": "PRACTICA",
+        "createdAt": "2026-04-11T04:48:13.262Z"
+      },
+      {
+        "id": "427330cf-807a-4a84-95ac-d351db0fb99d",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Resúmenes por área/Ciencias sociales y ciudadanas/1. Los primeros pobladores Colombia.pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "SOCIALES_CIUDADANAS",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "1. Los primeros pobladores Colombia.pdf",
+        "tipoPrueba": "PRACTICA",
+        "createdAt": "2026-04-11T04:48:13.009Z"
+      },
+      {
+        "id": "7ef927d8-f8d1-4ea9-a2e8-b98760db5bfd",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Exámenes/Examen final/Cuadernillo de preguntas Saber 11- Matemáticas.pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "MATEMATICAS",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "Cuadernillo de preguntas Saber 11- Matemáticas.pdf",
+        "tipoPrueba": "SABER_11",
+        "createdAt": "2026-04-11T04:48:12.953Z"
+      },
+      {
+        "id": "a1915306-4a61-4405-a6a4-a2fa0287a7d5",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Exámenes/Examen final/Cuadernillo de preguntas Saber 11 - Lectura critica (6).pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "LECTURA_CRITICA",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "Cuadernillo de preguntas Saber 11 - Lectura critica (6).pdf",
+        "tipoPrueba": "SABER_11",
+        "createdAt": "2026-04-11T04:48:12.753Z"
+      },
+      {
+        "id": "a518b882-da4f-4e2a-aaf2-30e218d6073b",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Exámenes/Evaluaciones/Matematicas/Matemáticas PSU.pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "MATEMATICAS",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "Matemáticas PSU.pdf",
+        "tipoPrueba": "EVALUACION",
+        "createdAt": "2026-04-11T04:48:12.397Z"
+      },
+      {
+        "id": "392138d5-4a49-4447-abd8-472046b3c3ef",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Exámenes/Evaluaciones/Matematicas/evaluación matemáticas 1 .pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "MATEMATICAS",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "evaluación matemáticas 1 .pdf",
+        "tipoPrueba": "EVALUACION",
+        "createdAt": "2026-04-11T04:48:12.324Z"
+      },
+      {
+        "id": "f4855615-6036-4113-8c1c-e79947d10294",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Exámenes/Evaluaciones/Ingles/Respuestas y Explicaciones.pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "INGLES",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "Respuestas y Explicaciones.pdf",
+        "tipoPrueba": "EVALUACION",
+        "createdAt": "2026-04-11T04:48:12.160Z"
+      },
+      {
+        "id": "b0781eed-0104-4b06-abbc-abf824c1966a",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Exámenes/Evaluaciones/Ingles/Evaluacion Ingles.pdf",
+        "categoria": "MATERIALES_APOYO",
+        "area": "INGLES",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "Evaluacion Ingles.pdf",
+        "tipoPrueba": "EVALUACION",
+        "createdAt": "2026-04-11T04:48:12.133Z"
+      },
+      {
+        "id": "525b6083-c7d0-4087-96df-c36219862ad3",
+        "rutaLogica": "material/10. OTRA PREPACIÓN/Ejercicios resueltos estudiantes/JhonierNegrete_AlejandroLopez/Matematicas_Cuadernillo preguntas Saber 11_Resuelto.docx",
+        "categoria": "MATERIALES_APOYO",
+        "area": "MATEMATICAS",
+        "priority": "baja",
+        "confidence": "alta",
+        "nombreOriginal": "Matematicas_Cuadernillo preguntas Saber 11_Resuelto.docx",
+        "tipoPrueba": "SABER_11",
+        "createdAt": "2026-04-11T04:48:12.095Z"
+      }
+    ]
+  },
+  "classroom": {
+    "filters": {
+      "grado": "11",
+      "minAttempts": 1
+    },
+    "totals": {
+      "cohortStudents": 29,
+      "studentsWithAttempts": 29,
+      "studentsWithoutAttempts": 0,
+      "totalAttempts": 29,
+      "averageGlobalPercentage": 93.1,
+      "averageGlobalScore": 0.97
+    },
+    "weakAreasGlobal": [
+      {
+        "area": "MATEMATICAS",
+        "porcentajeAcierto": 96.43,
+        "totalCorrectas": 27,
+        "totalPreguntas": 28
+      }
+    ],
+    "strongAreasGlobal": [
+      {
+        "area": "MATEMATICAS",
+        "porcentajeAcierto": 96.43,
+        "totalCorrectas": 27,
+        "totalPreguntas": 28
+      }
+    ],
+    "areaSummary": [
+      {
+        "area": "MATEMATICAS",
+        "porcentajeAcierto": 96.43,
+        "totalCorrectas": 27,
+        "totalPreguntas": 28
+      }
+    ],
+    "performanceLevelDistribution": [
+      {
+        "level": "Superior",
+        "count": 27
+      },
+      {
+        "level": "Bajo",
+        "count": 2
+      }
+    ],
+    "examSummary": [
+      {
+        "examId": "bca97f93-8dac-4c48-b931-35ea7f960d9a",
+        "examName": "Simulacro Saber 11 ICFES 2026",
+        "attempts": 2,
+        "averagePercentage": 50
+      },
+      {
+        "examId": "8ec05805-e3fa-450e-ac27-973f23406708",
+        "examName": "IT EXAM 1776137849559",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "a754984b-f055-4bb7-aade-4d823bcf3fff",
+        "examName": "IT EXAM 1776132382977",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "1f8a9c30-77ef-47ac-a7d7-e432a191ba15",
+        "examName": "IT EXAM 1776131129124",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "935c4566-0a3f-4fc0-809b-0f66f22cb478",
+        "examName": "IT EXAM 1776131050893",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "45a8f7d4-e050-45bc-9a23-a0b1fb8df366",
+        "examName": "IT EXAM 1776130904179",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "3fbf4c5f-1640-4800-b743-b713bede5d28",
+        "examName": "IT EXAM 1776130716594",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "5dbe0f05-9e49-4816-9e89-b7b3b2687ca8",
+        "examName": "IT EXAM 1776130548175",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "4e7ca905-170a-4acd-8133-0cdd686614a2",
+        "examName": "IT EXAM 1776130387832",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "b964dc86-c261-4d09-b84f-26d817617105",
+        "examName": "IT EXAM 1776130316485",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "745fcfda-a3a1-409b-80c6-778a2d3b5855",
+        "examName": "IT EXAM 1776130191678",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "aaa2c899-ba2e-43bb-91f8-e28529fe4e3a",
+        "examName": "IT EXAM 1776130156168",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "b8185f9c-e43a-42bb-a2f4-b5a4f984d0a3",
+        "examName": "IT EXAM 1776129597817",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "8d20835f-97ed-4bfd-b3a2-7860e7f36664",
+        "examName": "IT EXAM 1776128772295",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "4e19cc4b-a062-4fd8-9369-fe1a03f35c69",
+        "examName": "IT EXAM 1776128691593",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "5a140946-3555-475d-871e-315363c6e14d",
+        "examName": "IT EXAM 1775964186670",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "4b09d652-94fc-49d2-8b6f-982b5d45c8cc",
+        "examName": "IT EXAM 1775961179146",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "554da4f8-56b3-4d88-a898-a1eb90f0f8ef",
+        "examName": "IT EXAM 1775960421338",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "bf79f9ef-7fdb-4fa1-9cb0-45d7349b5855",
+        "examName": "IT EXAM 1775882808909",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "85d883ec-d570-45ca-b47c-d1052c2f905e",
+        "examName": "IT EXAM 1775881622455",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "3969eb7c-6951-4ffa-9a1d-aa2c6066a6b8",
+        "examName": "IT EXAM 1775881485741",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "fe42ccf0-5c2d-409e-b5f3-52d9167b15f2",
+        "examName": "IT EXAM 1775881453123",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "ba770eba-8330-410e-88a2-dd0b4012dcbf",
+        "examName": "IT EXAM 1775881304324",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "34452b0e-6d03-4f29-a604-361df3ad578f",
+        "examName": "IT EXAM 1775051899380",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "39c92f50-0756-41ba-a231-38c6708487c2",
+        "examName": "IT EXAM 1775051836772",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "bd4fbc9c-a78c-4f54-b5ac-0f18a4af7feb",
+        "examName": "IT EXAM 1775049453390",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "452240e7-abc8-4747-853c-701ac7bb05a5",
+        "examName": "IT EXAM 1775049412406",
+        "attempts": 1,
+        "averagePercentage": 100
+      },
+      {
+        "examId": "8975815b-f4d6-4ad9-be34-03d0477c19e4",
+        "examName": "IT EXAM 1775049329314",
+        "attempts": 1,
+        "averagePercentage": 0
+      }
+    ],
+    "ranking": [
+      {
+        "estudiante": {
+          "id": "44e91daa-fca0-44dc-9875-52b8b3f5044c",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1776137849559",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-14T03:37:30.498Z",
+        "posicion": 1
+      },
+      {
+        "estudiante": {
+          "id": "55ac8880-afdd-440d-af76-69d27b595a9a",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1776132382977",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-14T02:06:23.598Z",
+        "posicion": 2
+      },
+      {
+        "estudiante": {
+          "id": "84eeee48-ad40-4983-868b-b24a68fd1c04",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1776131129124",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-14T01:45:29.722Z",
+        "posicion": 3
+      },
+      {
+        "estudiante": {
+          "id": "fa70245b-e6c2-49df-8c69-2529d3a69a81",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1776131050893",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-14T01:44:11.533Z",
+        "posicion": 4
+      },
+      {
+        "estudiante": {
+          "id": "de9c33cc-1138-4ebd-9c04-aeab3a7954e1",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1776130904179",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-14T01:41:45.041Z",
+        "posicion": 5
+      },
+      {
+        "estudiante": {
+          "id": "6ac5ad33-3146-4c83-8dcc-cda3fc66ee6e",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1776130716594",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-14T01:38:37.204Z",
+        "posicion": 6
+      },
+      {
+        "estudiante": {
+          "id": "056e5deb-2153-447f-bd91-883c28a22a44",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1776130548175",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-14T01:35:48.985Z",
+        "posicion": 7
+      },
+      {
+        "estudiante": {
+          "id": "bb65f5bd-445d-498e-98a7-6d48bdbe01d4",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1776130387832",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-14T01:33:08.670Z",
+        "posicion": 8
+      },
+      {
+        "estudiante": {
+          "id": "dbcfc12e-82cc-4dc0-b68d-9482713a0500",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1776130316485",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-14T01:31:57.112Z",
+        "posicion": 9
+      },
+      {
+        "estudiante": {
+          "id": "f002bd0c-6d7e-44eb-8610-ef4cdde3eb3c",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1776130191678",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-14T01:29:52.337Z",
+        "posicion": 10
+      },
+      {
+        "estudiante": {
+          "id": "bc09778c-8b0b-49de-9f7c-86af4b0d3a8c",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1776130156168",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-14T01:29:16.938Z",
+        "posicion": 11
+      },
+      {
+        "estudiante": {
+          "id": "cfd1318c-22b8-486a-8814-6811d588e758",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1776129597817",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-14T01:19:58.482Z",
+        "posicion": 12
+      },
+      {
+        "estudiante": {
+          "id": "3dd440cc-8f6b-4a89-8045-4fc0f5fbe292",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1776128772295",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-14T01:06:12.943Z",
+        "posicion": 13
+      },
+      {
+        "estudiante": {
+          "id": "d3c07cc9-d383-4e98-8aeb-36e80420e965",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1776128691593",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-14T01:04:52.276Z",
+        "posicion": 14
+      },
+      {
+        "estudiante": {
+          "id": "70d24c2d-e5ef-49d8-92a2-f958038f22c1",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1775964186670",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-12T03:23:07.201Z",
+        "posicion": 15
+      },
+      {
+        "estudiante": {
+          "id": "b22ba7ce-183f-4046-b7d6-d0e37c69628c",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1775961179146",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-12T02:32:59.651Z",
+        "posicion": 16
+      },
+      {
+        "estudiante": {
+          "id": "7fec8e5e-0991-49a6-bf2a-dc097e16e090",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1775960421338",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-12T02:20:21.857Z",
+        "posicion": 17
+      },
+      {
+        "estudiante": {
+          "id": "3974392f-8a4f-47c4-8bcb-a870b32fd02e",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1775882808909",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-11T04:46:49.468Z",
+        "posicion": 18
+      },
+      {
+        "estudiante": {
+          "id": "6dc51902-13af-4e8b-bc57-b7bce741625e",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1775881622455",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-11T04:27:02.976Z",
+        "posicion": 19
+      },
+      {
+        "estudiante": {
+          "id": "e85d0498-0f64-45c9-8fbb-6c596fbc98f1",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1775881485741",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-11T04:24:46.249Z",
+        "posicion": 20
+      },
+      {
+        "estudiante": {
+          "id": "479dd614-c735-49ba-aae4-bd56de47add4",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1775881453123",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-11T04:24:13.518Z",
+        "posicion": 21
+      },
+      {
+        "estudiante": {
+          "id": "54126f45-6c8d-4451-bb8e-a33055d385ae",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1775881304324",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-11T04:21:44.736Z",
+        "posicion": 22
+      },
+      {
+        "estudiante": {
+          "id": "f961290d-3e2a-440c-9e67-ae0cc53f899a",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1775051899380",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-01T13:58:19.821Z",
+        "posicion": 23
+      },
+      {
+        "estudiante": {
+          "id": "a3b13657-a80d-42f0-a334-09686ad6d511",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1775051836772",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-01T13:57:17.271Z",
+        "posicion": 24
+      },
+      {
+        "estudiante": {
+          "id": "9f941ca5-bf55-4e52-886e-fd85d6f188bc",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1775049453390",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-01T13:17:33.824Z",
+        "posicion": 25
+      },
+      {
+        "estudiante": {
+          "id": "da176067-7c76-404e-b439-29fa434ab033",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1775049412406",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 1,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-04-01T13:16:52.767Z",
+        "posicion": 26
+      },
+      {
+        "estudiante": {
+          "id": "00bae6b1-2b01-4e18-9515-b2360461e5bf",
+          "nombres": "Ana",
+          "apellidos": "Martinez",
+          "numeroIdentificacion": "1100670314",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 100,
+        "averageScore": 2,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 100
+        },
+        "lastAttemptDate": "2026-03-31T21:20:05.800Z",
+        "posicion": 27
+      },
+      {
+        "estudiante": {
+          "id": "117f63a1-0a77-4ece-9cf9-b0c110051474",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1775049329314",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 0,
+        "averageScore": 0,
+        "weakestArea": null,
+        "lastAttemptDate": "2026-04-01T13:15:29.732Z",
+        "posicion": 28
+      },
+      {
+        "estudiante": {
+          "id": "4702bbb2-4f74-4413-a53f-733e831572b2",
+          "nombres": "Carlos",
+          "apellidos": "Ramirez",
+          "numeroIdentificacion": "1100178989",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 0,
+        "averageScore": 0,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 0
+        },
+        "lastAttemptDate": "2026-03-31T21:30:39.520Z",
+        "posicion": 29
+      }
+    ],
+    "studentsAtRisk": [
+      {
+        "estudiante": {
+          "id": "117f63a1-0a77-4ece-9cf9-b0c110051474",
+          "nombres": "Estudiante",
+          "apellidos": "Integracion",
+          "numeroIdentificacion": "IT-1775049329314",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 0,
+        "averageScore": 0,
+        "weakestArea": null,
+        "lastAttemptDate": "2026-04-01T13:15:29.732Z",
+        "posicion": 28
+      },
+      {
+        "estudiante": {
+          "id": "4702bbb2-4f74-4413-a53f-733e831572b2",
+          "nombres": "Carlos",
+          "apellidos": "Ramirez",
+          "numeroIdentificacion": "1100178989",
+          "grado": "11",
+          "grupo": null,
+          "institucion": null
+        },
+        "attempts": 1,
+        "averagePercentage": 0,
+        "averageScore": 0,
+        "weakestArea": {
+          "area": "MATEMATICAS",
+          "porcentajeAcierto": 0
+        },
+        "lastAttemptDate": "2026-03-31T21:30:39.520Z",
+        "posicion": 29
+      }
+    ],
+    "generatedAt": "2026-04-14T03:47:05.329Z"
+  }
+}

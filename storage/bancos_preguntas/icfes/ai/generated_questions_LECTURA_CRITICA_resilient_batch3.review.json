@@ -1,0 +1,31 @@
+{
+  "generatedAt": "2026-04-14T02:56:59.628Z",
+  "quality": {
+    "minQualityScore": 78,
+    "similarityThreshold": 0.88
+  },
+  "invalid": [],
+  "review": [
+    {
+      "index": 0,
+      "area": "LECTURA_CRITICA",
+      "score": 50,
+      "accepted": false,
+      "maxSimilarityExisting": 1,
+      "maxSimilarityGenerated": 0,
+      "reasons": [
+        "muy_parecida_a_banco_existente"
+      ],
+      "preview": "En el texto Transformaciones urbanas en la ciudad de hoy, se afirma que las nuevas formas de producción, consumo, gestión y pensamiento son consecuencias de:"
+    }
+  ],
+  "rejected": [
+    {
+      "index": 0,
+      "reasons": [
+        "muy_parecida_a_banco_existente"
+      ],
+      "score": 50
+    }
+  ]
+}

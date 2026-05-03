@@ -1,0 +1,367 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleCode {
+  ADMIN
+  DOCENTE
+}
+
+enum DocumentTypeCode {
+  TI
+  CC
+  CE
+  PASAPORTE
+  OTRO
+}
+
+enum QuestionArea {
+  LECTURA_CRITICA
+  MATEMATICAS
+  SOCIALES_CIUDADANAS
+  CIENCIAS_NATURALES
+  INGLES
+}
+
+enum QuestionDifficulty {
+  BAJO
+  MEDIO
+  ALTO
+}
+
+enum QuestionType {
+  SELECCION_UNICA
+}
+
+enum ExamStatus {
+  DRAFT
+  PUBLICADO
+  INACTIVO
+}
+
+enum AttemptStatus {
+  PENDIENTE
+  INICIADA
+  ENVIADA
+  CALIFICADA
+  ANULADA
+}
+
+enum FileCategory {
+  EXAMENES
+  SIMULACROS
+  BANCOS_PREGUNTAS
+  HOJAS_RESPUESTA
+  CLAVES
+  REPORTES
+  MATERIALES_APOYO
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  code        RoleCode @unique
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
+
+  @@map("roles")
+}
+
+model User {
+  id           String         @id @default(uuid())
+  name         String
+  email        String         @unique
+  passwordHash String
+  isActive     Boolean        @default(true)
+  roleId       String
+  role         Role           @relation(fields: [roleId], references: [id])
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  refreshTokens RefreshToken[]
+  auditLogs    AuditLog[]
+  fileAssets   FileAsset[]
+
+  @@index([roleId])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model DocumentTypeCatalog {
+  id          String           @id @default(uuid())
+  code        DocumentTypeCode @unique
+  label       String
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("document_types_catalog")
+}
+
+model SubjectCatalog {
+  id        String       @id @default(uuid())
+  code      QuestionArea @unique
+  label     String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@map("subjects")
+}
+
+model Student {
+  id                   String           @id @default(uuid())
+  nombres              String
+  apellidos            String
+  tipoIdentificacion   DocumentTypeCode
+  numeroIdentificacion String           @unique
+  grado                String
+  isDeleted            Boolean          @default(false)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  examAttempts         ExamAttempt[]
+
+  @@index([grado])
+  @@index([isDeleted])
+  @@map("students")
+}
+
+model Question {
+  id                   String             @id @default(uuid())
+  codigoInterno        String             @unique
+  area                 QuestionArea
+  competencia          String
+  componente           String
+  nivelDificultad      QuestionDifficulty
+  nivelCognitivo       String
+  enunciado            String
+  contextoTextoBase    String?
+  tipoPregunta         QuestionType       @default(SELECCION_UNICA)
+  gradoObjetivo        String
+  estado               Boolean            @default(true)
+  explicacionRespuesta String?
+  observacionesDocente String?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  options              QuestionOption[]
+  examQuestions        ExamQuestion[]
+  studentAnswers       StudentAnswer[]
+
+  @@index([area])
+  @@index([nivelDificultad])
+  @@index([gradoObjetivo])
+  @@index([estado])
+  @@map("question_bank")
+}
+
+model QuestionOption {
+  id             String          @id @default(uuid())
+  preguntaId     String
+  pregunta       Question        @relation(fields: [preguntaId], references: [id], onDelete: Cascade)
+  textoOpcion    String
+  esCorrecta     Boolean
+  isArchived     Boolean         @default(false)
+  orden          Int
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  studentAnswers StudentAnswer[]
+
+  @@unique([preguntaId, orden, isArchived])
+  @@index([preguntaId, isArchived])
+  @@map("question_options")
+}
+
+model Exam {
+  id                  String         @id @default(uuid())
+  nombre              String
+  descripcion         String?
+  tipoPrueba          String
+  gradoObjetivo       String
+  estado              ExamStatus     @default(DRAFT)
+  tiempoLimiteMinutos Int
+  totalPreguntas      Int            @default(0)
+  puntajeMaximo       Float
+  instrucciones       String?
+  fechaPublicacion    DateTime?
+  isDeleted           Boolean        @default(false)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  examQuestions       ExamQuestion[]
+  examAttempts        ExamAttempt[]
+
+  @@index([estado])
+  @@index([gradoObjetivo])
+  @@index([tipoPrueba])
+  @@index([isDeleted])
+  @@unique([nombre, tipoPrueba, gradoObjetivo, isDeleted])
+  @@map("exams")
+}
+
+model ExamQuestion {
+  id              String       @id @default(uuid())
+  examId          String
+  exam            Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
+  questionId      String
+  question        Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  orden           Int
+  puntajePregunta Float
+  area            QuestionArea
+  metadata        Json?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([examId, questionId])
+  @@unique([examId, orden])
+  @@index([questionId])
+  @@map("exam_questions")
+}
+
+model ExamAttempt {
+  id                    String         @id @default(uuid())
+  estudianteId          String
+  estudiante            Student        @relation(fields: [estudianteId], references: [id])
+  pruebaId              String
+  prueba                Exam           @relation(fields: [pruebaId], references: [id])
+  fechaInicio           DateTime       @default(now())
+  fechaFin              DateTime?
+  estado                AttemptStatus  @default(PENDIENTE)
+  tiempoEmpleadoSegundos Int?
+  puntajeTotalObtenido  Float          @default(0)
+  porcentajeTotal       Float          @default(0)
+  nivelDesempenoGlobal  String?
+  observaciones         String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  studentAnswers        StudentAnswer[]
+  areaResults           AreaResult[]
+
+  @@index([estudianteId])
+  @@index([pruebaId])
+  @@index([estado])
+  @@map("exam_attempts")
+}
+
+model StudentAnswer {
+  id                     String         @id @default(uuid())
+  intentoId              String
+  intento                ExamAttempt    @relation(fields: [intentoId], references: [id], onDelete: Cascade)
+  preguntaId             String
+  pregunta               Question       @relation(fields: [preguntaId], references: [id])
+  opcionIdSeleccionada   String
+  opcionSeleccionada     QuestionOption @relation(fields: [opcionIdSeleccionada], references: [id])
+  esCorrecta             Boolean        @default(false)
+  puntajeObtenido        Float          @default(0)
+  tiempoRespuestaSegundos Int?
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+
+  @@unique([intentoId, preguntaId])
+  @@index([preguntaId])
+  @@map("student_answers")
+}
+
+model AreaResult {
+  id                 String       @id @default(uuid())
+  intentoId          String
+  intento            ExamAttempt  @relation(fields: [intentoId], references: [id], onDelete: Cascade)
+  area               QuestionArea
+  totalPreguntasArea Int
+  correctas          Int
+  incorrectas        Int
+  puntajeArea        Float
+  porcentajeArea     Float
+  nivelDesempenoArea String
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  @@unique([intentoId, area])
+  @@index([area])
+  @@map("area_results")
+}
+
+model PerformanceLevel {
+  id        String   @id @default(uuid())
+  nombre    String   @unique
+  minimo    Float
+  maximo    Float
+  scope     String   @default("GLOBAL")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, minimo, maximo])
+  @@map("performance_levels")
+}
+
+model FileAsset {
+  id               String       @id @default(uuid())
+  nombreOriginal   String       @map("nombre_original")
+  nombreArchivo    String       @map("nombre_archivo")
+  categoria        FileCategory
+  tipoMime         String       @map("tipo_mime")
+  extension        String
+  pesoBytes        Int          @map("peso_bytes")
+  ruta             String
+  rutaLogica       String       @map("ruta_logica")
+  descripcion      String?
+  gradoObjetivo    String?      @map("grado_objetivo")
+  area             QuestionArea?
+  tipoPrueba       String?      @map("tipo_prueba")
+  version          Int          @default(1)
+  parentFileId     String?      @map("parent_file_id")
+  parentFile       FileAsset?   @relation("FileAssetVersioning", fields: [parentFileId], references: [id], onDelete: SetNull)
+  childVersions    FileAsset[]  @relation("FileAssetVersioning")
+  sourceFileId     String?      @map("source_file_id")
+  sourceFile       FileAsset?   @relation("FileAssetDuplication", fields: [sourceFileId], references: [id], onDelete: SetNull)
+  duplicatedFiles  FileAsset[]  @relation("FileAssetDuplication")
+  uploadedByUserId String?      @map("uploaded_by_user_id")
+  uploadedByUser   User?        @relation(fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+  activo           Boolean      @default(true)
+  isCurrent        Boolean      @default(true) @map("is_current")
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  deletedAt        DateTime?    @map("deleted_at")
+
+  @@index([categoria, activo])
+  @@index([gradoObjetivo])
+  @@index([area])
+  @@index([tipoPrueba])
+  @@index([nombreOriginal])
+  @@index([parentFileId])
+  @@index([sourceFileId])
+  @@index([uploadedByUserId])
+  @@unique([parentFileId, version])
+  @@map("file_assets")
+}
+
+model AuditLog {
+  id       String   @id @default(uuid())
+  entidad  String
+  entidadId String
+  accion   String
+  datos    Json
+  userId   String?
+  user     User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([entidad, entidadId])
+  @@index([userId])
+  @@map("audit_logs")
+}

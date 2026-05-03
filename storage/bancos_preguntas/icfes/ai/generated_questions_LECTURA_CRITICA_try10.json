@@ -1,0 +1,53 @@
+{
+  "generatedAt": "2026-04-14T02:32:23.018Z",
+  "provider": "openai_compatible",
+  "model": "qwen2.5:3b-instruct-q4_K_M",
+  "endpoint": "http://ollama:11434/v1/chat/completions",
+  "targetCount": 10,
+  "selectedChunks": 12,
+  "selectedAreas": [
+    "LECTURA_CRITICA"
+  ],
+  "quality": {
+    "minQualityScore": 78,
+    "similarityThreshold": 0.88,
+    "dbCheck": true
+  },
+  "validCount": 5,
+  "invalidCount": 0,
+  "qualityAcceptedCount": 1,
+  "qualityRejectedCount": 4,
+  "invalid": [],
+  "questions": [
+    {
+      "area": "LECTURA_CRITICA",
+      "competencia": "BANCOS_PREGUNTAS",
+      "componente": "SINTESIS_DE_CONTEXTO",
+      "nivel_dificultad": "ALTO",
+      "nivel_cognitivo": "ANALIZAR",
+      "enunciado": "¿Qué conclusión se puede extraer del texto sobre la relación entre el hombre y la muerte basándose en las descripciones de los personajes mencionados?",
+      "contexto_texto_base": "La historia narra cómo un príncipe, huía de la muerte para evitarla. Sin embargo, al finalizar su huida, se encuentra nuevamente con ella. Un jardinero que conocía a la muerte también describe su encuentro con esta figura. El autor explica que ambos personajes son amigos de la muerte.",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "La conclusión que se puede extraer del texto es que la muerte es un personaje del lugar, ya que se desarrolla dentro de la historia como un personaje con características físicas al igual que los demás. Además, ambos el príncipe y el jardinero describen su relación con la muerte, lo cual sugiere que son amigos de esta figura.",
+      "opciones": [
+        {
+          "texto_opcion": "La muerte es un personaje del lugar",
+          "es_correcta": true
+        },
+        {
+          "texto_opcion": "El príncipe y el jardinero no conocen a la muerte",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "La historia se centra en describir las acciones de la muerte",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "Los personajes mencionados son simples observadores de la muerte",
+          "es_correcta": false
+        }
+      ],
+      "fuente_chunk_ids": []
+    }
+  ]
+}

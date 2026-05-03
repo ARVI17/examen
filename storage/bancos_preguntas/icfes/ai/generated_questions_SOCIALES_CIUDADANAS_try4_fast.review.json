@@ -1,0 +1,51 @@
+{
+  "generatedAt": "2026-04-14T03:46:50.338Z",
+  "quality": {
+    "minQualityScore": 75,
+    "similarityThreshold": 0.9
+  },
+  "invalid": [],
+  "review": [
+    {
+      "index": 0,
+      "area": "SOCIALES_CIUDADANAS",
+      "score": 100,
+      "accepted": true,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 0,
+      "reasons": [],
+      "preview": "El cuadro anterior muestra la producción cafetera en Colombia entre 1923 y 1932. De acuerdo con el gráfico, podemos inferir que durante este periodo:"
+    },
+    {
+      "index": 1,
+      "area": "SOCIALES_CIUDADANAS",
+      "score": 100,
+      "accepted": true,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 0,
+      "reasons": [],
+      "preview": "Durante las guerras de independencia en Hispanoamérica, hubo tres exigencias básicas: libertad política, autonomía administrativa y autonomía económica para las colonias. El primer"
+    },
+    {
+      "index": 2,
+      "area": "SOCIALES_CIUDADANAS",
+      "score": 100,
+      "accepted": true,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 0.3356,
+      "reasons": [],
+      "preview": "El comercio desplazó a la agricultura y fue ganando preferencia como actividad económica. De acuerdo con esto, podemos inferir que:"
+    },
+    {
+      "index": 3,
+      "area": "SOCIALES_CIUDADANAS",
+      "score": 100,
+      "accepted": true,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 0.4844,
+      "reasons": [],
+      "preview": "La navegación fue una actividad marginal, debido a los escasos conocimientos técnicos. De acuerdo con esto, podemos inferir que:"
+    }
+  ],
+  "rejected": []
+}

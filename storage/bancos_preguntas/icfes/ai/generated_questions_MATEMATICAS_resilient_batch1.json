@@ -1,0 +1,83 @@
+{
+  "generatedAt": "2026-04-14T03:00:39.402Z",
+  "provider": "openai_compatible",
+  "model": "qwen2.5:3b-instruct-q4_K_M",
+  "endpoint": "http://ollama:11434/v1/chat/completions",
+  "targetCount": 8,
+  "selectedChunks": 6,
+  "selectedAreas": [
+    "MATEMATICAS"
+  ],
+  "quality": {
+    "minQualityScore": 78,
+    "similarityThreshold": 0.88,
+    "dbCheck": true
+  },
+  "validCount": 2,
+  "invalidCount": 0,
+  "qualityAcceptedCount": 2,
+  "qualityRejectedCount": 0,
+  "invalid": [],
+  "questions": [
+    {
+      "area": "MATEMATICAS",
+      "competencia": "SIMULACROS",
+      "componente": "GENERAL",
+      "nivel_dificultad": "ALTO",
+      "nivel_cognitivo": "COMPRENSION_EXTRAPOLACION",
+      "enunciado": "En una región del país, se encuentra un valle atravesado por un río cuyas aguas se utilizan en diferentes actividades, como muestra la figura. En esta región, existe una explotación minera para extraer el oro de la reserva. Para ello, se desvía una parte del río y se usan sustancias químicas como mercurio y otros metales tóxicos; es decir, las aguas regresadas al cauce normal contienen estos productos. ¿De acuerdo con lo anterior, cuál de los siguientes efectos negativos podría tener el desarrollo de la región?",
+      "contexto_texto_base": "En una región del país, se encuentra un valle atravesado por un río cuyas aguas se utilizan en diferentes actividades, como muestra la figura. En esta región, existe una explotación minera para extraer el oro de la reserva. Para ello, se desvía una parte del río y se usan sustancias químicas como mercurio y otros metales tóxicos; es decir, las aguas regresadas al cauce normal contienen estos productos.",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "Las alternativas que podrían ser correctas son: A. Osmótica del cauce final del río; B. Aumento de zonajes de salinidad alrededor del río y C. Reducción de tierras para el cultivo.",
+      "opciones": [
+        {
+          "texto_opcion": "A. Osmótica del cauce final del río",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "B. Aumento de zonajes de salinidad alrededor del río",
+          "es_correcta": true
+        },
+        {
+          "texto_opcion": "C. Reducción de tierras para el cultivo",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "D. Ostracismo de los habitantes del valle",
+          "es_correcta": false
+        }
+      ],
+      "fuente_chunk_ids": []
+    },
+    {
+      "area": "MATEMATICAS",
+      "competencia": "SIMULACROS",
+      "componente": "GENERAL",
+      "nivel_dificultad": "ALTO",
+      "nivel_cognitivo": "COMPRENSION_EXTRAPOLACION",
+      "enunciado": "En una región del país, se encuentra un valle atravesado por un río cuyas aguas se utilizan en diferentes actividades, como muestra la figura. En esta región, existe una explotación minera para extraer el oro de la reserva. Para ello, se desvía una parte del río y se usan sustancias químicas como mercurio y otros metales tóxicos; es decir, las aguas regresadas al cauce normal contienen estos productos.",
+      "contexto_texto_base": "En una región del país, se encuentra un valle atravesado por un río cuyas aguas se utilizan en diferentes actividades, como muestra la figura. En esta región, existe una explotación minera para extraer el oro de la reserva. Para ello, se desvía una parte del río y se usan sustancias químicas como mercurio y otros metales tóxicos; es decir, las aguas regresadas al cauce normal contienen estos productos.",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "Las alternativas que podrían ser correctas son: A. Osmótica del cauce final del río; B. Aumento de zonajes de salinidad alrededor del río y C. Reducción de tierras para el cultivo.",
+      "opciones": [
+        {
+          "texto_opcion": "A. Osmótica del cauce final del río",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "B. Aumento de zonajes de salinidad alrededor del río",
+          "es_correcta": true
+        },
+        {
+          "texto_opcion": "C. Reducción de tierras para el cultivo",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "D. Ostracismo de los habitantes del valle",
+          "es_correcta": false
+        }
+      ],
+      "fuente_chunk_ids": []
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "generatedAt": "2026-04-14T08:13:44.571Z",
+  "quality": {
+    "minQualityScore": 60,
+    "similarityThreshold": 0.92
+  },
+  "invalid": [],
+  "review": [
+    {
+      "index": 0,
+      "area": "INGLES",
+      "score": 100,
+      "accepted": true,
+      "maxSimilarityExisting": 0.3947,
+      "maxSimilarityGenerated": 0,
+      "reasons": [],
+      "preview": "¿Cómo se forman las oraciones del presente perfecto en inglés?"
+    },
+    {
+      "index": 1,
+      "area": "INGLES",
+      "score": 100,
+      "accepted": true,
+      "maxSimilarityExisting": 0.3171,
+      "maxSimilarityGenerated": 0.3049,
+      "reasons": [],
+      "preview": "¿Cuáles son los participios pasados de los verbos 'have' y 'go' en el presente perfecto?"
+    },
+    {
+      "index": 2,
+      "area": "INGLES",
+      "score": 100,
+      "accepted": true,
+      "maxSimilarityExisting": 0.2763,
+      "maxSimilarityGenerated": 0.35,
+      "reasons": [],
+      "preview": "¿Cómo se dice 'I have been to the store' en español?"
+    }
+  ],
+  "rejected": []
+}

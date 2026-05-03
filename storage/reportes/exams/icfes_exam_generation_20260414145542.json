@@ -1,0 +1,151 @@
+{
+  "generatedAt": "2026-04-14T14:55:42.387Z",
+  "apply": true,
+  "strict": false,
+  "publish": false,
+  "grade": "11",
+  "examName": "Simulacro ICFES Jornadas Base 11",
+  "examId": "38b6dc34-0b29-4b6f-b6a7-e48123fba0e9",
+  "blueprint": [
+    {
+      "id": "J1",
+      "label": "Jornada 1",
+      "durationMinutes": 270,
+      "sections": [
+        {
+          "code": "MATEMATICAS",
+          "label": "Matematicas",
+          "scored": true,
+          "area": "MATEMATICAS",
+          "questionCount": 25
+        },
+        {
+          "code": "LECTURA_CRITICA",
+          "label": "Lectura Critica",
+          "scored": true,
+          "area": "LECTURA_CRITICA",
+          "questionCount": 41
+        },
+        {
+          "code": "SOCIALES_CIUDADANAS",
+          "label": "Sociales y Ciudadanas",
+          "scored": true,
+          "area": "SOCIALES_CIUDADANAS",
+          "questionCount": 25
+        },
+        {
+          "code": "CIENCIAS_NATURALES",
+          "label": "Ciencias Naturales",
+          "scored": true,
+          "area": "CIENCIAS_NATURALES",
+          "questionCount": 29
+        },
+        {
+          "code": "SOCIOECONOMICO",
+          "label": "Cuestionario Socioeconomico",
+          "scored": false,
+          "questionCount": 11
+        }
+      ]
+    },
+    {
+      "id": "J2",
+      "label": "Jornada 2",
+      "durationMinutes": 270,
+      "sections": [
+        {
+          "code": "SOCIALES_CIUDADANAS",
+          "label": "Sociales y Ciudadanas",
+          "scored": true,
+          "area": "SOCIALES_CIUDADANAS",
+          "questionCount": 25
+        },
+        {
+          "code": "MATEMATICAS",
+          "label": "Matematicas",
+          "scored": true,
+          "area": "MATEMATICAS",
+          "questionCount": 25
+        },
+        {
+          "code": "CIENCIAS_NATURALES",
+          "label": "Ciencias Naturales",
+          "scored": true,
+          "area": "CIENCIAS_NATURALES",
+          "questionCount": 29
+        },
+        {
+          "code": "INGLES",
+          "label": "Ingles",
+          "scored": true,
+          "area": "INGLES",
+          "questionCount": 55
+        },
+        {
+          "code": "SOCIOECONOMICO",
+          "label": "Cuestionario Socioeconomico",
+          "scored": false,
+          "questionCount": 13
+        }
+      ]
+    }
+  ],
+  "official": {
+    "totalQuestions": 278,
+    "scoredQuestions": 254,
+    "socioeconomicoQuestions": 24
+  },
+  "assigned": {
+    "scoredQuestions": 42,
+    "socioeconomicoQuestions": 0
+  },
+  "availability": [
+    {
+      "area": "MATEMATICAS",
+      "required": 50,
+      "available": 22,
+      "ok": false
+    },
+    {
+      "area": "LECTURA_CRITICA",
+      "required": 41,
+      "available": 7,
+      "ok": false
+    },
+    {
+      "area": "SOCIALES_CIUDADANAS",
+      "required": 50,
+      "available": 4,
+      "ok": false
+    },
+    {
+      "area": "CIENCIAS_NATURALES",
+      "required": 58,
+      "available": 3,
+      "ok": false
+    },
+    {
+      "area": "INGLES",
+      "required": 55,
+      "available": 6,
+      "ok": false
+    }
+  ],
+  "fulfilledBySession": [
+    {
+      "sessionId": "J1",
+      "label": "Jornada 1",
+      "officialScoredQuestions": 120,
+      "officialSocioQuestions": 11,
+      "assignedScoredQuestions": 36
+    },
+    {
+      "sessionId": "J2",
+      "label": "Jornada 2",
+      "officialScoredQuestions": 134,
+      "officialSocioQuestions": 13,
+      "assignedScoredQuestions": 6
+    }
+  ],
+  "warning": "El socioeconomico se deja en blueprint de jornada/tiempo; este motor solo asigna y califica preguntas de las 5 areas academicas."
+}

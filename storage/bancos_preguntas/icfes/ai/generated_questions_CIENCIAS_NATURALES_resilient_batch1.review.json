@@ -1,0 +1,47 @@
+{
+  "generatedAt": "2026-04-14T03:25:23.458Z",
+  "quality": {
+    "minQualityScore": 78,
+    "similarityThreshold": 0.88
+  },
+  "invalid": [],
+  "review": [
+    {
+      "index": 0,
+      "area": "CIENCIAS_NATURALES",
+      "score": 80,
+      "accepted": true,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 0,
+      "reasons": [
+        "opciones_muy_cortas"
+      ],
+      "preview": "Dos recipientes contienen dos mezclas distintas. El recipiente 1 contiene agua y aceite, mientras que el recipiente 2 contiene metanol y gasolina. Al combinar los contenidos de los"
+    },
+    {
+      "index": 1,
+      "area": "CIENCIAS_NATURALES",
+      "score": 80,
+      "accepted": true,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 0.2745,
+      "reasons": [
+        "opciones_muy_cortas"
+      ],
+      "preview": "Según la información dada en la tabla, ¿cuál de las siguientes gráficas mejor describe el crecimiento poblacional de estas dos especies?"
+    },
+    {
+      "index": 2,
+      "area": "CIENCIAS_NATURALES",
+      "score": 80,
+      "accepted": true,
+      "maxSimilarityExisting": 0,
+      "maxSimilarityGenerated": 0.316,
+      "reasons": [
+        "opciones_muy_cortas"
+      ],
+      "preview": "En un experimento de laboratorio se lleva a cabo el siguiente procedimiento: 1. Se utiliza 2L de agua y las mismas cantidades de sal. Al combinar los contenidos, ¿cuál de las sigui"
+    }
+  ],
+  "rejected": []
+}

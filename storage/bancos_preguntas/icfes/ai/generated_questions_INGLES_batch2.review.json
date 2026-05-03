@@ -1,0 +1,62 @@
+{
+  "generatedAt": "2026-04-14T08:10:07.695Z",
+  "quality": {
+    "minQualityScore": 68,
+    "similarityThreshold": 0.9
+  },
+  "invalid": [],
+  "review": [
+    {
+      "index": 0,
+      "area": "INGLES",
+      "score": 100,
+      "accepted": true,
+      "maxSimilarityExisting": 0.3553,
+      "maxSimilarityGenerated": 0,
+      "reasons": [],
+      "preview": "¿Cuál de las siguientes expresiones se refiere a números cardinales en inglés?"
+    },
+    {
+      "index": 1,
+      "area": "INGLES",
+      "score": 20,
+      "accepted": false,
+      "maxSimilarityExisting": 0.36,
+      "maxSimilarityGenerated": 0.9737,
+      "reasons": [
+        "opciones_duplicadas",
+        "muy_parecida_a_generada_en_lote"
+      ],
+      "preview": "¿Cuál de las siguientes expresiones se refiere a números ordinales en inglés?"
+    },
+    {
+      "index": 2,
+      "area": "INGLES",
+      "score": 65,
+      "accepted": false,
+      "maxSimilarityExisting": 0.3229,
+      "maxSimilarityGenerated": 0.7917,
+      "reasons": [
+        "opciones_duplicadas"
+      ],
+      "preview": "¿Cuál de las siguientes expresiones se refiere a números cardinales o números ordinales en inglés?"
+    }
+  ],
+  "rejected": [
+    {
+      "index": 1,
+      "reasons": [
+        "opciones_duplicadas",
+        "muy_parecida_a_generada_en_lote"
+      ],
+      "score": 20
+    },
+    {
+      "index": 2,
+      "reasons": [
+        "opciones_duplicadas"
+      ],
+      "score": 65
+    }
+  ]
+}

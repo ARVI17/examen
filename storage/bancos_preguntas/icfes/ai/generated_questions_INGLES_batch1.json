@@ -1,0 +1,87 @@
+{
+  "generatedAt": "2026-04-14T08:06:42.209Z",
+  "provider": "openai_compatible",
+  "model": "qwen2.5:3b-instruct-q4_K_M",
+  "endpoint": "http://ollama:11434/v1/chat/completions",
+  "targetCount": 10,
+  "selectedChunks": 8,
+  "selectedAreas": [
+    "INGLES"
+  ],
+  "quality": {
+    "minQualityScore": 70,
+    "similarityThreshold": 0.9,
+    "dbCheck": true
+  },
+  "validCount": 2,
+  "invalidCount": 0,
+  "qualityAcceptedCount": 2,
+  "qualityRejectedCount": 0,
+  "invalid": [],
+  "questions": [
+    {
+      "area": "INGLES",
+      "competencia": "Sílabas Pronunciadas vs Escritas",
+      "componente": "Adjetivos",
+      "nivel_dificultad": "BAJO",
+      "nivel_cognitivo": "RECOGIDA DE INFORMACIÓN",
+      "enunciado": "¿Cuántas sílabas se pronuncian en el adjetivo 'Interesting'?",
+      "contexto_texto_base": "Interesting - / ‘intrastin'/ tres sílabas",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "'Interesting' se pronuncia como 'intrastin', lo que implica tres sílabas: in-tr-est-ing.",
+      "opciones": [
+        {
+          "texto_opcion": "Una",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "Dos",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "Tres",
+          "es_correcta": true
+        },
+        {
+          "texto_opcion": "Cuatro",
+          "es_correcta": false
+        }
+      ],
+      "fuente_chunk_ids": [
+        "A0BE0420CCA5-2"
+      ]
+    },
+    {
+      "area": "INGLES",
+      "competencia": "Adjetivos Irregulares",
+      "componente": "Comparativas y Superlativas",
+      "nivel_dificultad": "MEDIO",
+      "nivel_cognitivo": "APLICACIÓN DE CONOCIMIENTO",
+      "enunciado": "¿Cuál es la oración comparativa correcta para el adjetivo 'Funny'?",
+      "contexto_texto_base": "Funny - the funniest (Divertido - el más divertido)",
+      "grado_objetivo": "11",
+      "explicacion_respuesta": "La oración comparativa correcta para 'Funny' es: 'This is the funniest T.V programme in this channel'.",
+      "opciones": [
+        {
+          "texto_opcion": "Funny - more funny (Divertido - más divertido)",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "The most funny (El más divertido)",
+          "es_correcta": false
+        },
+        {
+          "texto_opcion": "The funniest (El más divertido)",
+          "es_correcta": true
+        },
+        {
+          "texto_opcion": "More funny (Más divertido)",
+          "es_correcta": false
+        }
+      ],
+      "fuente_chunk_ids": [
+        "A0BE0420CCA5-2"
+      ]
+    }
+  ]
+}

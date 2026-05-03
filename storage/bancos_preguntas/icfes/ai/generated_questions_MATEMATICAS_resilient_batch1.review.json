@@ -1,0 +1,37 @@
+{
+  "generatedAt": "2026-04-14T03:00:39.412Z",
+  "quality": {
+    "minQualityScore": 78,
+    "similarityThreshold": 0.88
+  },
+  "invalid": [],
+  "review": [
+    {
+      "index": 0,
+      "area": "MATEMATICAS",
+      "score": 80,
+      "accepted": true,
+      "maxSimilarityExisting": 0.3135,
+      "maxSimilarityGenerated": 0,
+      "reasons": [
+        "sin_fuentes",
+        "componente_generico_o_vacio"
+      ],
+      "preview": "En una región del país, se encuentra un valle atravesado por un río cuyas aguas se utilizan en diferentes actividades, como muestra la figura. En esta región, existe una explotació"
+    },
+    {
+      "index": 1,
+      "area": "MATEMATICAS",
+      "score": 80,
+      "accepted": true,
+      "maxSimilarityExisting": 0.2828,
+      "maxSimilarityGenerated": 0.7857,
+      "reasons": [
+        "sin_fuentes",
+        "componente_generico_o_vacio"
+      ],
+      "preview": "En una región del país, se encuentra un valle atravesado por un río cuyas aguas se utilizan en diferentes actividades, como muestra la figura. En esta región, existe una explotació"
+    }
+  ],
+  "rejected": []
+}
