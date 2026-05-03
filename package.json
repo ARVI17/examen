@@ -14,8 +14,6 @@
     "prisma:push": "prisma db push",
     "seed": "ts-node prisma/seed.ts",
     "bootstrap:admin": "ts-node scripts/bootstrap_admin.ts",
-    "backup:db": "ts-node scripts/db_backup.ts",
-    "backup:db:restore-test": "ts-node scripts/db_restore_test.ts",
     "test:integration": "ts-node --files tests/integration/run.ts",
     "ingest:icfes:cuadernillos": "ts-node scripts/ingest_icfes_cuadernillos.ts",
     "download:icfes:pasados": "ts-node scripts/download_icfes_examenes_pasados.ts",
