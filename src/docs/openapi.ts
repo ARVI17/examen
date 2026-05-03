@@ -31,6 +31,12 @@ export const openApiDocument = {
         summary: "Healthcheck"
       }
     },
+    "/health/ready": {
+      get: {
+        tags: ["System"],
+        summary: "Readiness check con verificacion de base de datos"
+      }
+    },
     "/connection-info": {
       get: {
         tags: ["System"],
@@ -119,6 +125,13 @@ export const openApiDocument = {
         security: bearerSecurity
       }
     },
+    "/api/questions/generated": {
+      get: {
+        tags: ["Questions"],
+        summary: "Listar preguntas generadas por IA",
+        security: bearerSecurity
+      }
+    },
     "/api/questions/{id}": {
       get: {
         tags: ["Questions"],
@@ -136,6 +149,13 @@ export const openApiDocument = {
         security: bearerSecurity
       }
     },
+    "/api/questions/{id}/ai-status": {
+      patch: {
+        tags: ["Questions"],
+        summary: "Aprobar/Rechazar estado de generacion IA",
+        security: bearerSecurity
+      }
+    },
     "/api/exams": {
       post: {
         tags: ["Exams"],
@@ -146,6 +166,12 @@ export const openApiDocument = {
         tags: ["Exams"],
         summary: "Listar examenes",
         security: bearerSecurity
+      }
+    },
+    "/api/exams/public": {
+      get: {
+        tags: ["Exams"],
+        summary: "Listar examenes publicos disponibles"
       }
     },
     "/api/exams/{id}": {
@@ -177,6 +203,18 @@ export const openApiDocument = {
         security: bearerSecurity
       }
     },
+    "/api/exams/{id}/assignments": {
+      post: {
+        tags: ["Exams"],
+        summary: "Crear asignacion de examen (GLOBAL/SCHOOL/GROUP/STUDENT)",
+        security: bearerSecurity
+      },
+      get: {
+        tags: ["Exams"],
+        summary: "Listar asignaciones de examen",
+        security: bearerSecurity
+      }
+    },
     "/api/attempts/start": {
       post: {
         tags: ["Attempts"],
@@ -195,6 +233,37 @@ export const openApiDocument = {
       post: {
         tags: ["Attempts"],
         summary: "Enviar y calificar intento",
+        security: bearerSecurity
+      }
+    },
+    "/api/attempts/public/start": {
+      post: {
+        tags: ["Attempts"],
+        summary: "Iniciar intento publico"
+      }
+    },
+    "/api/attempts/public/{id}": {
+      get: {
+        tags: ["Attempts"],
+        summary: "Detalle de intento publico"
+      }
+    },
+    "/api/attempts/public/{id}/answer": {
+      post: {
+        tags: ["Attempts"],
+        summary: "Registrar respuesta en intento publico"
+      }
+    },
+    "/api/attempts/public/{id}/submit": {
+      post: {
+        tags: ["Attempts"],
+        summary: "Enviar intento publico y calificar"
+      }
+    },
+    "/api/attempts/{id}/session2/enable": {
+      post: {
+        tags: ["Attempts"],
+        summary: "Habilitar jornada 2 en intento estricto",
         security: bearerSecurity
       }
     },
@@ -219,6 +288,30 @@ export const openApiDocument = {
         security: bearerSecurity
       }
     },
+    "/api/schools": {
+      get: {
+        tags: ["Schools"],
+        summary: "Listar colegios",
+        security: bearerSecurity
+      },
+      post: {
+        tags: ["Schools"],
+        summary: "Crear colegio",
+        security: bearerSecurity
+      }
+    },
+    "/api/schools/{id}/groups": {
+      get: {
+        tags: ["Schools"],
+        summary: "Listar grupos por colegio",
+        security: bearerSecurity
+      },
+      post: {
+        tags: ["Schools"],
+        summary: "Crear grupo en colegio",
+        security: bearerSecurity
+      }
+    },
     "/api/reports/student/{numero_identificacion}/summary": {
       get: {
         tags: ["Reports"],
@@ -230,6 +323,27 @@ export const openApiDocument = {
       get: {
         tags: ["Reports"],
         summary: "Resultados por area de estudiante",
+        security: bearerSecurity
+      }
+    },
+    "/api/reports/student/{numero_identificacion}/performance": {
+      get: {
+        tags: ["Reports"],
+        summary: "Reporte de desempeno del estudiante",
+        security: bearerSecurity
+      }
+    },
+    "/api/reports/classroom/summary": {
+      get: {
+        tags: ["Reports"],
+        summary: "Resumen consolidado por aula",
+        security: bearerSecurity
+      }
+    },
+    "/api/reports/questions/readiness": {
+      get: {
+        tags: ["Reports"],
+        summary: "Cobertura de banco por area",
         security: bearerSecurity
       }
     },
@@ -362,6 +476,7 @@ export const openApiDocument = {
     { name: "Exams" },
     { name: "Attempts" },
     { name: "Reports" },
+    { name: "Schools" },
     { name: "Performance Levels" },
     { name: "Files" }
   ]

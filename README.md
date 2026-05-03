@@ -195,8 +195,63 @@ API:
 
 - `http://localhost:4000`
 - `http://localhost:4000/health`
+- `http://localhost:4000/health/ready`
 - `http://localhost:4000/connection-info`
 - `http://localhost:4000/api/docs`
+
+### Nuevos comandos utiles (multi-colegio / ingesta / MCP)
+
+```bash
+# Ingesta unificada (dry-run)
+npm run ingest:kb
+
+# Ingesta unificada aplicando cambios en BD
+npm run ingest:kb:apply
+
+# Servidor MCP (stdio JSON-RPC)
+npm run mcp:server
+
+# Backup PostgreSQL (archivo .sql.gz + manifest)
+npm run backup:db
+
+# Restore test del ultimo backup (o -- --file=storage/backups/postgres/<archivo>.sql.gz)
+npm run backup:db:restore-test
+
+# Alternativa recomendada en Windows sin Node local:
+powershell -ExecutionPolicy Bypass -File .\scripts\db_backup.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\db_restore_test.ps1
+```
+
+Opciones utiles de ingesta para volumen alto:
+
+```bash
+# exigir mas evidencia antes de aceptar claves "inciertas"
+npm run ingest:kb:apply -- --min-uncertain-key-answers=20
+
+# desactivar OCR de imagenes de claves (si quieres solo tablas xls/xlsx/pdf/texto)
+npm run ingest:kb:apply -- --no-ocr-keys-images
+```
+
+El log `storage/reportes/ingestion_kb_log.json` incluye metricas de clasificacion:
+`keyFilesClassifiedAsKeyTable`, `keyFilesClassifiedAsStatement`, `keyFilesClassifiedAsUncertain`,
+`keyFilesSkippedByClassification` y detalle por archivo en `keyClassifications`.
+
+## Hardening de produccion aplicado
+
+- Rotacion JWT:
+  - `JWT_SECRETS="secreto_actual,secreto_anterior_1,secreto_anterior_2"`
+  - El backend firma con el primer secreto y valida con toda la lista.
+- Rate limit diferenciado:
+  - `AUTH_*` para login/register
+  - `PUBLIC_SIMULATOR_*` para flujo publico de simulador
+  - `ADMIN_RATE_LIMIT_*` para rutas autenticadas administrativas
+- Monitoreo y alertas:
+  - `SLOW_REQUEST_WARN_MS` alerta en logs para requests lentas
+  - `SLOW_QUERY_WARN_MS` alerta en logs para queries lentas de Prisma
+  - `GET /health/ready` verifica conectividad real a DB
+- Backups/restore:
+  - `npm run backup:db`
+  - `npm run backup:db:restore-test`
 
 ## Acceso de estudiantes por IP local
 
@@ -322,6 +377,74 @@ storage/bancos_preguntas/icfes/audits/
 - `GET /api/reports/dashboard/overview`
 - `GET /api/reports/files/coverage`
 - `GET /api/reports/files/coverage/export.csv`
+- `GET /api/exams/public`
+- `POST /api/exams/:id/assignments`
+- `GET /api/exams/:id/assignments`
+- `GET /api/questions/generated`
+- `PATCH /api/questions/:id/ai-status`
+- `GET /api/schools`
+- `POST /api/schools`
+- `POST /api/schools/:id/groups`
+- `POST /api/students/bulk`
+- `GET /api/students/bulk/template.csv`
+- `POST /api/attempts/public/start`
+- `POST /api/attempts/public/:id/answer`
+- `POST /api/attempts/public/:id/submit`
+- `GET /api/attempts/public/:id`
+- `POST /api/attempts/public/:id/session1/complete`
+- `POST /api/attempts/:id/session2/enable`
+- `GET /api/attempts/pending-session2`
+- `GET /api/reports/classroom/summary`
+- `GET /api/reports/school/:schoolId/summary`
+- `GET /api/reports/group/:groupId/summary`
+- `GET /api/reports/questions/readiness`
+- `GET /api/reports/files/material-local/coverage`
+- `GET /api/reports/student/:numero_identificacion/performance`
+- `GET /api/reports/student/:numero_identificacion/performance/export.csv`
+
+## MCP para IA (preparado)
+
+Script MCP por stdio: `scripts/mcp_exam_server.ts`
+
+Herramientas disponibles:
+
+- `buscar_materiales`
+- `buscar_preguntas`
+- `obtener_pregunta_por_id`
+- `listar_temas`
+- `listar_bancos_preguntas`
+- `obtener_contexto_para_generar_preguntas`
+- `validar_pregunta`
+- `guardar_generacion_ia`
+- `crear_pregunta_generada`
+
+## Prueba real paso a paso
+
+1. Ejecuta migraciones y seed:
+   - `npm run prisma:migrate:deploy`
+   - `npm run seed`
+2. Crea colegio:
+   - `POST /api/schools`
+3. Crea grupo del colegio:
+   - `POST /api/schools/:id/groups`
+4. Carga estudiantes:
+   - `POST /api/students/bulk` con CSV o `POST /api/students`
+5. Carga base de conocimiento:
+   - `npm run ingest:kb:apply`
+6. Crea examen/simulacro:
+   - `POST /api/exams`
+   - `POST /api/exams/:id/questions`
+7. Publica y asigna simulacro:
+   - `PATCH /api/exams/:id` (`estado=PUBLICADO`)
+   - `POST /api/exams/:id/assignments`
+8. Estudiante inicia intento:
+   - `POST /api/attempts/public/start`
+   - `POST /api/attempts/public/:id/answer`
+   - `POST /api/attempts/public/:id/submit`
+9. Revisa resultados:
+   - `GET /api/reports/student/:numero_identificacion/performance`
+   - `GET /api/reports/classroom/summary`
+   - `GET /api/reports/school/:schoolId/summary`
 
 ## Seguridad de registro
 
