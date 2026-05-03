@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, QuestionGenerationStatus } from "@prisma/client";
 import prisma from "../../common/prisma";
 import { QuestionCreateInput, QuestionUpdateInput } from "./questions.types";
 
@@ -169,6 +169,40 @@ export class QuestionsRepository {
     return prisma.question.update({
       where: { id },
       data: { estado: false }
+    });
+  }
+
+  static listGeneratedQuestions(
+    where: Prisma.QuestionWhereInput,
+    skip: number,
+    take: number
+  ) {
+    return Promise.all([
+      prisma.question.count({ where }),
+      prisma.question.findMany({
+        where,
+        skip,
+        take,
+        include: {
+          options: { where: { isArchived: false }, orderBy: { orden: "asc" } },
+          generation: true,
+          source: true
+        },
+        orderBy: { createdAt: "desc" }
+      })
+    ]);
+  }
+
+  static findGenerationById(generationId: string) {
+    return prisma.questionGeneration.findUnique({
+      where: { id: generationId }
+    });
+  }
+
+  static updateGenerationStatus(generationId: string, status: QuestionGenerationStatus) {
+    return prisma.questionGeneration.update({
+      where: { id: generationId },
+      data: { status }
     });
   }
 }

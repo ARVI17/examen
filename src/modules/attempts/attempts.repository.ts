@@ -1,11 +1,16 @@
-import { AttemptStatus, QuestionArea } from "@prisma/client";
+import { AttemptStatus, Prisma, QuestionArea } from "@prisma/client";
 import prisma from "../../common/prisma";
+import { AttemptPresentation } from "./attempts.types";
 
 export class AttemptsRepository {
   static findExamById(pruebaId: string) {
     return prisma.exam.findUnique({
       where: { id: pruebaId },
       include: {
+        assignments: {
+          where: { isActive: true },
+          orderBy: { createdAt: "desc" }
+        },
         examQuestions: {
           orderBy: { orden: "asc" },
           include: {
@@ -18,7 +23,17 @@ export class AttemptsRepository {
                   orderBy: {
                     orden: "asc"
                   }
-                }
+                },
+                topicLinks: {
+                  include: {
+                    topic: {
+                      include: {
+                        subject: true
+                      }
+                    }
+                  }
+                },
+                subject: true
               }
             }
           }
@@ -27,21 +42,63 @@ export class AttemptsRepository {
     });
   }
 
+  static findStudentByDocument(numeroIdentificacion: string) {
+    return prisma.student.findUnique({
+      where: { numeroIdentificacion }
+    });
+  }
+
+  static countStudentAttemptsByExam(payload: { estudianteId: string; pruebaId: string; assignmentId?: string | null }) {
+    return prisma.examAttempt.count({
+      where: {
+        estudianteId: payload.estudianteId,
+        pruebaId: payload.pruebaId,
+        assignmentId: payload.assignmentId ?? undefined,
+        estado: {
+          not: AttemptStatus.ANULADA
+        }
+      }
+    });
+  }
+
+  static findOpenAttemptByStudentExam(payload: { estudianteId: string; pruebaId: string }) {
+    return prisma.examAttempt.findFirst({
+      where: {
+        estudianteId: payload.estudianteId,
+        pruebaId: payload.pruebaId,
+        estado: {
+          in: [AttemptStatus.PENDIENTE, AttemptStatus.INICIADA]
+        }
+      },
+      include: {
+        estudiante: true,
+        prueba: true,
+        assignment: true
+      },
+      orderBy: { createdAt: "desc" }
+    });
+  }
+
   static createAttempt(data: {
     estudianteId: string;
     pruebaId: string;
+    assignmentId?: string | null;
     estado: AttemptStatus;
+    presentacion?: AttemptPresentation | null;
   }) {
     return prisma.examAttempt.create({
       data: {
         estudianteId: data.estudianteId,
         pruebaId: data.pruebaId,
+        assignmentId: data.assignmentId,
         estado: data.estado,
+        presentacion: data.presentacion as unknown as Prisma.InputJsonValue,
         fechaInicio: new Date()
       },
       include: {
         estudiante: true,
-        prueba: true
+        prueba: true,
+        assignment: true
       }
     });
   }
@@ -52,6 +109,7 @@ export class AttemptsRepository {
       include: {
         estudiante: true,
         prueba: true,
+        assignment: true,
         studentAnswers: {
           include: {
             pregunta: true,
@@ -67,7 +125,9 @@ export class AttemptsRepository {
     return prisma.examAttempt.findUnique({
       where: { id },
       include: {
-        prueba: true
+        prueba: true,
+        assignment: true,
+        estudiante: true
       }
     });
   }
@@ -129,6 +189,7 @@ export class AttemptsRepository {
     return prisma.examAttempt.findUnique({
       where: { id },
       include: {
+        assignment: true,
         estudiante: true,
         prueba: {
           include: {
@@ -155,6 +216,7 @@ export class AttemptsRepository {
       where: { estudianteId: studentId },
       include: {
         prueba: true,
+        assignment: true,
         areaResults: true
       },
       orderBy: { createdAt: "desc" }
@@ -166,6 +228,7 @@ export class AttemptsRepository {
       where: { pruebaId: examId },
       include: {
         estudiante: true,
+        assignment: true,
         areaResults: true
       },
       orderBy: { createdAt: "desc" }
@@ -176,6 +239,54 @@ export class AttemptsRepository {
     return prisma.performanceLevel.findMany({
       where: { isActive: true },
       orderBy: { minimo: "asc" }
+    });
+  }
+
+  static updateAttemptPresentation(attemptId: string, presentacion: AttemptPresentation) {
+    return prisma.examAttempt.update({
+      where: { id: attemptId },
+      data: {
+        presentacion: presentacion as unknown as Prisma.InputJsonValue
+      }
+    });
+  }
+
+  static markAttemptStopped(
+    attemptId: string,
+    payload: {
+      presentacion: AttemptPresentation;
+      motivo?: string;
+    }
+  ) {
+    return prisma.examAttempt.update({
+      where: { id: attemptId },
+      data: {
+        estado: AttemptStatus.ANULADA,
+        observaciones: payload.motivo,
+        fechaFin: new Date(),
+        presentacion: payload.presentacion as unknown as Prisma.InputJsonValue
+      },
+      include: {
+        estudiante: true,
+        prueba: true,
+        assignment: true
+      }
+    });
+  }
+
+  static listPendingSessionTwo(payload: { limit: number }) {
+    return prisma.examAttempt.findMany({
+      where: {
+        estado: {
+          in: [AttemptStatus.PENDIENTE, AttemptStatus.INICIADA]
+        }
+      },
+      include: {
+        estudiante: true,
+        prueba: true
+      },
+      orderBy: { createdAt: "desc" },
+      take: payload.limit
     });
   }
 
@@ -212,7 +323,8 @@ export class AttemptsRepository {
         },
         include: {
           estudiante: true,
-          prueba: true
+          prueba: true,
+          assignment: true
         }
       });
 

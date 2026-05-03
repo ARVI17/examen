@@ -13,6 +13,11 @@ export class ExamController {
     return sendSuccess(res, "Listado de pruebas", data);
   }
 
+  static async listPublic(req: Request, res: Response) {
+    const data = await ExamService.listPublic(req.query as Record<string, unknown>);
+    return sendSuccess(res, "Listado de pruebas disponibles", data);
+  }
+
   static async getById(req: Request, res: Response) {
     const data = await ExamService.getById(req.params.id);
     return sendSuccess(res, "Detalle de prueba", data);
@@ -36,5 +41,15 @@ export class ExamController {
   static async listQuestions(req: Request, res: Response) {
     const data = await ExamService.listQuestions(req.params.id);
     return sendSuccess(res, "Preguntas de la prueba", data);
+  }
+
+  static async createAssignment(req: Request, res: Response) {
+    const data = await ExamService.createAssignment(req.params.id, req.body, req.user?.id);
+    return sendSuccess(res, "Asignacion creada", data, 201);
+  }
+
+  static async listAssignments(req: Request, res: Response) {
+    const data = await ExamService.listAssignments(req.params.id);
+    return sendSuccess(res, "Asignaciones de prueba", data);
   }
 }

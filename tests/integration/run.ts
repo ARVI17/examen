@@ -55,9 +55,11 @@ const main = async () => {
   let createdQuestionId = "";
   let createdExamId = "";
   let createdAttemptId = "";
+  let publicAttemptId = "";
   let createdFileId = "";
   let selectedOptionId = "";
   const testDocument = `IT-${runId}`;
+  const publicDocument = `PUB-${runId}`;
   const testEmail = `it.docente.${runId}@saber11.local`;
 
   await run("Auth | Login admin", async () => {
@@ -187,6 +189,38 @@ const main = async () => {
     ensure(response.body?.data?.addedCount === 1, "no se asigno la pregunta");
   });
 
+  await run("Exams | Publish exam", async () => {
+    const response = await client
+      .patch(`/api/exams/${createdExamId}`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        estado: "PUBLICADO"
+      });
+
+    ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
+    ensure(response.body?.data?.estado === "PUBLICADO", "estado de prueba no publicado");
+  });
+
+  await run("Exams | Create GLOBAL assignment", async () => {
+    const response = await client
+      .post(`/api/exams/${createdExamId}/assignments`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        scope: "GLOBAL",
+        max_attempts: 2,
+        allow_retake: true
+      });
+
+    ensure(response.status === 201, `status esperado 201, recibido ${response.status}`);
+    ensure(response.body?.data?.scope === "GLOBAL", "asignacion global no creada");
+  });
+
+  await run("Exams | Public list", async () => {
+    const response = await client.get("/api/exams/public?grado_objetivo=11");
+    ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
+    ensure(Array.isArray(response.body?.data?.items), "items de examenes publicos no es arreglo");
+  });
+
   await run("Attempts | Start attempt with create-or-find student", async () => {
     const response = await client
       .post("/api/attempts/start")
@@ -205,6 +239,50 @@ const main = async () => {
     ensure(response.status === 201, `status esperado 201, recibido ${response.status}`);
     createdAttemptId = response.body?.data?.attempt?.id;
     ensure(Boolean(createdAttemptId), "attempt id no generado");
+  });
+
+  await run("Students | Create student for public flow", async () => {
+    const response = await client
+      .post("/api/students")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        nombres: "Publico",
+        apellidos: "Integracion",
+        tipo_identificacion: "TI",
+        numero_identificacion: publicDocument,
+        grado: "11"
+      });
+
+    ensure([200, 201].includes(response.status), `status esperado 200|201, recibido ${response.status}`);
+  });
+
+  await run("Attempts | Public start with registered student", async () => {
+    const response = await client.post("/api/attempts/public/start").send({
+      prueba_id: createdExamId,
+      estudiante_registrado: {
+        numero_identificacion: publicDocument
+      }
+    });
+
+    ensure(response.status === 201, `status esperado 201, recibido ${response.status}`);
+    ensure(response.body?.data?.attempt?.id, "attempt publico no generado");
+    publicAttemptId = response.body?.data?.attempt?.id;
+  });
+
+  await run("Attempts | Public answer", async () => {
+    const response = await client.post(`/api/attempts/public/${publicAttemptId}/answer`).send({
+      pregunta_id: createdQuestionId,
+      opcion_id_seleccionada: selectedOptionId
+    });
+
+    ensure(response.status === 201, `status esperado 201, recibido ${response.status}`);
+  });
+
+  await run("Attempts | Public submit", async () => {
+    const response = await client.post(`/api/attempts/public/${publicAttemptId}/submit`).send({});
+
+    ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
+    ensure(response.body?.data?.porcentajeTotal >= 0, "porcentaje total no retornado en submit publico");
   });
 
   await run("Attempts | Answer question", async () => {
@@ -237,6 +315,15 @@ const main = async () => {
 
     ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
     ensure(response.body?.data?.totalAttempts >= 1, "summary no retorna intentos");
+  });
+
+  await run("Reports | Classroom summary", async () => {
+    const response = await client
+      .get("/api/reports/classroom/summary?grado=11")
+      .set("Authorization", `Bearer ${adminToken}`);
+
+    ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
+    ensure(response.body?.data?.totals?.studentsWithAttempts >= 1, "classroom summary sin estudiantes");
   });
 
   await run("Files | Soft delete uploaded file", async () => {

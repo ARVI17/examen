@@ -3,6 +3,31 @@ import { sendSuccess } from "../../common/utils/api-response";
 import { StudentService } from "./students.service";
 
 export class StudentController {
+  static async bulkCreate(req: Request, res: Response) {
+    const data = await StudentService.bulkCreate(
+      {
+        fileBuffer: req.file?.buffer,
+        csvText: typeof req.body?.csv === "string" ? req.body.csv : undefined,
+        delimiter: typeof req.body?.delimiter === "string" ? req.body.delimiter : undefined
+      },
+      req.user?.id
+    );
+
+    return sendSuccess(res, "Carga masiva de estudiantes procesada", data, 201);
+  }
+
+  static async bulkTemplate(_req: Request, res: Response) {
+    const csv = [
+      "nombres,apellidos,tipo_identificacion,numero_identificacion,grado,grupo,institucion,email",
+      "Ana,Perez,TI,TI-9001,11,11-A,Colegio Demo,ana.perez@example.com",
+      "Luis,Rojas,CC,CC-9002,11,11-B,Colegio Demo,luis.rojas@example.com"
+    ].join("\n");
+
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", "attachment; filename=\"students_bulk_template.csv\"");
+    return res.status(200).send(`${csv}\n`);
+  }
+
   static async create(req: Request, res: Response) {
     const data = await StudentService.createOrFind(req.body, req.user?.id);
 

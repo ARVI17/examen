@@ -8,6 +8,11 @@ export class AttemptController {
     return sendSuccess(res, "Intento creado", data, 201);
   }
 
+  static async publicStart(req: Request, res: Response) {
+    const data = await AttemptService.start(req.body);
+    return sendSuccess(res, "Intento creado", data, 201);
+  }
+
   static async answer(req: Request, res: Response) {
     const data = await AttemptService.answer(req.params.id, req.body, req.user?.id);
     return sendSuccess(res, "Respuesta registrada", data, 201);
@@ -18,8 +23,18 @@ export class AttemptController {
     return sendSuccess(res, "Intento enviado y calificado", data);
   }
 
+  static async publicSubmit(req: Request, res: Response) {
+    const data = await AttemptService.submit(req.params.id);
+    return sendSuccess(res, "Intento enviado y calificado", data);
+  }
+
   static async getById(req: Request, res: Response) {
     const data = await AttemptService.getById(req.params.id);
+    return sendSuccess(res, "Detalle de intento", data);
+  }
+
+  static async publicGetById(req: Request, res: Response) {
+    const data = await AttemptService.getPublicById(req.params.id);
     return sendSuccess(res, "Detalle de intento", data);
   }
 
@@ -31,5 +46,42 @@ export class AttemptController {
   static async getByExam(req: Request, res: Response) {
     const data = await AttemptService.getByExam(req.params.examId);
     return sendSuccess(res, "Intentos por prueba", data);
+  }
+
+  static async stop(req: Request, res: Response) {
+    const data = await AttemptService.stop(req.params.id, req.body, req.user?.id);
+    return sendSuccess(res, "Intento detenido", data);
+  }
+
+  static async publicStop(req: Request, res: Response) {
+    const data = await AttemptService.stop(req.params.id, req.body);
+    return sendSuccess(res, "Intento detenido", data);
+  }
+
+  static async restart(req: Request, res: Response) {
+    const data = await AttemptService.restart(req.params.id, req.body, req.user?.id);
+    return sendSuccess(res, "Intento reiniciado", data);
+  }
+
+  static async publicRestart(req: Request, res: Response) {
+    const data = await AttemptService.restart(req.params.id, req.body);
+    return sendSuccess(res, "Intento reiniciado", data);
+  }
+
+  static async completeSessionOne(req: Request, res: Response) {
+    const data = await AttemptService.completeSessionOne(req.params.id);
+    return sendSuccess(res, "Jornada 1 completada", data);
+  }
+
+  static async enableSessionTwo(req: Request, res: Response) {
+    const data = await AttemptService.enableSessionTwo(req.params.id, req.user?.id);
+    return sendSuccess(res, "Jornada 2 habilitada", data);
+  }
+
+  static async pendingSessionTwo(req: Request, res: Response) {
+    const data = await AttemptService.pendingSessionTwo(
+      req.query as unknown as { grado?: string; grupo?: string; limit: number }
+    );
+    return sendSuccess(res, "Intentos pendientes de jornada 2", data);
   }
 }

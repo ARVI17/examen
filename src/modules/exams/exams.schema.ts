@@ -175,6 +175,27 @@ export const listExamsQuerySchema = z
     gradoObjetivo: value.grado_objetivo
   }));
 
+export const listPublicExamsQuerySchema = z
+  .object({
+    page: z.coerce.number().int().positive().optional(),
+    limit: z.coerce.number().int().positive().optional(),
+    tipo_prueba: optionalExamTypeSchema,
+    grado_objetivo: optionalGradeSchema,
+    school_id: z.string().uuid().optional(),
+    group_id: z.string().uuid().optional(),
+    student_id: z.string().uuid().optional(),
+    numero_identificacion: z.string().min(3).max(40).optional()
+  })
+  .transform((value) => ({
+    ...value,
+    tipoPrueba: value.tipo_prueba,
+    gradoObjetivo: value.grado_objetivo,
+    schoolId: value.school_id,
+    groupId: value.group_id,
+    studentId: value.student_id,
+    numeroIdentificacion: value.numero_identificacion
+  }));
+
 export const addExamQuestionsSchema = z
   .object({
     questions: z.array(
@@ -198,4 +219,45 @@ export const addExamQuestionsSchema = z
       area: question.area,
       metadata: question.metadata
     }))
+  }));
+
+export const createExamAssignmentSchema = z
+  .object({
+    scope: z.enum(["GLOBAL", "SCHOOL", "GROUP", "STUDENT"]).default("GLOBAL"),
+    school_id: z.string().uuid().optional(),
+    group_id: z.string().uuid().optional(),
+    student_id: z.string().uuid().optional(),
+    starts_at: z.string().datetime().optional(),
+    ends_at: z.string().datetime().optional(),
+    max_attempts: z.number().int().positive().optional(),
+    allow_retake: z.boolean().optional(),
+    is_active: z.boolean().optional()
+  })
+  .superRefine((value, ctx) => {
+    if (value.scope === "SCHOOL" && !value.school_id) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "school_id es obligatorio para scope SCHOOL" });
+    }
+    if (value.scope === "GROUP" && (!value.school_id || !value.group_id)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "school_id y group_id son obligatorios para scope GROUP"
+      });
+    }
+    if (value.scope === "STUDENT" && !value.student_id) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "student_id es obligatorio para scope STUDENT" });
+    }
+    if (value.starts_at && value.ends_at && new Date(value.ends_at).getTime() < new Date(value.starts_at).getTime()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "ends_at no puede ser menor a starts_at" });
+    }
+  })
+  .transform((value) => ({
+    scope: value.scope,
+    schoolId: value.school_id,
+    groupId: value.group_id,
+    studentId: value.student_id,
+    startsAt: value.starts_at ? new Date(value.starts_at) : undefined,
+    endsAt: value.ends_at ? new Date(value.ends_at) : undefined,
+    maxAttempts: value.max_attempts,
+    allowRetake: value.allow_retake,
+    isActive: value.is_active
   }));

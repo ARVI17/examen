@@ -2,9 +2,12 @@ import "express-async-errors";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
+import path from "path";
 import { Request } from "express";
 import swaggerUi from "swagger-ui-express";
 import { AppError } from "./common/errors/AppError";
+import logger from "./common/logger";
+import prisma from "./common/prisma";
 import { httpLogger } from "./common/logger";
 import { getLanUrls } from "./common/utils/network";
 import { config } from "./config";
@@ -106,6 +109,29 @@ app.use(
 app.use(express.json({ limit: "2mb" }));
 app.use(sanitizeRequest);
 app.use(apiRateLimiter);
+app.use((req, res, next) => {
+  const startedAt = process.hrtime.bigint();
+
+  res.on("finish", () => {
+    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+    if (durationMs >= config.slowRequestWarnMs) {
+      logger.warn(
+        {
+          requestId: req.id,
+          method: req.method,
+          url: req.originalUrl ?? req.url,
+          statusCode: res.statusCode,
+          durationMs: Number(durationMs.toFixed(2))
+        },
+        "Slow request detectada"
+      );
+    }
+  });
+
+  next();
+});
+app.use("/admin", express.static(path.resolve(process.cwd(), "public", "admin")));
+app.use("/simulador", express.static(path.resolve(process.cwd(), "public", "simulador")));
 
 app.get("/", (_req, res) => {
   res.json({
@@ -113,7 +139,9 @@ app.get("/", (_req, res) => {
     message: "Saber11 backend activo",
     data: {
       status: "ok",
-      connectionInfoUrl: "/connection-info"
+      connectionInfoUrl: "/connection-info",
+      adminWebUrl: "/admin",
+      simulatorWebUrl: "/simulador"
     }
   });
 });
@@ -131,6 +159,7 @@ app.get("/health", (_req, res) => {
 app.get("/connection-info", (req, res) => {
   const { requestBaseUrl, preferredBaseUrl } = buildPreferredBaseUrl(req);
   const localUrls = [`http://localhost:${config.port}`, `http://127.0.0.1:${config.port}`];
+  const lanUrls = getLanUrls(config.port);
 
   res.json({
     success: true,
@@ -142,11 +171,44 @@ app.get("/connection-info", (req, res) => {
       docsUrl: `${requestBaseUrl}/api/docs`,
       healthUrl: `${requestBaseUrl}/health`,
       preferredApiBaseUrl: `${preferredBaseUrl}/api`,
+      adminWebUrl: `${requestBaseUrl}/admin`,
+      simulatorWebUrl: `${requestBaseUrl}/simulador`,
+      preferredAdminWebUrl: `${preferredBaseUrl}/admin`,
+      preferredSimulatorWebUrl: `${preferredBaseUrl}/simulador`,
       localUrls,
-      lanUrls: getLanUrls(config.port),
+      lanUrls,
+      sharedLanUrls: lanUrls,
       generatedAt: new Date().toISOString()
     }
   });
+});
+
+app.get("/health/ready", async (_req, res) => {
+  const startedAt = process.hrtime.bigint();
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+
+    return res.json({
+      success: true,
+      message: "Readiness check ok",
+      data: {
+        database: "up",
+        dbResponseMs: Number(durationMs.toFixed(2)),
+        uptimeSeconds: Math.floor(process.uptime())
+      }
+    });
+  } catch (error) {
+    logger.error({ err: error }, "Readiness check fallo por base de datos");
+    return res.status(503).json({
+      success: false,
+      message: "Readiness check failed",
+      error: {
+        code: "READINESS_DB_UNAVAILABLE",
+        details: null
+      }
+    });
+  }
 });
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));

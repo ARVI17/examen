@@ -1,6 +1,8 @@
 import { Router } from "express";
+import multer from "multer";
 import { RoleCode } from "@prisma/client";
 import { authenticate, authorize } from "../../middlewares/auth.middleware";
+import { adminRouteRateLimiter } from "../../middlewares/rate-limit.middleware";
 import { validateRequest } from "../../middlewares/validation.middleware";
 import { StudentController } from "./students.controller";
 import {
@@ -12,9 +14,17 @@ import {
 } from "./students.schema";
 
 const router = Router();
+const bulkUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 4 * 1024 * 1024
+  }
+});
 
-router.use(authenticate, authorize(RoleCode.ADMIN, RoleCode.DOCENTE));
+router.use(authenticate, authorize(RoleCode.ADMIN, RoleCode.DOCENTE), adminRouteRateLimiter);
 
+router.get("/bulk/template.csv", StudentController.bulkTemplate);
+router.post("/bulk", bulkUpload.single("file"), StudentController.bulkCreate);
 router.post("/", validateRequest({ body: createStudentSchema }), StudentController.create);
 router.get("/", validateRequest({ query: listStudentsQuerySchema }), StudentController.list);
 router.get(

@@ -9,12 +9,56 @@ export const examReportParamsSchema = z.object({
   examId: z.string().uuid("examId invalido")
 });
 
-export const reportsFilterQuerySchema = z.object({
-  grado: z.string().optional(),
-  from: z.string().datetime().optional(),
-  to: z.string().datetime().optional(),
-  limit: z.coerce.number().int().positive().max(100).optional()
+export const schoolReportParamsSchema = z.object({
+  schoolId: z.string().uuid("schoolId invalido")
 });
+
+export const groupReportParamsSchema = z.object({
+  groupId: z.string().uuid("groupId invalido")
+});
+
+export const reportsFilterQuerySchema = z
+  .object({
+    grado: z.string().optional(),
+    school_id: z.string().uuid().optional(),
+    group_id: z.string().uuid().optional(),
+    from: z.string().datetime().optional(),
+    to: z.string().datetime().optional(),
+    limit: z.coerce.number().int().positive().max(100).optional()
+  })
+  .transform((value) => ({
+    ...value,
+    schoolId: value.school_id,
+    groupId: value.group_id
+  }));
+
+export const classroomSummaryQuerySchema = z
+  .object({
+    grado: z.string().optional(),
+    grupo: z.string().optional(),
+    institucion: z.string().optional(),
+    school_id: z.string().uuid().optional(),
+    group_id: z.string().uuid().optional(),
+    from: z.string().datetime().optional(),
+    to: z.string().datetime().optional(),
+    limit: z.coerce.number().int().positive().max(5000).optional()
+  })
+  .transform((value) => ({
+    ...value,
+    schoolId: value.school_id,
+    groupId: value.group_id,
+    limit: value.limit ?? 3000
+  }));
+
+export const questionReadinessQuerySchema = z
+  .object({
+    grado_objetivo: z.string().optional(),
+    target_per_area: z.coerce.number().int().positive().optional()
+  })
+  .transform((value) => ({
+    gradoObjetivo: value.grado_objetivo,
+    targetPerArea: value.target_per_area ?? 120
+  }));
 
 export const filesCoverageQuerySchema = z
   .object({
@@ -47,3 +91,4 @@ export const filesCoverageQuerySchema = z
     onlySaber11: value.only_saber11 === undefined ? true : value.only_saber11 === "true",
     activo: value.activo === undefined ? undefined : value.activo === "true"
   }));
+

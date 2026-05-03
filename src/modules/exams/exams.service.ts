@@ -5,7 +5,7 @@ import { createAuditLog } from "../../common/utils/audit";
 import { getPagination } from "../../common/utils/pagination";
 import { QuestionsRepository } from "../questions/questions.repository";
 import { ExamsRepository } from "./exams.repository";
-import { ExamCreateInput, ExamQuestionAssignment, ExamUpdateInput } from "./exams.types";
+import { ExamAssignmentCreateInput, ExamCreateInput, ExamQuestionAssignment, ExamUpdateInput } from "./exams.types";
 import { normalizeExamType, normalizeGradoObjetivo } from "./exams.utils";
 
 export class ExamService {
@@ -90,6 +90,121 @@ export class ExamService {
       limit: pagination.limit,
       total,
       items: exams
+    };
+  }
+
+  static async listPublic(query: Record<string, unknown>) {
+    const pagination = getPagination(query);
+    const typedQuery = query as {
+      tipoPrueba?: string;
+      gradoObjetivo?: string;
+      schoolId?: string;
+      groupId?: string;
+      studentId?: string;
+      numeroIdentificacion?: string;
+    };
+
+    let context = {
+      schoolId: typedQuery.schoolId,
+      groupId: typedQuery.groupId,
+      studentId: typedQuery.studentId
+    };
+
+    if (typedQuery.numeroIdentificacion && !context.studentId) {
+      const student = await ExamsRepository.findStudentByDocument(typedQuery.numeroIdentificacion);
+      if (student && !student.isDeleted) {
+        context = {
+          schoolId: context.schoolId ?? student.schoolId ?? undefined,
+          groupId: context.groupId ?? student.groupId ?? undefined,
+          studentId: student.id
+        };
+      }
+    }
+
+    if (context.studentId && (!context.schoolId || !context.groupId)) {
+      const student = await ExamsRepository.findStudentById(context.studentId);
+      if (student && !student.isDeleted) {
+        context = {
+          schoolId: context.schoolId ?? student.schoolId ?? undefined,
+          groupId: context.groupId ?? student.groupId ?? undefined,
+          studentId: context.studentId
+        };
+      }
+    }
+
+    const where: Prisma.ExamWhereInput = {
+      estado: ExamStatus.PUBLICADO,
+      tipoPrueba: typedQuery.tipoPrueba,
+      gradoObjetivo: typedQuery.gradoObjetivo,
+      isDeleted: false
+    };
+
+    const [, exams] = await ExamsRepository.listWithAssignments(where, 0, 5000);
+    const now = new Date();
+
+    const isTimeEnabled = (assignment: { startsAt: Date | null; endsAt: Date | null }) => {
+      if (assignment.startsAt && assignment.startsAt.getTime() > now.getTime()) {
+        return false;
+      }
+      if (assignment.endsAt && assignment.endsAt.getTime() < now.getTime()) {
+        return false;
+      }
+      return true;
+    };
+
+    const hasMatch = (exam: (typeof exams)[number]) => {
+      if (!exam.assignments || exam.assignments.length === 0) {
+        return true;
+      }
+
+      for (const assignment of exam.assignments) {
+        if (!assignment.isActive || !isTimeEnabled(assignment)) {
+          continue;
+        }
+
+        if (assignment.scope === "GLOBAL") {
+          return true;
+        }
+
+        if (assignment.scope === "SCHOOL" && context.schoolId && assignment.schoolId === context.schoolId) {
+          return true;
+        }
+
+        if (assignment.scope === "GROUP" && context.groupId && assignment.groupId === context.groupId) {
+          return true;
+        }
+
+        if (assignment.scope === "STUDENT" && context.studentId && assignment.studentId === context.studentId) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+
+    const filteredAll = exams.filter(hasMatch).map((exam) => ({
+      id: exam.id,
+      nombre: exam.nombre,
+      descripcion: exam.descripcion,
+      tipoPrueba: exam.tipoPrueba,
+      gradoObjetivo: exam.gradoObjetivo,
+      estado: exam.estado,
+      tiempoLimiteMinutos: exam.tiempoLimiteMinutos,
+      totalPreguntas: exam.totalPreguntas,
+      puntajeMaximo: exam.puntajeMaximo,
+      instrucciones: exam.instrucciones,
+      fechaPublicacion: exam.fechaPublicacion,
+      hasAssignments: exam.assignments.length > 0
+    }));
+
+    const paged = filteredAll.slice(pagination.skip, pagination.skip + pagination.limit);
+
+    return {
+      page: pagination.page,
+      limit: pagination.limit,
+      total: filteredAll.length,
+      context,
+      items: paged
     };
   }
 
@@ -260,6 +375,100 @@ export class ExamService {
       exam,
       totalQuestions: questions.length,
       items: questions
+    };
+  }
+
+  static async createAssignment(examId: string, payload: ExamAssignmentCreateInput, actorId?: string) {
+    const exam = await ExamsRepository.findById(examId);
+    if (!exam || exam.isDeleted) {
+      throw new AppError("Prueba no encontrada", 404, "NOT_FOUND");
+    }
+
+    if (payload.scope === "SCHOOL") {
+      if (!payload.schoolId) {
+        throw new AppError("school_id es obligatorio para scope SCHOOL", 400, "VALIDATION_ERROR");
+      }
+      const school = await ExamsRepository.findSchoolById(payload.schoolId);
+      if (!school || !school.isActive) {
+        throw new AppError("Colegio no encontrado o inactivo", 404, "SCHOOL_NOT_FOUND");
+      }
+    }
+
+    if (payload.scope === "GROUP") {
+      if (!payload.schoolId || !payload.groupId) {
+        throw new AppError("school_id y group_id son obligatorios para scope GROUP", 400, "VALIDATION_ERROR");
+      }
+
+      const [school, group] = await Promise.all([
+        ExamsRepository.findSchoolById(payload.schoolId),
+        ExamsRepository.findGroupById(payload.groupId)
+      ]);
+
+      if (!school || !school.isActive) {
+        throw new AppError("Colegio no encontrado o inactivo", 404, "SCHOOL_NOT_FOUND");
+      }
+
+      if (!group || !group.isActive) {
+        throw new AppError("Grupo no encontrado o inactivo", 404, "GROUP_NOT_FOUND");
+      }
+
+      if (group.schoolId !== school.id) {
+        throw new AppError("El grupo no pertenece al colegio indicado", 400, "GROUP_SCHOOL_MISMATCH");
+      }
+    }
+
+    if (payload.scope === "STUDENT") {
+      if (!payload.studentId) {
+        throw new AppError("student_id es obligatorio para scope STUDENT", 400, "VALIDATION_ERROR");
+      }
+
+      const student = await ExamsRepository.findStudentById(payload.studentId);
+      if (!student || student.isDeleted) {
+        throw new AppError("Estudiante no encontrado", 404, "STUDENT_NOT_FOUND");
+      }
+
+      if (payload.schoolId && student.schoolId && payload.schoolId !== student.schoolId) {
+        throw new AppError("school_id no coincide con el estudiante", 400, "STUDENT_SCHOOL_MISMATCH");
+      }
+
+      if (payload.groupId && student.groupId && payload.groupId !== student.groupId) {
+        throw new AppError("group_id no coincide con el estudiante", 400, "STUDENT_GROUP_MISMATCH");
+      }
+    }
+
+    const created = await ExamsRepository.createAssignment(examId, {
+      ...payload,
+      createdByUserId: actorId
+    });
+
+    await createAuditLog({
+      entidad: "exam_assignments",
+      entidadId: created.id,
+      accion: "CREATE",
+      userId: actorId,
+      datos: {
+        examId,
+        scope: created.scope,
+        schoolId: created.schoolId,
+        groupId: created.groupId,
+        studentId: created.studentId
+      }
+    });
+
+    return created;
+  }
+
+  static async listAssignments(examId: string) {
+    const exam = await ExamsRepository.findById(examId);
+    if (!exam || exam.isDeleted) {
+      throw new AppError("Prueba no encontrada", 404, "NOT_FOUND");
+    }
+
+    const items = await ExamsRepository.listAssignments(examId);
+    return {
+      exam,
+      total: items.length,
+      items
     };
   }
 }

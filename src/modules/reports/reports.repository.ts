@@ -74,6 +74,8 @@ export class ReportsRepository {
 
   static listDashboardAttempts(filter: {
     grado?: string;
+    schoolId?: string;
+    groupId?: string;
     dateRange?: { gte?: Date; lte?: Date };
     limit: number;
   }) {
@@ -83,9 +85,15 @@ export class ReportsRepository {
         estudiante: filter.grado
           ? {
               grado: filter.grado,
+              schoolId: filter.schoolId,
+              groupId: filter.groupId,
               isDeleted: false
             }
-          : undefined
+          : {
+              schoolId: filter.schoolId,
+              groupId: filter.groupId,
+              isDeleted: false
+            }
       },
       include: {
         estudiante: true,
@@ -99,6 +107,8 @@ export class ReportsRepository {
 
   static aggregateDashboardGradedAttempts(filter: {
     grado?: string;
+    schoolId?: string;
+    groupId?: string;
     dateRange?: { gte?: Date; lte?: Date };
   }) {
     return prisma.examAttempt.aggregate({
@@ -112,15 +122,23 @@ export class ReportsRepository {
         estudiante: filter.grado
           ? {
               grado: filter.grado,
+              schoolId: filter.schoolId,
+              groupId: filter.groupId,
               isDeleted: false
             }
-          : undefined
+          : {
+              schoolId: filter.schoolId,
+              groupId: filter.groupId,
+              isDeleted: false
+            }
       }
     });
   }
 
   static listDashboardAreaResults(filter: {
     grado?: string;
+    schoolId?: string;
+    groupId?: string;
     dateRange?: { gte?: Date; lte?: Date };
   }) {
     return prisma.areaResult.findMany({
@@ -130,19 +148,27 @@ export class ReportsRepository {
           estudiante: filter.grado
             ? {
                 grado: filter.grado,
+                schoolId: filter.schoolId,
+                groupId: filter.groupId,
                 isDeleted: false
               }
-            : undefined
+            : {
+                schoolId: filter.schoolId,
+                groupId: filter.groupId,
+                isDeleted: false
+              }
         }
       }
     });
   }
 
-  static countStudents(grado?: string) {
+  static countStudents(payload?: { grado?: string; schoolId?: string; groupId?: string }) {
     return prisma.student.count({
       where: {
         isDeleted: false,
-        grado: grado ?? undefined
+        grado: payload?.grado,
+        schoolId: payload?.schoolId,
+        groupId: payload?.groupId
       }
     });
   }
@@ -176,6 +202,124 @@ export class ReportsRepository {
         createdAt: true,
         updatedAt: true,
         rutaLogica: true
+      },
+      orderBy: { createdAt: "desc" }
+    });
+  }
+
+  static findSchoolById(id: string) {
+    return prisma.school.findUnique({ where: { id } });
+  }
+
+  static findGroupById(id: string) {
+    return prisma.schoolGroup.findUnique({ where: { id } });
+  }
+
+  static countStudentsByScope(payload: { schoolId?: string; groupId?: string; grado?: string }) {
+    return prisma.student.count({
+      where: {
+        isDeleted: false,
+        schoolId: payload.schoolId,
+        groupId: payload.groupId,
+        grado: payload.grado
+      }
+    });
+  }
+
+  static listAttemptsForScope(payload: {
+    schoolId?: string;
+    groupId?: string;
+    grado?: string;
+    dateRange?: { gte?: Date; lte?: Date };
+  }) {
+    return prisma.examAttempt.findMany({
+      where: {
+        fechaInicio: payload.dateRange,
+        estudiante: {
+          isDeleted: false,
+          schoolId: payload.schoolId,
+          groupId: payload.groupId,
+          grado: payload.grado
+        }
+      },
+      include: {
+        estudiante: true,
+        prueba: true,
+        areaResults: true,
+        studentAnswers: {
+          include: {
+            pregunta: {
+              include: {
+                subject: true,
+                topicLinks: {
+                  include: {
+                    topic: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy: { createdAt: "desc" }
+    });
+  }
+
+  static listQuestionAccuracy(payload: {
+    schoolId?: string;
+    groupId?: string;
+    examId?: string;
+    dateRange?: { gte?: Date; lte?: Date };
+  }) {
+    return prisma.studentAnswer.findMany({
+      where: {
+        intento: {
+          pruebaId: payload.examId,
+          fechaInicio: payload.dateRange,
+          estudiante: {
+            isDeleted: false,
+            schoolId: payload.schoolId,
+            groupId: payload.groupId
+          }
+        }
+      },
+      include: {
+        pregunta: true
+      }
+    });
+  }
+
+  static listQuestionsReadiness(payload: { gradoObjetivo?: string }) {
+    return prisma.question.groupBy({
+      by: ["area"],
+      _count: {
+        _all: true
+      },
+      where: {
+        estado: true,
+        gradoObjetivo: payload.gradoObjetivo
+      }
+    });
+  }
+
+  static listMaterialCoverage() {
+    return prisma.fileAsset.findMany({
+      where: {
+        rutaLogica: {
+          startsWith: "material/"
+        },
+        deletedAt: null
+      },
+      select: {
+        id: true,
+        categoria: true,
+        area: true,
+        nombreOriginal: true,
+        tipoPrueba: true,
+        descripcion: true,
+        rutaLogica: true,
+        pesoBytes: true,
+        activo: true
       },
       orderBy: { createdAt: "desc" }
     });

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { RoleCode } from "@prisma/client";
 import { authenticate, authorize } from "../../middlewares/auth.middleware";
+import { adminRouteRateLimiter } from "../../middlewares/rate-limit.middleware";
 import { validateRequest } from "../../middlewares/validation.middleware";
 import { FilesController } from "./files.controller";
 import {
@@ -17,7 +18,7 @@ import { uploadSingleFile, validateUploadedFileIntegrity } from "./files.upload"
 
 const router = Router();
 
-router.use(authenticate, authorize(RoleCode.ADMIN, RoleCode.DOCENTE));
+router.use(authenticate, authorize(RoleCode.ADMIN, RoleCode.DOCENTE), adminRouteRateLimiter);
 
 router.post(
   "/upload",

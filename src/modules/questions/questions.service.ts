@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, QuestionGenerationStatus } from "@prisma/client";
 import { AppError } from "../../common/errors/AppError";
 import { createAuditLog } from "../../common/utils/audit";
 import { getPagination } from "../../common/utils/pagination";
@@ -121,6 +121,65 @@ export class QuestionService {
         codigoInterno: existing.codigoInterno
       }
     });
+  }
+
+  static async listGenerated(query: Record<string, unknown>) {
+    const pagination = getPagination(query);
+    const typedQuery = query as {
+      status?: QuestionGenerationStatus;
+    };
+
+    const where: Prisma.QuestionWhereInput = {
+      isAiGenerated: true,
+      generation: typedQuery.status
+        ? {
+            status: typedQuery.status
+          }
+        : undefined
+    };
+
+    const [total, questions] = await QuestionsRepository.listGeneratedQuestions(where, pagination.skip, pagination.limit);
+    return {
+      page: pagination.page,
+      limit: pagination.limit,
+      total,
+      items: questions
+    };
+  }
+
+  static async updateGeneratedStatus(questionId: string, status: QuestionGenerationStatus, actorId?: string) {
+    const question = await QuestionsRepository.findById(questionId);
+    if (!question) {
+      throw new AppError("Pregunta no encontrada", 404, "NOT_FOUND");
+    }
+
+    if (!question.isAiGenerated || !question.generationId) {
+      throw new AppError("La pregunta no pertenece a una generacion IA", 400, "QUESTION_NOT_AI_GENERATED");
+    }
+
+    const generation = await QuestionsRepository.findGenerationById(question.generationId);
+    if (!generation) {
+      throw new AppError("Registro de generacion IA no encontrado", 404, "GENERATION_NOT_FOUND");
+    }
+
+    const updated = await QuestionsRepository.updateGenerationStatus(question.generationId, status);
+
+    await createAuditLog({
+      entidad: "question_generations",
+      entidadId: updated.id,
+      accion: "UPDATE_STATUS",
+      userId: actorId,
+      datos: {
+        questionId: question.id,
+        before: generation.status,
+        after: updated.status
+      }
+    });
+
+    return {
+      questionId: question.id,
+      generation: updated
+    };
   }
 }
 

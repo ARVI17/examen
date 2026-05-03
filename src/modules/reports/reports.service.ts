@@ -1,5 +1,6 @@
-import { AttemptStatus, Prisma, QuestionArea } from "@prisma/client";
+import { AttemptStatus, Prisma, QuestionArea, ReportScope } from "@prisma/client";
 import { AppError } from "../../common/errors/AppError";
+import prisma from "../../common/prisma";
 import { parseDateRange } from "../../common/utils/date";
 import { ReportsRepository } from "./reports.repository";
 
@@ -135,6 +136,44 @@ const csvEscape = (value: unknown) => {
   }
 
   return text;
+};
+
+const escapePdfText = (value: string) => {
+  return value.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+};
+
+const buildSimplePdf = (title: string, lines: string[]) => {
+  const safeLines = [title, "", ...lines].slice(0, 120);
+  const lineBlocks = safeLines.map((line, index) => {
+    const y = 790 - index * 14;
+    return `BT /F1 11 Tf 40 ${y} Td (${escapePdfText(line.slice(0, 160))}) Tj ET`;
+  });
+  const streamBody = lineBlocks.join("\n");
+
+  const objects = [
+    "1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj",
+    "2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj",
+    "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj",
+    "4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj",
+    `5 0 obj << /Length ${Buffer.byteLength(streamBody, "utf8")} >> stream\n${streamBody}\nendstream endobj`
+  ];
+
+  let content = "%PDF-1.4\n";
+  const offsets: number[] = [0];
+  for (const object of objects) {
+    offsets.push(Buffer.byteLength(content, "utf8"));
+    content += `${object}\n`;
+  }
+
+  const xrefOffset = Buffer.byteLength(content, "utf8");
+  content += `xref\n0 ${objects.length + 1}\n`;
+  content += "0000000000 65535 f \n";
+  for (let index = 1; index <= objects.length; index += 1) {
+    content += `${String(offsets[index]).padStart(10, "0")} 00000 n \n`;
+  }
+  content += `trailer << /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+
+  return Buffer.from(content, "utf8");
 };
 
 const buildFileAssetsWhere = (typedQuery: FilesCoverageQuery) => {
@@ -454,6 +493,8 @@ export class ReportService {
   static async dashboardOverview(query: Record<string, unknown>) {
     const dateRange = parseDateRange(query.from as string | undefined, query.to as string | undefined);
     const grado = query.grado as string | undefined;
+    const schoolId = query.schoolId as string | undefined;
+    const groupId = query.groupId as string | undefined;
     const limit = Number(query.limit ?? 20);
 
     const [
@@ -465,24 +506,30 @@ export class ReportService {
       gradedAggregate,
       areaResults
     ] = await Promise.all([
-      ReportsRepository.countStudents(grado),
+      ReportsRepository.countStudents({ grado, schoolId, groupId }),
       ReportsRepository.countExams(),
       ReportsRepository.countAttempts({
         fechaInicio: dateRange,
-        estudiante: grado ? { grado, isDeleted: false } : undefined
+        estudiante: grado
+          ? { grado, schoolId, groupId, isDeleted: false }
+          : { schoolId, groupId, isDeleted: false }
       }),
       ReportsRepository.countAttempts({
         estado: AttemptStatus.CALIFICADA,
         fechaInicio: dateRange,
-        estudiante: grado ? { grado, isDeleted: false } : undefined
+        estudiante: grado
+          ? { grado, schoolId, groupId, isDeleted: false }
+          : { schoolId, groupId, isDeleted: false }
       }),
       ReportsRepository.listDashboardAttempts({
         grado,
+        schoolId,
+        groupId,
         dateRange,
         limit
       }),
-      ReportsRepository.aggregateDashboardGradedAttempts({ grado, dateRange }),
-      ReportsRepository.listDashboardAreaResults({ grado, dateRange })
+      ReportsRepository.aggregateDashboardGradedAttempts({ grado, schoolId, groupId, dateRange }),
+      ReportsRepository.listDashboardAreaResults({ grado, schoolId, groupId, dateRange })
     ]);
 
     const averageGlobalPercentage = Number((gradedAggregate._avg.porcentajeTotal ?? 0).toFixed(2));
@@ -544,6 +591,449 @@ export class ReportService {
       percentageByArea,
       studentsWithLatestResults,
       generatedAt: new Date().toISOString()
+    };
+  }
+
+  private static buildScopeAggregates(attempts: Awaited<ReturnType<typeof ReportsRepository.listAttemptsForScope>>) {
+    const graded = attempts.filter((attempt) => attempt.estado === AttemptStatus.CALIFICADA);
+    const students = new Map<
+      string,
+      {
+        studentId: string;
+        nombres: string;
+        apellidos: string;
+        numeroIdentificacion: string;
+        grado: string;
+        grupo: string | null;
+        institucion: string | null;
+        attempts: number;
+        gradedAttempts: number;
+        avgPercentageAccumulator: number;
+        bestPercentage: number;
+      }
+    >();
+
+    const bySubject = new Map<string, { subject: string; total: number; correct: number }>();
+    const byTopic = new Map<string, { topic: string; total: number; correct: number }>();
+    const byQuestion = new Map<
+      string,
+      { questionId: string; enunciado: string; total: number; correct: number; incorrect: number }
+    >();
+
+    for (const attempt of attempts) {
+      if (!students.has(attempt.estudianteId)) {
+        students.set(attempt.estudianteId, {
+          studentId: attempt.estudianteId,
+          nombres: attempt.estudiante.nombres,
+          apellidos: attempt.estudiante.apellidos,
+          numeroIdentificacion: attempt.estudiante.numeroIdentificacion,
+          grado: attempt.estudiante.grado,
+          grupo: attempt.estudiante.grupo,
+          institucion: attempt.estudiante.institucion,
+          attempts: 0,
+          gradedAttempts: 0,
+          avgPercentageAccumulator: 0,
+          bestPercentage: 0
+        });
+      }
+
+      const studentAggregate = students.get(attempt.estudianteId)!;
+      studentAggregate.attempts += 1;
+
+      if (attempt.estado === AttemptStatus.CALIFICADA) {
+        studentAggregate.gradedAttempts += 1;
+        studentAggregate.avgPercentageAccumulator += attempt.porcentajeTotal ?? 0;
+        studentAggregate.bestPercentage = Math.max(studentAggregate.bestPercentage, attempt.porcentajeTotal ?? 0);
+      }
+
+      for (const answer of attempt.studentAnswers) {
+        const subjectName = answer.pregunta.subject?.name ?? answer.pregunta.area;
+        if (!bySubject.has(subjectName)) {
+          bySubject.set(subjectName, { subject: subjectName, total: 0, correct: 0 });
+        }
+        const subjectRow = bySubject.get(subjectName)!;
+        subjectRow.total += 1;
+        if (answer.esCorrecta) {
+          subjectRow.correct += 1;
+        }
+
+        for (const link of answer.pregunta.topicLinks) {
+          if (!byTopic.has(link.topic.name)) {
+            byTopic.set(link.topic.name, { topic: link.topic.name, total: 0, correct: 0 });
+          }
+          const topicRow = byTopic.get(link.topic.name)!;
+          topicRow.total += 1;
+          if (answer.esCorrecta) {
+            topicRow.correct += 1;
+          }
+        }
+
+        if (!byQuestion.has(answer.preguntaId)) {
+          byQuestion.set(answer.preguntaId, {
+            questionId: answer.preguntaId,
+            enunciado: answer.pregunta.enunciado,
+            total: 0,
+            correct: 0,
+            incorrect: 0
+          });
+        }
+        const questionRow = byQuestion.get(answer.preguntaId)!;
+        questionRow.total += 1;
+        if (answer.esCorrecta) {
+          questionRow.correct += 1;
+        } else {
+          questionRow.incorrect += 1;
+        }
+      }
+    }
+
+    const studentRows = Array.from(students.values())
+      .map((row) => ({
+        ...row,
+        averagePercentage: row.gradedAttempts
+          ? Number((row.avgPercentageAccumulator / row.gradedAttempts).toFixed(2))
+          : 0
+      }))
+      .sort((a, b) => b.averagePercentage - a.averagePercentage);
+
+    const subjectRows = Array.from(bySubject.values())
+      .map((row) => ({
+        subject: row.subject,
+        total: row.total,
+        correct: row.correct,
+        incorrect: row.total - row.correct,
+        porcentajeAcierto: row.total ? Number(((row.correct / row.total) * 100).toFixed(2)) : 0
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    const topicRows = Array.from(byTopic.values())
+      .map((row) => ({
+        topic: row.topic,
+        total: row.total,
+        correct: row.correct,
+        incorrect: row.total - row.correct,
+        porcentajeAcierto: row.total ? Number(((row.correct / row.total) * 100).toFixed(2)) : 0
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    const questionRows = Array.from(byQuestion.values()).map((row) => ({
+      ...row,
+      porcentajeAcierto: row.total ? Number(((row.correct / row.total) * 100).toFixed(2)) : 0
+    }));
+
+    const mostFailed = [...questionRows].sort((a, b) => b.incorrect - a.incorrect).slice(0, 10);
+    const mostCorrect = [...questionRows].sort((a, b) => b.correct - a.correct).slice(0, 10);
+
+    return {
+      totalAttempts: attempts.length,
+      gradedAttempts: graded.length,
+      studentsWithAttempts: studentRows.length,
+      averagePercentage: graded.length
+        ? Number((graded.reduce((acc, attempt) => acc + (attempt.porcentajeTotal ?? 0), 0) / graded.length).toFixed(2))
+        : 0,
+      ranking: studentRows,
+      bySubject: subjectRows,
+      byTopic: topicRows,
+      questions: {
+        mostFailed,
+        mostCorrect
+      }
+    };
+  }
+
+  private static async storeReport(scope: ReportScope, scopeRef: string | undefined, payload: unknown) {
+    try {
+      await prisma.reportRecord.create({
+        data: {
+          scope,
+          scopeRef,
+          payload: payload as Prisma.InputJsonValue
+        }
+      });
+    } catch {
+      // Sin impacto funcional para consulta de reportes en tiempo real.
+    }
+  }
+
+  static async studentPerformance(numeroIdentificacion: string, query: Record<string, unknown>) {
+    const summary = await this.studentSummary(numeroIdentificacion, query);
+    const areas = await this.studentAreas(numeroIdentificacion, query);
+    const average = summary.averagePercentage ?? 0;
+    const riskLevel = average >= 75 ? "BAJO" : average >= 50 ? "MEDIO" : "ALTO";
+
+    const payload = {
+      student: summary.student,
+      totals: {
+        totalAttempts: summary.totalAttempts,
+        gradedAttempts: summary.gradedAttempts,
+        averagePercentage: summary.averagePercentage,
+        averageScore: summary.averageScore,
+        bestPercentage: summary.bestPercentage,
+        worstPercentage: summary.worstPercentage,
+        riskLevel
+      },
+      areas: areas.summary,
+      latestResult: summary.latestResult
+    };
+
+    await this.storeReport(ReportScope.STUDENT, summary.student.id, payload);
+    return payload;
+  }
+
+  static async studentPerformanceExportCsv(numeroIdentificacion: string, query: Record<string, unknown>) {
+    const performance = await this.studentPerformance(numeroIdentificacion, query);
+
+    const header = ["student_document", "student_name", "metric", "value"];
+    const rows = [
+      [
+        performance.student.numeroIdentificacion,
+        `${performance.student.nombres} ${performance.student.apellidos}`.trim(),
+        "risk_level",
+        performance.totals.riskLevel
+      ],
+      [
+        performance.student.numeroIdentificacion,
+        `${performance.student.nombres} ${performance.student.apellidos}`.trim(),
+        "average_percentage",
+        performance.totals.averagePercentage
+      ],
+      [
+        performance.student.numeroIdentificacion,
+        `${performance.student.nombres} ${performance.student.apellidos}`.trim(),
+        "average_score",
+        performance.totals.averageScore
+      ]
+    ];
+
+    for (const area of performance.areas) {
+      rows.push([
+        performance.student.numeroIdentificacion,
+        `${performance.student.nombres} ${performance.student.apellidos}`.trim(),
+        `area_${area.area}_accuracy`,
+        area.porcentajeAcierto
+      ]);
+    }
+
+    const lines = [header, ...rows].map((row) => row.map((value) => csvEscape(value)).join(","));
+    const csv = `${lines.join("\n")}\n`;
+
+    return {
+      fileName: `student_performance_${numeroIdentificacion}.csv`,
+      csv
+    };
+  }
+
+  static async studentPerformanceExportPdf(numeroIdentificacion: string, query: Record<string, unknown>) {
+    const performance = await this.studentPerformance(numeroIdentificacion, query);
+    const lines = [
+      `Documento: ${performance.student.numeroIdentificacion}`,
+      `Nombre: ${performance.student.nombres} ${performance.student.apellidos}`.trim(),
+      `Intentos: ${performance.totals.totalAttempts}`,
+      `Intentos calificados: ${performance.totals.gradedAttempts}`,
+      `Promedio porcentaje: ${performance.totals.averagePercentage}`,
+      `Promedio puntaje: ${performance.totals.averageScore}`,
+      `Nivel de riesgo: ${performance.totals.riskLevel}`,
+      "",
+      "Por area:"
+    ];
+    for (const area of performance.areas) {
+      lines.push(`- ${area.area}: ${area.porcentajeAcierto}%`);
+    }
+
+    return {
+      fileName: `student_performance_${numeroIdentificacion}.pdf`,
+      pdfBuffer: buildSimplePdf("Reporte de Desempeno Estudiante", lines)
+    };
+  }
+
+  static async classroomSummary(query: Record<string, unknown>) {
+    const dateRange = parseDateRange(query.from as string | undefined, query.to as string | undefined);
+    const schoolId = query.schoolId as string | undefined;
+    const groupId = query.groupId as string | undefined;
+    const grado = query.grado as string | undefined;
+    const grupo = query.grupo as string | undefined;
+    const institucion = query.institucion as string | undefined;
+    const limit = Number(query.limit ?? 3000);
+
+    const attempts = await ReportsRepository.listAttemptsForScope({
+      schoolId,
+      groupId,
+      grado,
+      dateRange
+    });
+
+    const scopedAttempts = attempts.filter((attempt) => {
+      if (grupo && attempt.estudiante.grupo !== grupo) {
+        return false;
+      }
+      if (institucion && attempt.estudiante.institucion !== institucion) {
+        return false;
+      }
+      return true;
+    });
+
+    const trimmedAttempts = scopedAttempts.slice(0, limit);
+    const aggregates = this.buildScopeAggregates(trimmedAttempts);
+
+    const payload = {
+      filters: {
+        schoolId,
+        groupId,
+        grado,
+        grupo,
+        institucion,
+        from: query.from,
+        to: query.to,
+        limit
+      },
+      totals: {
+        studentsWithAttempts: aggregates.studentsWithAttempts,
+        totalAttempts: aggregates.totalAttempts,
+        gradedAttempts: aggregates.gradedAttempts,
+        averagePercentage: aggregates.averagePercentage
+      },
+      ranking: aggregates.ranking,
+      bySubject: aggregates.bySubject,
+      byTopic: aggregates.byTopic,
+      questions: aggregates.questions
+    };
+
+    await this.storeReport(ReportScope.GROUP, groupId ?? "classroom", payload);
+    return payload;
+  }
+
+  static async classroomSummaryExportCsv(query: Record<string, unknown>) {
+    const summary = await this.classroomSummary(query);
+    const header = ["student_document", "student_name", "grado", "grupo", "institucion", "attempts", "average_percentage"];
+    const rows = summary.ranking.map((row) => [
+      row.numeroIdentificacion,
+      `${row.nombres} ${row.apellidos}`.trim(),
+      row.grado,
+      row.grupo ?? "",
+      row.institucion ?? "",
+      row.attempts,
+      row.averagePercentage
+    ]);
+    const lines = [header, ...rows].map((row) => row.map((value) => csvEscape(value)).join(","));
+
+    return {
+      fileName: "classroom_summary.csv",
+      csv: `${lines.join("\n")}\n`
+    };
+  }
+
+  static async classroomSummaryExportPdf(query: Record<string, unknown>) {
+    const summary = await this.classroomSummary(query);
+    const lines = [
+      `Estudiantes con intentos: ${summary.totals.studentsWithAttempts}`,
+      `Intentos totales: ${summary.totals.totalAttempts}`,
+      `Intentos calificados: ${summary.totals.gradedAttempts}`,
+      `Promedio porcentaje: ${summary.totals.averagePercentage}`,
+      ""
+    ];
+    for (const row of summary.ranking.slice(0, 40)) {
+      lines.push(
+        `${row.numeroIdentificacion} | ${row.nombres} ${row.apellidos} | Promedio ${row.averagePercentage}% | Intentos ${row.attempts}`
+      );
+    }
+
+    return {
+      fileName: "classroom_summary.pdf",
+      pdfBuffer: buildSimplePdf("Reporte de Aula", lines)
+    };
+  }
+
+  static async groupSummary(groupId: string, query: Record<string, unknown>) {
+    const group = await ReportsRepository.findGroupById(groupId);
+    if (!group) {
+      throw new AppError("Grupo no encontrado", 404, "NOT_FOUND");
+    }
+    const summary = await this.classroomSummary({
+      ...query,
+      groupId
+    });
+
+    const payload = {
+      group,
+      ...summary
+    };
+    await this.storeReport(ReportScope.GROUP, groupId, payload);
+    return payload;
+  }
+
+  static async schoolSummary(schoolId: string, query: Record<string, unknown>) {
+    const school = await ReportsRepository.findSchoolById(schoolId);
+    if (!school) {
+      throw new AppError("Colegio no encontrado", 404, "NOT_FOUND");
+    }
+    const summary = await this.classroomSummary({
+      ...query,
+      schoolId
+    });
+
+    const payload = {
+      school,
+      ...summary
+    };
+    await this.storeReport(ReportScope.SCHOOL, schoolId, payload);
+    return payload;
+  }
+
+  static async questionsReadiness(query: Record<string, unknown>) {
+    const gradoObjetivo = query.gradoObjetivo as string | undefined;
+    const targetPerArea = Number(query.targetPerArea ?? 120);
+    const rows = await ReportsRepository.listQuestionsReadiness({ gradoObjetivo });
+
+    const byArea = rows.map((row) => {
+      const total = row._count._all;
+      const deficit = Math.max(0, targetPerArea - total);
+      const coveragePercent = targetPerArea > 0 ? Number(((total / targetPerArea) * 100).toFixed(2)) : 0;
+      return {
+        area: row.area,
+        totalQuestions: total,
+        target: targetPerArea,
+        deficit,
+        coveragePercent
+      };
+    });
+
+    const totalQuestions = byArea.reduce((acc, row) => acc + row.totalQuestions, 0);
+    const totalTarget = byArea.length * targetPerArea;
+    const overallCoveragePercent = totalTarget ? Number(((totalQuestions / totalTarget) * 100).toFixed(2)) : 0;
+
+    return {
+      totals: {
+        totalQuestions,
+        totalTarget,
+        overallCoveragePercent
+      },
+      byArea
+    };
+  }
+
+  static async materialLocalCoverage() {
+    const items = await ReportsRepository.listMaterialCoverage();
+    const totalAssets = items.length;
+    const activeAssets = items.filter((item) => item.activo).length;
+    const totalSizeBytes = items.reduce((acc, item) => acc + item.pesoBytes, 0);
+
+    const byCategory = new Map<string, number>();
+    const byArea = new Map<string, number>();
+    for (const item of items) {
+      byCategory.set(item.categoria, (byCategory.get(item.categoria) ?? 0) + 1);
+      byArea.set(item.area ?? "SIN_AREA", (byArea.get(item.area ?? "SIN_AREA") ?? 0) + 1);
+    }
+
+    return {
+      totals: {
+        totalAssets,
+        activeAssets,
+        totalSizeBytes,
+        coveragePercent: totalAssets ? Number(((activeAssets / totalAssets) * 100).toFixed(2)) : 0
+      },
+      byCategory: Array.from(byCategory.entries()).map(([categoria, total]) => ({ categoria, total })),
+      byArea: Array.from(byArea.entries()).map(([area, total]) => ({ area, total })),
+      items: items.slice(0, 200)
     };
   }
 

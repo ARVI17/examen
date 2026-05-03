@@ -2,7 +2,7 @@ FROM node:20-bookworm-slim
 
 WORKDIR /app
 
-RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get install -y openssl postgresql-client && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json* ./
 RUN npm install

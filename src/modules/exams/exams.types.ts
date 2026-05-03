@@ -24,3 +24,22 @@ export type ExamQuestionAssignment = {
   metadata?: Prisma.InputJsonValue;
 };
 
+export type ExamAssignmentCreateInput = {
+  scope: "GLOBAL" | "SCHOOL" | "GROUP" | "STUDENT";
+  schoolId?: string;
+  groupId?: string;
+  studentId?: string;
+  startsAt?: Date;
+  endsAt?: Date;
+  maxAttempts?: number;
+  allowRetake?: boolean;
+  isActive?: boolean;
+};
+
+export type PublicExamListContext = {
+  schoolId?: string;
+  groupId?: string;
+  studentId?: string;
+  numeroIdentificacion?: string;
+};
+

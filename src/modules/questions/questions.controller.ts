@@ -13,6 +13,11 @@ export class QuestionController {
     return sendSuccess(res, "Listado de preguntas", data);
   }
 
+  static async listGenerated(req: Request, res: Response) {
+    const data = await QuestionService.listGenerated(req.query as Record<string, unknown>);
+    return sendSuccess(res, "Listado de preguntas generadas por IA", data);
+  }
+
   static async getById(req: Request, res: Response) {
     const data = await QuestionService.getById(req.params.id);
     return sendSuccess(res, "Detalle de pregunta", data);
@@ -26,5 +31,10 @@ export class QuestionController {
   static async softDelete(req: Request, res: Response) {
     await QuestionService.softDelete(req.params.id, req.user?.id);
     return sendSuccess(res, "Pregunta desactivada", null);
+  }
+
+  static async updateGeneratedStatus(req: Request, res: Response) {
+    const data = await QuestionService.updateGeneratedStatus(req.params.id, req.body.status, req.user?.id);
+    return sendSuccess(res, "Estado de generacion IA actualizado", data);
   }
 }

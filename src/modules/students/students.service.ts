@@ -1,12 +1,117 @@
 import { DocumentTypeCode, Prisma } from "@prisma/client";
 import { AppError } from "../../common/errors/AppError";
+import logger from "../../common/logger";
 import { createAuditLog } from "../../common/utils/audit";
 import { getPagination } from "../../common/utils/pagination";
 import { StudentsRepository } from "./students.repository";
 import { StudentCreateInput, StudentUpdateInput } from "./students.types";
 
+const normalizeHeader = (value: string) => {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9_]/g, "")
+    .trim();
+};
+
+const parseDelimitedLine = (line: string, delimiter: string) => {
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index];
+    const next = line[index + 1];
+
+    if (char === "\"") {
+      if (inQuotes && next === "\"") {
+        current += "\"";
+        index += 1;
+        continue;
+      }
+      inQuotes = !inQuotes;
+      continue;
+    }
+
+    if (!inQuotes && char === delimiter) {
+      result.push(current.trim());
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  result.push(current.trim());
+  return result;
+};
+
+const detectDelimiter = (headerLine: string) => {
+  const commaCount = (headerLine.match(/,/g) || []).length;
+  const semicolonCount = (headerLine.match(/;/g) || []).length;
+  const tabCount = (headerLine.match(/\t/g) || []).length;
+
+  if (tabCount >= semicolonCount && tabCount >= commaCount && tabCount > 0) {
+    return "\t";
+  }
+  if (semicolonCount >= commaCount && semicolonCount > 0) {
+    return ";";
+  }
+  return ",";
+};
+
+const toDocumentType = (value?: string): DocumentTypeCode | undefined => {
+  if (!value) {
+    return undefined;
+  }
+  const normalized = value.trim().toUpperCase() as DocumentTypeCode;
+  if (Object.values(DocumentTypeCode).includes(normalized)) {
+    return normalized;
+  }
+  return undefined;
+};
+
 export class StudentService {
+  private static async normalizeSchoolGroup(payload: {
+    schoolId?: string;
+    groupId?: string;
+  }) {
+    let schoolId = payload.schoolId;
+    const groupId = payload.groupId;
+
+    if (schoolId) {
+      const school = await StudentsRepository.findSchoolById(schoolId);
+      if (!school || !school.isActive) {
+        throw new AppError("Colegio no encontrado o inactivo", 404, "SCHOOL_NOT_FOUND");
+      }
+    }
+
+    if (groupId) {
+      const group = await StudentsRepository.findGroupById(groupId);
+      if (!group || !group.isActive) {
+        throw new AppError("Grupo no encontrado o inactivo", 404, "GROUP_NOT_FOUND");
+      }
+
+      if (schoolId && group.schoolId !== schoolId) {
+        throw new AppError("El grupo no pertenece al colegio indicado", 400, "GROUP_SCHOOL_MISMATCH");
+      }
+
+      schoolId = schoolId ?? group.schoolId;
+    }
+
+    return {
+      schoolId,
+      groupId
+    };
+  }
+
   static async createOrFind(payload: StudentCreateInput, actorId?: string) {
+    const normalizedSchoolGroup = await this.normalizeSchoolGroup({
+      schoolId: payload.schoolId,
+      groupId: payload.groupId
+    });
+
     const existing = await StudentsRepository.findByDocument(payload.numeroIdentificacion);
 
     if (existing) {
@@ -16,7 +121,21 @@ export class StudentService {
           nombres: payload.nombres,
           apellidos: payload.apellidos,
           tipoIdentificacion: payload.tipoIdentificacion,
-          grado: payload.grado
+          grado: payload.grado,
+          schoolId: normalizedSchoolGroup.schoolId,
+          groupId: normalizedSchoolGroup.groupId,
+          fechaNacimiento: payload.fechaNacimiento,
+          genero: payload.genero,
+          institucion: payload.institucion,
+          jornada: payload.jornada,
+          grupo: payload.grupo,
+          departamento: payload.departamento,
+          municipio: payload.municipio,
+          email: payload.email,
+          telefono: payload.telefono,
+          acudienteNombre: payload.acudienteNombre,
+          acudienteEmail: payload.acudienteEmail,
+          acudienteTelefono: payload.acudienteTelefono
         });
 
         await createAuditLog({
@@ -33,7 +152,11 @@ export class StudentService {
       return { student: existing, reused: true };
     }
 
-    const created = await StudentsRepository.create(payload);
+    const created = await StudentsRepository.create({
+      ...payload,
+      schoolId: normalizedSchoolGroup.schoolId,
+      groupId: normalizedSchoolGroup.groupId
+    });
 
     await createAuditLog({
       entidad: "students",
@@ -42,7 +165,9 @@ export class StudentService {
       userId: actorId,
       datos: {
         numeroIdentificacion: created.numeroIdentificacion,
-        grado: created.grado
+        grado: created.grado,
+        schoolId: created.schoolId,
+        groupId: created.groupId
       }
     });
 
@@ -76,11 +201,30 @@ export class StudentService {
       throw new AppError("Estudiante no encontrado", 404, "NOT_FOUND");
     }
 
+    const normalizedSchoolGroup = await this.normalizeSchoolGroup({
+      schoolId: payload.schoolId ?? student.schoolId ?? undefined,
+      groupId: payload.groupId ?? student.groupId ?? undefined
+    });
+
     const updated = await StudentsRepository.update(id, {
       nombres: payload.nombres,
       apellidos: payload.apellidos,
       tipoIdentificacion: payload.tipoIdentificacion,
-      grado: payload.grado
+      grado: payload.grado,
+      schoolId: payload.schoolId === undefined ? undefined : normalizedSchoolGroup.schoolId,
+      groupId: payload.groupId === undefined ? undefined : normalizedSchoolGroup.groupId,
+      fechaNacimiento: payload.fechaNacimiento,
+      genero: payload.genero,
+      institucion: payload.institucion,
+      jornada: payload.jornada,
+      grupo: payload.grupo,
+      departamento: payload.departamento,
+      municipio: payload.municipio,
+      email: payload.email,
+      telefono: payload.telefono,
+      acudienteNombre: payload.acudienteNombre,
+      acudienteEmail: payload.acudienteEmail,
+      acudienteTelefono: payload.acudienteTelefono
     });
 
     await createAuditLog({
@@ -89,18 +233,8 @@ export class StudentService {
       accion: "UPDATE",
       userId: actorId,
       datos: {
-        before: {
-          nombres: student.nombres,
-          apellidos: student.apellidos,
-          tipoIdentificacion: student.tipoIdentificacion,
-          grado: student.grado
-        },
-        after: {
-          nombres: updated.nombres,
-          apellidos: updated.apellidos,
-          tipoIdentificacion: updated.tipoIdentificacion,
-          grado: updated.grado
-        }
+        before: student,
+        after: updated
       }
     });
 
@@ -133,6 +267,10 @@ export class StudentService {
       grado?: string;
       numeroIdentificacion?: string;
       tipoIdentificacion?: string;
+      schoolId?: string;
+      groupId?: string;
+      institucion?: string;
+      grupo?: string;
       includeDeleted?: boolean;
     };
 
@@ -152,7 +290,21 @@ export class StudentService {
         : undefined,
       grado: typedQuery.grado ? typedQuery.grado : undefined,
       numeroIdentificacion: typedQuery.numeroIdentificacion ?? undefined,
-      tipoIdentificacion: typedQuery.tipoIdentificacion as DocumentTypeCode | undefined
+      tipoIdentificacion: typedQuery.tipoIdentificacion as DocumentTypeCode | undefined,
+      schoolId: typedQuery.schoolId,
+      groupId: typedQuery.groupId,
+      institucion: typedQuery.institucion
+        ? {
+            contains: typedQuery.institucion,
+            mode: "insensitive"
+          }
+        : undefined,
+      grupo: typedQuery.grupo
+        ? {
+            contains: typedQuery.grupo,
+            mode: "insensitive"
+          }
+        : undefined
     };
 
     const [total, students] = await StudentsRepository.list(where, pagination.skip, pagination.limit);
@@ -184,6 +336,145 @@ export class StudentService {
       student,
       attempts,
       totalAttempts: attempts.length
+    };
+  }
+
+  static async bulkCreate(
+    payload: {
+      fileBuffer?: Buffer;
+      csvText?: string;
+      delimiter?: string;
+    },
+    actorId?: string
+  ) {
+    const sourceText = payload.csvText ?? payload.fileBuffer?.toString("utf-8") ?? "";
+    const normalizedText = sourceText.replace(/^\uFEFF/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+
+    if (!normalizedText) {
+      throw new AppError("El archivo CSV esta vacio", 400, "CSV_EMPTY");
+    }
+
+    const lines = normalizedText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    if (lines.length < 2) {
+      throw new AppError("El CSV debe incluir cabecera y al menos una fila", 400, "CSV_WITHOUT_ROWS");
+    }
+
+    const headerLine = lines[0];
+    const delimiter = payload.delimiter && [",", ";", "\t"].includes(payload.delimiter)
+      ? payload.delimiter
+      : detectDelimiter(headerLine);
+
+    const headers = parseDelimitedLine(headerLine, delimiter).map(normalizeHeader);
+    const indexByHeader = new Map(headers.map((header, index) => [header, index] as const));
+
+    const resolveColumnIndex = (aliases: string[]) => {
+      for (const alias of aliases) {
+        const value = indexByHeader.get(alias);
+        if (value !== undefined) {
+          return value;
+        }
+      }
+      return -1;
+    };
+
+    const namesIndex = resolveColumnIndex(["nombres", "nombre", "name"]);
+    const lastNamesIndex = resolveColumnIndex(["apellidos", "apellido", "lastname", "last_name"]);
+    const docTypeIndex = resolveColumnIndex(["tipo_identificacion", "tipoidentificacion", "tipo_documento", "document_type"]);
+    const docIndex = resolveColumnIndex(["numero_identificacion", "numeroidentificacion", "documento", "numero_documento"]);
+    const gradeIndex = resolveColumnIndex(["grado", "grade"]);
+    const groupIndex = resolveColumnIndex(["grupo", "group"]);
+    const institutionIndex = resolveColumnIndex(["institucion", "institution", "colegio"]);
+    const emailIndex = resolveColumnIndex(["email", "correo"]);
+    const schoolIdIndex = resolveColumnIndex(["school_id", "colegio_id"]);
+    const groupIdIndex = resolveColumnIndex(["group_id", "grupo_id"]);
+
+    if (namesIndex < 0 || lastNamesIndex < 0 || docTypeIndex < 0 || docIndex < 0 || gradeIndex < 0) {
+      throw new AppError(
+        "Cabecera invalida. Minimo requerido: nombres, apellidos, tipo_identificacion, numero_identificacion, grado",
+        400,
+        "CSV_INVALID_HEADER"
+      );
+    }
+
+    const created = [];
+    const reused = [];
+    const errors: Array<{ row: number; numeroIdentificacion: string | null; reason: string }> = [];
+
+    for (let rowNumber = 2; rowNumber <= lines.length; rowNumber += 1) {
+      const line = lines[rowNumber - 1];
+      if (!line || !line.trim()) {
+        continue;
+      }
+
+      const cells = parseDelimitedLine(line, delimiter);
+      const tipoIdentificacion = toDocumentType(cells[docTypeIndex]);
+      const numeroIdentificacion = cells[docIndex]?.trim();
+      const grado = cells[gradeIndex]?.trim();
+
+      if (!tipoIdentificacion || !numeroIdentificacion || !grado) {
+        errors.push({
+          row: rowNumber,
+          numeroIdentificacion: numeroIdentificacion ?? null,
+          reason: "Fila invalida: falta tipo_identificacion/numero_identificacion/grado"
+        });
+        continue;
+      }
+
+      try {
+        const result = await this.createOrFind(
+          {
+            nombres: cells[namesIndex]?.trim() ?? "",
+            apellidos: cells[lastNamesIndex]?.trim() ?? "",
+            tipoIdentificacion,
+            numeroIdentificacion,
+            grado,
+            grupo: groupIndex >= 0 ? cells[groupIndex]?.trim() || undefined : undefined,
+            institucion: institutionIndex >= 0 ? cells[institutionIndex]?.trim() || undefined : undefined,
+            email: emailIndex >= 0 ? cells[emailIndex]?.trim().toLowerCase() || undefined : undefined,
+            schoolId: schoolIdIndex >= 0 ? cells[schoolIdIndex]?.trim() || undefined : undefined,
+            groupId: groupIdIndex >= 0 ? cells[groupIdIndex]?.trim() || undefined : undefined
+          },
+          actorId
+        );
+
+        if (result.reused) {
+          reused.push(result.student);
+        } else {
+          created.push(result.student);
+        }
+      } catch (error) {
+        errors.push({
+          row: rowNumber,
+          numeroIdentificacion,
+          reason: error instanceof Error ? error.message : "Error procesando fila"
+        });
+      }
+    }
+
+    logger.info(
+      {
+        actorId,
+        created: created.length,
+        reused: reused.length,
+        errors: errors.length
+      },
+      "students.bulk_create.completed"
+    );
+
+    return {
+      summary: {
+        totalRows: lines.length - 1,
+        created: created.length,
+        reused: reused.length,
+        errors: errors.length
+      },
+      created,
+      reused,
+      errors
     };
   }
 }

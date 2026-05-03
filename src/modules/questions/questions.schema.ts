@@ -1,4 +1,4 @@
-import { QuestionArea, QuestionDifficulty, QuestionType } from "@prisma/client";
+import { QuestionArea, QuestionDifficulty, QuestionGenerationStatus, QuestionType } from "@prisma/client";
 import { z } from "zod";
 
 const optionSchema = z.object({
@@ -126,3 +126,19 @@ export const listQuestionsQuerySchema = z
     gradoObjetivo: value.grado_objetivo,
     estado: value.estado === undefined ? undefined : value.estado === "true"
   }));
+
+export const listGeneratedQuestionsQuerySchema = z
+  .object({
+    page: z.coerce.number().int().positive().optional(),
+    limit: z.coerce.number().int().positive().optional(),
+    status: z.nativeEnum(QuestionGenerationStatus).optional()
+  })
+  .transform((value) => ({
+    page: value.page,
+    limit: value.limit,
+    status: value.status
+  }));
+
+export const updateGeneratedQuestionStatusSchema = z.object({
+  status: z.nativeEnum(QuestionGenerationStatus)
+});

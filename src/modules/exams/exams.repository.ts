@@ -1,6 +1,6 @@
 import { Prisma, QuestionArea } from "@prisma/client";
 import prisma from "../../common/prisma";
-import { ExamCreateInput, ExamUpdateInput } from "./exams.types";
+import { ExamAssignmentCreateInput, ExamCreateInput, ExamUpdateInput } from "./exams.types";
 
 export class ExamsRepository {
   static create(data: ExamCreateInput) {
@@ -40,6 +40,26 @@ export class ExamsRepository {
         where,
         skip,
         take,
+        orderBy: { createdAt: "desc" }
+      })
+    ]);
+  }
+
+  static listWithAssignments(where: Prisma.ExamWhereInput, skip: number, take: number) {
+    return Promise.all([
+      prisma.exam.count({ where }),
+      prisma.exam.findMany({
+        where,
+        skip,
+        take,
+        include: {
+          assignments: {
+            where: {
+              isActive: true
+            },
+            orderBy: { createdAt: "desc" }
+          }
+        },
         orderBy: { createdAt: "desc" }
       })
     ]);
@@ -117,6 +137,60 @@ export class ExamsRepository {
           }
         }
       }
+    });
+  }
+
+  static createAssignment(examId: string, data: ExamAssignmentCreateInput & { createdByUserId?: string }) {
+    return prisma.examAssignment.create({
+      data: {
+        examId,
+        scope: data.scope,
+        schoolId: data.schoolId,
+        groupId: data.groupId,
+        studentId: data.studentId,
+        startsAt: data.startsAt,
+        endsAt: data.endsAt,
+        maxAttempts: data.maxAttempts ?? 1,
+        allowRetake: data.allowRetake ?? false,
+        isActive: data.isActive ?? true,
+        createdByUserId: data.createdByUserId
+      }
+    });
+  }
+
+  static listAssignments(examId: string) {
+    return prisma.examAssignment.findMany({
+      where: { examId },
+      include: {
+        school: true,
+        group: true,
+        student: true,
+        attempts: true,
+        createdByUser: {
+          include: {
+            role: true
+          }
+        }
+      },
+      orderBy: { createdAt: "desc" }
+    });
+  }
+
+  static findSchoolById(id: string) {
+    return prisma.school.findUnique({ where: { id } });
+  }
+
+  static findGroupById(id: string) {
+    return prisma.schoolGroup.findUnique({ where: { id } });
+  }
+
+  static findStudentById(id: string) {
+    return prisma.student.findUnique({ where: { id } });
+  }
+
+  static findStudentByDocument(numeroIdentificacion: string) {
+    return prisma.student.findUnique({
+      where: { numeroIdentificacion }
     });
   }
 }

@@ -84,7 +84,7 @@ export class AuthService {
         email: user.email,
         role: user.role.code
       },
-      config.jwtSecret,
+      config.jwtSigningSecret,
       signOptions
     );
 
