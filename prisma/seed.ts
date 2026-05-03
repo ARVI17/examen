@@ -52,6 +52,60 @@ async function seedSubjects() {
       create: subject
     });
   }
+
+  const normalizedSubjects = [
+    { code: "LECTURA_CRITICA", name: "Lectura Critica" },
+    { code: "MATEMATICAS", name: "Matematicas" },
+    { code: "SOCIALES_CIUDADANAS", name: "Sociales y Ciudadanas" },
+    { code: "CIENCIAS_NATURALES", name: "Ciencias Naturales" },
+    { code: "INGLES", name: "Ingles" }
+  ];
+
+  for (const subject of normalizedSubjects) {
+    await prisma.subject.upsert({
+      where: { code: subject.code },
+      update: { name: subject.name, isActive: true },
+      create: { ...subject, isActive: true }
+    });
+  }
+}
+
+async function seedSchoolStructure() {
+  const school = await prisma.school.upsert({
+    where: { code: "COLEGIO_DEMO" },
+    update: {
+      name: "Colegio Demo",
+      isActive: true
+    },
+    create: {
+      code: "COLEGIO_DEMO",
+      name: "Colegio Demo",
+      description: "Estructura base para pruebas reales",
+      isActive: true
+    }
+  });
+
+  await prisma.schoolGroup.upsert({
+    where: {
+      schoolId_name_academicYear: {
+        schoolId: school.id,
+        name: "11-A",
+        academicYear: new Date().getUTCFullYear()
+      }
+    },
+    update: {
+      grade: "11",
+      isActive: true
+    },
+    create: {
+      schoolId: school.id,
+      code: "11A",
+      name: "11-A",
+      grade: "11",
+      academicYear: new Date().getUTCFullYear(),
+      isActive: true
+    }
+  });
 }
 
 async function seedPerformanceLevels() {
@@ -122,6 +176,7 @@ async function main() {
   await seedRoles();
   await seedDocumentTypes();
   await seedSubjects();
+  await seedSchoolStructure();
   await seedPerformanceLevels();
   await seedUsers();
 

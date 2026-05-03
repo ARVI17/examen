@@ -62,6 +62,35 @@ enum FileCategory {
   MATERIALES_APOYO
 }
 
+enum ExamAssignmentScope {
+  GLOBAL
+  SCHOOL
+  GROUP
+  STUDENT
+}
+
+enum QuestionSourceType {
+  STORAGE
+  MATERIAL
+  MANUAL
+  IA
+}
+
+enum QuestionGenerationStatus {
+  BORRADOR
+  REVISADA
+  APROBADA
+  RECHAZADA
+}
+
+enum ReportScope {
+  STUDENT
+  GROUP
+  SCHOOL
+  EXAM
+  SYSTEM
+}
+
 model Role {
   id          String   @id @default(uuid())
   code        RoleCode @unique
@@ -75,18 +104,21 @@ model Role {
 }
 
 model User {
-  id           String         @id @default(uuid())
-  name         String
-  email        String         @unique
-  passwordHash String
-  isActive     Boolean        @default(true)
-  roleId       String
-  role         Role           @relation(fields: [roleId], references: [id])
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  id            String          @id @default(uuid())
+  name          String
+  email         String          @unique
+  passwordHash  String
+  isActive      Boolean         @default(true)
+  roleId        String
+  role          Role            @relation(fields: [roleId], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   refreshTokens RefreshToken[]
-  auditLogs    AuditLog[]
-  fileAssets   FileAsset[]
+  auditLogs     AuditLog[]
+  fileAssets    FileAsset[]
+  reportRecords ReportRecord[]
+  examAssignments ExamAssignment[] @relation("ExamAssignmentCreator")
+  questionGenerations QuestionGeneration[]
 
   @@index([roleId])
   @@map("users")
@@ -126,19 +158,126 @@ model SubjectCatalog {
   @@map("subjects")
 }
 
+model School {
+  id          String           @id @default(uuid())
+  code        String?          @unique
+  name        String
+  description String?
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  groups      SchoolGroup[]
+  students    Student[]
+  assignments ExamAssignment[]
+
+  @@index([name])
+  @@index([isActive])
+  @@map("schools")
+}
+
+model SchoolGroup {
+  id           String           @id @default(uuid())
+  schoolId     String
+  school       School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  code         String?
+  name         String
+  grade        String?
+  academicYear Int?
+  isActive     Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  students     Student[]
+  assignments  ExamAssignment[]
+
+  @@unique([schoolId, name, academicYear])
+  @@index([schoolId, isActive])
+  @@map("school_groups")
+}
+
+model Subject {
+  id          String     @id @default(uuid())
+  code        String     @unique
+  name        String
+  description String?
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  topics      Topic[]
+  questions   Question[]
+
+  @@index([isActive])
+  @@map("subjects_catalog")
+}
+
+model Topic {
+  id          String        @id @default(uuid())
+  subjectId   String
+  subject     Subject       @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  code        String?
+  name        String
+  description String?
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  questionLinks QuestionTopic[]
+
+  @@unique([subjectId, name])
+  @@index([subjectId, isActive])
+  @@map("topics")
+}
+
+model QuestionSource {
+  id               String             @id @default(uuid())
+  sourceType       QuestionSourceType
+  logicalPath      String?
+  originalFileName String?
+  sha256           String?
+  metadata         Json?
+  fileAssetId      String?
+  fileAsset        FileAsset?         @relation(fields: [fileAssetId], references: [id], onDelete: SetNull)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  questions        Question[]
+  generations      QuestionGeneration[]
+
+  @@index([sourceType])
+  @@index([logicalPath])
+  @@index([sha256])
+  @@map("question_sources")
+}
+
 model Student {
   id                   String           @id @default(uuid())
+  schoolId             String?
+  school               School?          @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  groupId              String?
+  group                SchoolGroup?     @relation(fields: [groupId], references: [id], onDelete: SetNull)
   nombres              String
   apellidos            String
   tipoIdentificacion   DocumentTypeCode
   numeroIdentificacion String           @unique
   grado                String
+  fechaNacimiento      DateTime?        @db.Date
+  genero               String?
+  institucion          String?
+  jornada              String?
+  grupo                String?
+  departamento         String?
+  municipio            String?
+  email                String?
+  telefono             String?
+  acudienteNombre      String?
+  acudienteEmail       String?
+  acudienteTelefono    String?
   isDeleted            Boolean          @default(false)
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
   examAttempts         ExamAttempt[]
+  assignments          ExamAssignment[]
 
   @@index([grado])
+  @@index([schoolId, groupId])
+  @@index([institucion, grupo])
   @@index([isDeleted])
   @@map("students")
 }
@@ -146,7 +285,14 @@ model Student {
 model Question {
   id                   String             @id @default(uuid())
   codigoInterno        String             @unique
+  sourceId             String?
+  source               QuestionSource?    @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  generationId         String?
+  generation           QuestionGeneration? @relation(fields: [generationId], references: [id], onDelete: SetNull)
+  sourceHash           String?
   area                 QuestionArea
+  subjectId            String?
+  subject              Subject?           @relation(fields: [subjectId], references: [id], onDelete: SetNull)
   competencia          String
   componente           String
   nivelDificultad      QuestionDifficulty
@@ -156,6 +302,7 @@ model Question {
   tipoPregunta         QuestionType       @default(SELECCION_UNICA)
   gradoObjetivo        String
   estado               Boolean            @default(true)
+  isAiGenerated        Boolean            @default(false)
   explicacionRespuesta String?
   observacionesDocente String?
   createdAt            DateTime           @default(now())
@@ -163,12 +310,29 @@ model Question {
   options              QuestionOption[]
   examQuestions        ExamQuestion[]
   studentAnswers       StudentAnswer[]
+  topicLinks           QuestionTopic[]
 
   @@index([area])
+  @@index([subjectId])
+  @@index([sourceId])
+  @@index([generationId])
+  @@index([sourceHash])
   @@index([nivelDificultad])
   @@index([gradoObjetivo])
   @@index([estado])
   @@map("question_bank")
+}
+
+model QuestionTopic {
+  questionId String
+  topicId    String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  topic      Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([questionId, topicId])
+  @@index([topicId])
+  @@map("question_topics")
 }
 
 model QuestionOption {
@@ -205,6 +369,7 @@ model Exam {
   updatedAt           DateTime       @updatedAt
   examQuestions       ExamQuestion[]
   examAttempts        ExamAttempt[]
+  assignments         ExamAssignment[]
 
   @@index([estado])
   @@index([gradoObjetivo])
@@ -212,6 +377,33 @@ model Exam {
   @@index([isDeleted])
   @@unique([nombre, tipoPrueba, gradoObjetivo, isDeleted])
   @@map("exams")
+}
+
+model ExamAssignment {
+  id              String              @id @default(uuid())
+  examId           String
+  exam             Exam                @relation(fields: [examId], references: [id], onDelete: Cascade)
+  scope            ExamAssignmentScope @default(GLOBAL)
+  schoolId         String?
+  school           School?             @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  groupId          String?
+  group            SchoolGroup?        @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  studentId        String?
+  student          Student?            @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  startsAt         DateTime?
+  endsAt           DateTime?
+  maxAttempts      Int                 @default(1)
+  allowRetake      Boolean             @default(false)
+  isActive         Boolean             @default(true)
+  createdByUserId  String?
+  createdByUser    User?               @relation("ExamAssignmentCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  attempts         ExamAttempt[]
+
+  @@index([examId, isActive])
+  @@index([scope, schoolId, groupId, studentId])
+  @@map("exam_assignments")
 }
 
 model ExamQuestion {
@@ -234,43 +426,47 @@ model ExamQuestion {
 }
 
 model ExamAttempt {
-  id                    String         @id @default(uuid())
-  estudianteId          String
-  estudiante            Student        @relation(fields: [estudianteId], references: [id])
-  pruebaId              String
-  prueba                Exam           @relation(fields: [pruebaId], references: [id])
-  fechaInicio           DateTime       @default(now())
-  fechaFin              DateTime?
-  estado                AttemptStatus  @default(PENDIENTE)
+  id                     String         @id @default(uuid())
+  assignmentId           String?
+  assignment             ExamAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  estudianteId           String
+  estudiante             Student        @relation(fields: [estudianteId], references: [id])
+  pruebaId               String
+  prueba                 Exam           @relation(fields: [pruebaId], references: [id])
+  presentacion           Json?
+  fechaInicio            DateTime       @default(now())
+  fechaFin               DateTime?
+  estado                 AttemptStatus  @default(PENDIENTE)
   tiempoEmpleadoSegundos Int?
-  puntajeTotalObtenido  Float          @default(0)
-  porcentajeTotal       Float          @default(0)
-  nivelDesempenoGlobal  String?
-  observaciones         String?
-  createdAt             DateTime       @default(now())
-  updatedAt             DateTime       @updatedAt
-  studentAnswers        StudentAnswer[]
-  areaResults           AreaResult[]
+  puntajeTotalObtenido   Float          @default(0)
+  porcentajeTotal        Float          @default(0)
+  nivelDesempenoGlobal   String?
+  observaciones          String?
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  studentAnswers         StudentAnswer[]
+  areaResults            AreaResult[]
 
   @@index([estudianteId])
   @@index([pruebaId])
+  @@index([assignmentId])
   @@index([estado])
   @@map("exam_attempts")
 }
 
 model StudentAnswer {
-  id                     String         @id @default(uuid())
-  intentoId              String
-  intento                ExamAttempt    @relation(fields: [intentoId], references: [id], onDelete: Cascade)
-  preguntaId             String
-  pregunta               Question       @relation(fields: [preguntaId], references: [id])
-  opcionIdSeleccionada   String
-  opcionSeleccionada     QuestionOption @relation(fields: [opcionIdSeleccionada], references: [id])
-  esCorrecta             Boolean        @default(false)
-  puntajeObtenido        Float          @default(0)
+  id                      String         @id @default(uuid())
+  intentoId               String
+  intento                 ExamAttempt    @relation(fields: [intentoId], references: [id], onDelete: Cascade)
+  preguntaId              String
+  pregunta                Question       @relation(fields: [preguntaId], references: [id])
+  opcionIdSeleccionada    String
+  opcionSeleccionada      QuestionOption @relation(fields: [opcionIdSeleccionada], references: [id])
+  esCorrecta              Boolean        @default(false)
+  puntajeObtenido         Float          @default(0)
   tiempoRespuestaSegundos Int?
-  createdAt              DateTime       @default(now())
-  updatedAt              DateTime       @updatedAt
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
 
   @@unique([intentoId, preguntaId])
   @@index([preguntaId])
@@ -333,6 +529,7 @@ model FileAsset {
   duplicatedFiles  FileAsset[]  @relation("FileAssetDuplication")
   uploadedByUserId String?      @map("uploaded_by_user_id")
   uploadedByUser   User?        @relation(fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+  questionSources  QuestionSource[]
   activo           Boolean      @default(true)
   isCurrent        Boolean      @default(true) @map("is_current")
   createdAt        DateTime     @default(now())
@@ -351,14 +548,51 @@ model FileAsset {
   @@map("file_assets")
 }
 
+model QuestionGeneration {
+  id             String                   @id @default(uuid())
+  sourceId       String?
+  source         QuestionSource?          @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  requestedByUserId String?
+  requestedByUser User?                   @relation(fields: [requestedByUserId], references: [id], onDelete: SetNull)
+  provider       String?
+  model          String?
+  prompt         String
+  context        Json?
+  rawOutput      Json?
+  validation     Json?
+  status         QuestionGenerationStatus @default(BORRADOR)
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+  questions      Question[]
+
+  @@index([status])
+  @@index([provider, model])
+  @@index([sourceId])
+  @@map("question_generations")
+}
+
+model ReportRecord {
+  id               String      @id @default(uuid())
+  scope            ReportScope
+  scopeRef         String?
+  payload          Json
+  generatedByUserId String?
+  generatedByUser   User?      @relation(fields: [generatedByUserId], references: [id], onDelete: SetNull)
+  createdAt        DateTime    @default(now())
+
+  @@index([scope, scopeRef])
+  @@index([generatedByUserId])
+  @@map("report_records")
+}
+
 model AuditLog {
-  id       String   @id @default(uuid())
-  entidad  String
+  id        String   @id @default(uuid())
+  entidad   String
   entidadId String
-  accion   String
-  datos    Json
-  userId   String?
-  user     User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  accion    String
+  datos     Json
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
 
   @@index([entidad, entidadId])
