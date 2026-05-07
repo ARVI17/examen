@@ -82,15 +82,17 @@ router.get(
 );
 router.get(
   "/questions/readiness",
+  authorize(RoleCode.ADMIN),
   validateRequest({ query: questionReadinessQuerySchema }),
   ReportController.questionsReadiness
 );
-router.get("/files/material-local/coverage", ReportController.materialLocalCoverage);
+router.get("/files/material-local/coverage", authorize(RoleCode.ADMIN), ReportController.materialLocalCoverage);
 router.get(
   "/files/coverage/export.csv",
+  authorize(RoleCode.ADMIN),
   validateRequest({ query: filesCoverageQuerySchema }),
   ReportController.filesCoverageExportCsv
 );
-router.get("/files/coverage", validateRequest({ query: filesCoverageQuerySchema }), ReportController.filesCoverage);
+router.get("/files/coverage", authorize(RoleCode.ADMIN), validateRequest({ query: filesCoverageQuerySchema }), ReportController.filesCoverage);
 
 export default router;

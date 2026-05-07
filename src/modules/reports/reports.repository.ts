@@ -14,6 +14,26 @@ export class ReportsRepository {
     });
   }
 
+  static listExamAssignments(examId: string) {
+    return prisma.examAssignment.findMany({
+      where: {
+        examId,
+        isActive: true
+      },
+      select: {
+        scope: true,
+        schoolId: true,
+        groupId: true,
+        student: {
+          select: {
+            schoolId: true,
+            groupId: true
+          }
+        }
+      }
+    });
+  }
+
   static listStudentAttempts(studentId: string, dateRange?: { gte?: Date; lte?: Date }) {
     return prisma.examAttempt.findMany({
       where: {
@@ -179,6 +199,37 @@ export class ReportsRepository {
         isDeleted: false
       }
     });
+  }
+
+  static async countDistinctExamsByScope(filter: {
+    grado?: string;
+    schoolId?: string;
+    groupId?: string;
+    dateRange?: { gte?: Date; lte?: Date };
+  }) {
+    const rows = await prisma.examAttempt.findMany({
+      where: {
+        fechaInicio: filter.dateRange,
+        estudiante: filter.grado
+          ? {
+              grado: filter.grado,
+              schoolId: filter.schoolId,
+              groupId: filter.groupId,
+              isDeleted: false
+            }
+          : {
+              schoolId: filter.schoolId,
+              groupId: filter.groupId,
+              isDeleted: false
+            }
+      },
+      select: {
+        pruebaId: true
+      },
+      distinct: ["pruebaId"]
+    });
+
+    return rows.length;
   }
 
   static countAttempts(filter: Prisma.ExamAttemptWhereInput) {

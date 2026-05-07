@@ -20,22 +20,25 @@ router.get("/public", validateRequest({ query: listPublicExamsQuerySchema }), Ex
 
 router.use(authenticate, authorize(RoleCode.ADMIN, RoleCode.DOCENTE), adminRouteRateLimiter);
 
-router.post("/", validateRequest({ body: createExamSchema }), ExamController.create);
 router.get("/", validateRequest({ query: listExamsQuerySchema }), ExamController.list);
 router.get("/:id", validateRequest({ params: examParamsSchema }), ExamController.getById);
-router.patch("/:id", validateRequest({ params: examParamsSchema, body: updateExamSchema }), ExamController.update);
-router.delete("/:id", validateRequest({ params: examParamsSchema }), ExamController.softDelete);
+router.get("/:id/questions", validateRequest({ params: examParamsSchema }), ExamController.listQuestions);
+router.get("/:id/assignments", validateRequest({ params: examParamsSchema }), ExamController.listAssignments);
+
+router.post("/", authorize(RoleCode.ADMIN), validateRequest({ body: createExamSchema }), ExamController.create);
+router.patch("/:id", authorize(RoleCode.ADMIN), validateRequest({ params: examParamsSchema, body: updateExamSchema }), ExamController.update);
+router.delete("/:id", authorize(RoleCode.ADMIN), validateRequest({ params: examParamsSchema }), ExamController.softDelete);
 router.post(
   "/:id/questions",
+  authorize(RoleCode.ADMIN),
   validateRequest({ params: examParamsSchema, body: addExamQuestionsSchema }),
   ExamController.addQuestions
 );
-router.get("/:id/questions", validateRequest({ params: examParamsSchema }), ExamController.listQuestions);
 router.post(
   "/:id/assignments",
+  authorize(RoleCode.ADMIN),
   validateRequest({ params: examParamsSchema, body: createExamAssignmentSchema }),
   ExamController.createAssignment
 );
-router.get("/:id/assignments", validateRequest({ params: examParamsSchema }), ExamController.listAssignments);
 
 export default router;

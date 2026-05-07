@@ -9,7 +9,7 @@ export class ExamController {
   }
 
   static async list(req: Request, res: Response) {
-    const data = await ExamService.list(req.query as Record<string, unknown>);
+    const data = await ExamService.list(req.query as Record<string, unknown>, req.user);
     return sendSuccess(res, "Listado de pruebas", data);
   }
 
@@ -19,7 +19,7 @@ export class ExamController {
   }
 
   static async getById(req: Request, res: Response) {
-    const data = await ExamService.getById(req.params.id);
+    const data = await ExamService.getById(req.params.id, req.user);
     return sendSuccess(res, "Detalle de prueba", data);
   }
 
@@ -39,7 +39,7 @@ export class ExamController {
   }
 
   static async listQuestions(req: Request, res: Response) {
-    const data = await ExamService.listQuestions(req.params.id);
+    const data = await ExamService.listQuestions(req.params.id, req.user);
     return sendSuccess(res, "Preguntas de la prueba", data);
   }
 
@@ -49,7 +49,7 @@ export class ExamController {
   }
 
   static async listAssignments(req: Request, res: Response) {
-    const data = await ExamService.listAssignments(req.params.id);
+    const data = await ExamService.listAssignments(req.params.id, req.user);
     return sendSuccess(res, "Asignaciones de prueba", data);
   }
 }

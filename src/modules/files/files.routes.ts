@@ -22,6 +22,7 @@ router.use(authenticate, authorize(RoleCode.ADMIN, RoleCode.DOCENTE), adminRoute
 
 router.post(
   "/upload",
+  authorize(RoleCode.ADMIN),
   uploadSingleFile,
   validateUploadedFileIntegrity,
   validateRequest({ body: uploadFileBodySchema }),
@@ -34,12 +35,14 @@ router.get("/:id/download", validateRequest({ params: fileIdParamsSchema }), Fil
 router.get("/:id", validateRequest({ params: fileIdParamsSchema }), FilesController.getById);
 router.patch(
   "/:id",
+  authorize(RoleCode.ADMIN),
   validateRequest({ params: fileIdParamsSchema, body: updateFileBodySchema }),
   FilesController.update
 );
-router.delete("/:id", validateRequest({ params: fileIdParamsSchema }), FilesController.softDelete);
+router.delete("/:id", authorize(RoleCode.ADMIN), validateRequest({ params: fileIdParamsSchema }), FilesController.softDelete);
 router.post(
   "/:id/new-version",
+  authorize(RoleCode.ADMIN),
   uploadSingleFile,
   validateUploadedFileIntegrity,
   validateRequest({ params: fileIdParamsSchema, body: newVersionBodySchema }),
@@ -47,6 +50,7 @@ router.post(
 );
 router.post(
   "/:id/duplicate",
+  authorize(RoleCode.ADMIN),
   validateRequest({ params: fileIdParamsSchema, body: duplicateFileBodySchema }),
   FilesController.duplicate
 );

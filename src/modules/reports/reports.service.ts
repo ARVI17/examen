@@ -1,8 +1,18 @@
 import { AttemptStatus, Prisma, QuestionArea, ReportScope } from "@prisma/client";
 import { AppError } from "../../common/errors/AppError";
+import {
+  assertCanAccessExamAssignments,
+  assertCanAccessStudent,
+  assertDocenteCanUseGroup,
+  assertDocenteCanUseSchool,
+  isDocenteUser,
+  resolveScopedSchoolOrGroup
+} from "../../common/security/access-scope";
 import prisma from "../../common/prisma";
 import { parseDateRange } from "../../common/utils/date";
 import { ReportsRepository } from "./reports.repository";
+
+type ActorUser = Express.Request["user"];
 
 const normalizeSearchText = (value: string) => {
   return value
@@ -263,12 +273,54 @@ const listCoverageAssets = async (typedQuery: FilesCoverageQuery): Promise<Cover
 };
 
 export class ReportService {
-  static async studentSummary(numeroIdentificacion: string, query: Record<string, unknown>) {
+  private static resolveScopedQuery(query: Record<string, unknown>, actor?: ActorUser) {
+    if (!isDocenteUser(actor)) {
+      return query;
+    }
+
+    const scoped = resolveScopedSchoolOrGroup(actor, {
+      schoolId: query.schoolId as string | undefined,
+      groupId: query.groupId as string | undefined
+    });
+
+    return {
+      ...query,
+      schoolId: scoped.schoolId,
+      groupId: scoped.groupId
+    };
+  }
+
+  private static filterAttemptsByActorScope<T extends { estudiante: { schoolId: string | null; groupId: string | null } }>(
+    attempts: T[],
+    actor?: ActorUser
+  ) {
+    if (!isDocenteUser(actor)) {
+      return attempts;
+    }
+
+    return attempts.filter((attempt) => {
+      try {
+        assertCanAccessStudent(actor, {
+          schoolId: attempt.estudiante.schoolId,
+          groupId: attempt.estudiante.groupId
+        });
+        return true;
+      } catch {
+        return false;
+      }
+    });
+  }
+
+  static async studentSummary(numeroIdentificacion: string, query: Record<string, unknown>, actor?: ActorUser) {
     const student = await ReportsRepository.findStudentByDocument(numeroIdentificacion);
 
     if (!student || student.isDeleted) {
       throw new AppError("Estudiante no encontrado", 404, "NOT_FOUND");
     }
+    assertCanAccessStudent(actor, {
+      schoolId: student.schoolId,
+      groupId: student.groupId
+    });
 
     const dateRange = parseDateRange(query.from as string | undefined, query.to as string | undefined);
     const attempts = await ReportsRepository.listStudentAttempts(student.id, dateRange);
@@ -316,12 +368,16 @@ export class ReportService {
     };
   }
 
-  static async studentAreas(numeroIdentificacion: string, query: Record<string, unknown>) {
+  static async studentAreas(numeroIdentificacion: string, query: Record<string, unknown>, actor?: ActorUser) {
     const student = await ReportsRepository.findStudentByDocument(numeroIdentificacion);
 
     if (!student || student.isDeleted) {
       throw new AppError("Estudiante no encontrado", 404, "NOT_FOUND");
     }
+    assertCanAccessStudent(actor, {
+      schoolId: student.schoolId,
+      groupId: student.groupId
+    });
 
     const dateRange = parseDateRange(query.from as string | undefined, query.to as string | undefined);
     const areaResults = await ReportsRepository.listStudentAreaResults(student.id, dateRange);
@@ -378,18 +434,26 @@ export class ReportService {
     };
   }
 
-  static async examSummary(examId: string, query: Record<string, unknown>) {
+  static async examSummary(examId: string, query: Record<string, unknown>, actor?: ActorUser) {
     const exam = await ReportsRepository.findExamById(examId);
 
     if (!exam || exam.isDeleted) {
       throw new AppError("Prueba no encontrada", 404, "NOT_FOUND");
     }
 
+    if (isDocenteUser(actor)) {
+      const assignments = await ReportsRepository.listExamAssignments(examId);
+      assertCanAccessExamAssignments(actor, assignments);
+    }
+
     const dateRange = parseDateRange(query.from as string | undefined, query.to as string | undefined);
-    const attempts = await ReportsRepository.listExamAttempts(examId, {
-      grado: query.grado as string | undefined,
-      dateRange
-    });
+    const attempts = this.filterAttemptsByActorScope(
+      await ReportsRepository.listExamAttempts(examId, {
+        grado: query.grado as string | undefined,
+        dateRange
+      }),
+      actor
+    );
 
     const graded = attempts.filter((attempt) => attempt.estado === AttemptStatus.CALIFICADA);
     const totalUniqueStudents = new Set(attempts.map((attempt) => attempt.estudianteId)).size;
@@ -445,19 +509,27 @@ export class ReportService {
     };
   }
 
-  static async examRanking(examId: string, query: Record<string, unknown>) {
+  static async examRanking(examId: string, query: Record<string, unknown>, actor?: ActorUser) {
     const exam = await ReportsRepository.findExamById(examId);
 
     if (!exam || exam.isDeleted) {
       throw new AppError("Prueba no encontrada", 404, "NOT_FOUND");
     }
 
+    if (isDocenteUser(actor)) {
+      const assignments = await ReportsRepository.listExamAssignments(examId);
+      assertCanAccessExamAssignments(actor, assignments);
+    }
+
     const dateRange = parseDateRange(query.from as string | undefined, query.to as string | undefined);
 
-    const attempts = await ReportsRepository.listExamAttempts(examId, {
-      grado: query.grado as string | undefined,
-      dateRange
-    });
+    const attempts = this.filterAttemptsByActorScope(
+      await ReportsRepository.listExamAttempts(examId, {
+        grado: query.grado as string | undefined,
+        dateRange
+      }),
+      actor
+    );
 
     const ranking = attempts
       .filter((attempt) => attempt.estado === AttemptStatus.CALIFICADA)
@@ -490,12 +562,13 @@ export class ReportService {
     };
   }
 
-  static async dashboardOverview(query: Record<string, unknown>) {
-    const dateRange = parseDateRange(query.from as string | undefined, query.to as string | undefined);
-    const grado = query.grado as string | undefined;
-    const schoolId = query.schoolId as string | undefined;
-    const groupId = query.groupId as string | undefined;
-    const limit = Number(query.limit ?? 20);
+  static async dashboardOverview(query: Record<string, unknown>, actor?: ActorUser) {
+    const scopedQuery = this.resolveScopedQuery(query, actor);
+    const dateRange = parseDateRange(scopedQuery.from as string | undefined, scopedQuery.to as string | undefined);
+    const grado = scopedQuery.grado as string | undefined;
+    const schoolId = scopedQuery.schoolId as string | undefined;
+    const groupId = scopedQuery.groupId as string | undefined;
+    const limit = Number(scopedQuery.limit ?? 20);
 
     const [
       totalStudents,
@@ -507,7 +580,9 @@ export class ReportService {
       areaResults
     ] = await Promise.all([
       ReportsRepository.countStudents({ grado, schoolId, groupId }),
-      ReportsRepository.countExams(),
+      isDocenteUser(actor)
+        ? ReportsRepository.countDistinctExamsByScope({ grado, schoolId, groupId, dateRange })
+        : ReportsRepository.countExams(),
       ReportsRepository.countAttempts({
         fechaInicio: dateRange,
         estudiante: grado
@@ -755,9 +830,9 @@ export class ReportService {
     }
   }
 
-  static async studentPerformance(numeroIdentificacion: string, query: Record<string, unknown>) {
-    const summary = await this.studentSummary(numeroIdentificacion, query);
-    const areas = await this.studentAreas(numeroIdentificacion, query);
+  static async studentPerformance(numeroIdentificacion: string, query: Record<string, unknown>, actor?: ActorUser) {
+    const summary = await this.studentSummary(numeroIdentificacion, query, actor);
+    const areas = await this.studentAreas(numeroIdentificacion, query, actor);
     const average = summary.averagePercentage ?? 0;
     const riskLevel = average >= 75 ? "BAJO" : average >= 50 ? "MEDIO" : "ALTO";
 
@@ -780,8 +855,12 @@ export class ReportService {
     return payload;
   }
 
-  static async studentPerformanceExportCsv(numeroIdentificacion: string, query: Record<string, unknown>) {
-    const performance = await this.studentPerformance(numeroIdentificacion, query);
+  static async studentPerformanceExportCsv(
+    numeroIdentificacion: string,
+    query: Record<string, unknown>,
+    actor?: ActorUser
+  ) {
+    const performance = await this.studentPerformance(numeroIdentificacion, query, actor);
 
     const header = ["student_document", "student_name", "metric", "value"];
     const rows = [
@@ -823,8 +902,12 @@ export class ReportService {
     };
   }
 
-  static async studentPerformanceExportPdf(numeroIdentificacion: string, query: Record<string, unknown>) {
-    const performance = await this.studentPerformance(numeroIdentificacion, query);
+  static async studentPerformanceExportPdf(
+    numeroIdentificacion: string,
+    query: Record<string, unknown>,
+    actor?: ActorUser
+  ) {
+    const performance = await this.studentPerformance(numeroIdentificacion, query, actor);
     const lines = [
       `Documento: ${performance.student.numeroIdentificacion}`,
       `Nombre: ${performance.student.nombres} ${performance.student.apellidos}`.trim(),
@@ -846,14 +929,15 @@ export class ReportService {
     };
   }
 
-  static async classroomSummary(query: Record<string, unknown>) {
-    const dateRange = parseDateRange(query.from as string | undefined, query.to as string | undefined);
-    const schoolId = query.schoolId as string | undefined;
-    const groupId = query.groupId as string | undefined;
-    const grado = query.grado as string | undefined;
-    const grupo = query.grupo as string | undefined;
-    const institucion = query.institucion as string | undefined;
-    const limit = Number(query.limit ?? 3000);
+  static async classroomSummary(query: Record<string, unknown>, actor?: ActorUser) {
+    const scopedQuery = this.resolveScopedQuery(query, actor);
+    const dateRange = parseDateRange(scopedQuery.from as string | undefined, scopedQuery.to as string | undefined);
+    const schoolId = scopedQuery.schoolId as string | undefined;
+    const groupId = scopedQuery.groupId as string | undefined;
+    const grado = scopedQuery.grado as string | undefined;
+    const grupo = scopedQuery.grupo as string | undefined;
+    const institucion = scopedQuery.institucion as string | undefined;
+    const limit = Number(scopedQuery.limit ?? 3000);
 
     const attempts = await ReportsRepository.listAttemptsForScope({
       schoolId,
@@ -882,8 +966,8 @@ export class ReportService {
         grado,
         grupo,
         institucion,
-        from: query.from,
-        to: query.to,
+        from: scopedQuery.from,
+        to: scopedQuery.to,
         limit
       },
       totals: {
@@ -902,8 +986,8 @@ export class ReportService {
     return payload;
   }
 
-  static async classroomSummaryExportCsv(query: Record<string, unknown>) {
-    const summary = await this.classroomSummary(query);
+  static async classroomSummaryExportCsv(query: Record<string, unknown>, actor?: ActorUser) {
+    const summary = await this.classroomSummary(query, actor);
     const header = ["student_document", "student_name", "grado", "grupo", "institucion", "attempts", "average_percentage"];
     const rows = summary.ranking.map((row) => [
       row.numeroIdentificacion,
@@ -922,8 +1006,8 @@ export class ReportService {
     };
   }
 
-  static async classroomSummaryExportPdf(query: Record<string, unknown>) {
-    const summary = await this.classroomSummary(query);
+  static async classroomSummaryExportPdf(query: Record<string, unknown>, actor?: ActorUser) {
+    const summary = await this.classroomSummary(query, actor);
     const lines = [
       `Estudiantes con intentos: ${summary.totals.studentsWithAttempts}`,
       `Intentos totales: ${summary.totals.totalAttempts}`,
@@ -943,7 +1027,8 @@ export class ReportService {
     };
   }
 
-  static async groupSummary(groupId: string, query: Record<string, unknown>) {
+  static async groupSummary(groupId: string, query: Record<string, unknown>, actor?: ActorUser) {
+    assertDocenteCanUseGroup(actor, groupId);
     const group = await ReportsRepository.findGroupById(groupId);
     if (!group) {
       throw new AppError("Grupo no encontrado", 404, "NOT_FOUND");
@@ -951,7 +1036,7 @@ export class ReportService {
     const summary = await this.classroomSummary({
       ...query,
       groupId
-    });
+    }, actor);
 
     const payload = {
       group,
@@ -961,7 +1046,8 @@ export class ReportService {
     return payload;
   }
 
-  static async schoolSummary(schoolId: string, query: Record<string, unknown>) {
+  static async schoolSummary(schoolId: string, query: Record<string, unknown>, actor?: ActorUser) {
+    assertDocenteCanUseSchool(actor, schoolId);
     const school = await ReportsRepository.findSchoolById(schoolId);
     if (!school) {
       throw new AppError("Colegio no encontrado", 404, "NOT_FOUND");
@@ -969,7 +1055,7 @@ export class ReportService {
     const summary = await this.classroomSummary({
       ...query,
       schoolId
-    });
+    }, actor);
 
     const payload = {
       school,

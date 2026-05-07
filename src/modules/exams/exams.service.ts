@@ -1,5 +1,10 @@
 import { ExamStatus, Prisma } from "@prisma/client";
 import { AppError } from "../../common/errors/AppError";
+import {
+  assertCanAccessExamAssignments,
+  canAccessExamAssignment,
+  isDocenteUser
+} from "../../common/security/access-scope";
 import prisma from "../../common/prisma";
 import { createAuditLog } from "../../common/utils/audit";
 import { getPagination } from "../../common/utils/pagination";
@@ -8,7 +13,40 @@ import { ExamsRepository } from "./exams.repository";
 import { ExamAssignmentCreateInput, ExamCreateInput, ExamQuestionAssignment, ExamUpdateInput } from "./exams.types";
 import { normalizeExamType, normalizeGradoObjetivo } from "./exams.utils";
 
+type ActorUser = Express.Request["user"];
+
 export class ExamService {
+  private static filterAssignmentsByScope<T extends { scope: string; schoolId?: string | null; groupId?: string | null; student?: { schoolId: string | null; groupId: string | null } | null }>(
+    actor: ActorUser | undefined,
+    assignments: T[]
+  ) {
+    if (!isDocenteUser(actor)) {
+      return assignments;
+    }
+
+    return assignments.filter((assignment) =>
+      canAccessExamAssignment(actor, {
+        scope: assignment.scope,
+        schoolId: assignment.schoolId ?? null,
+        groupId: assignment.groupId ?? null,
+        student: assignment.student ?? null
+      })
+    );
+  }
+
+  private static assertDocenteExamScope(actor: ActorUser | undefined, assignments: Array<{ scope: string; schoolId?: string | null; groupId?: string | null; student?: { schoolId: string | null; groupId: string | null } | null }>) {
+    if (!isDocenteUser(actor)) {
+      return;
+    }
+
+    assertCanAccessExamAssignments(actor, assignments.map((assignment) => ({
+      scope: assignment.scope,
+      schoolId: assignment.schoolId ?? null,
+      groupId: assignment.groupId ?? null,
+      student: assignment.student ?? null
+    })));
+  }
+
   static async create(payload: ExamCreateInput, actorId?: string) {
     const duplicated = await ExamsRepository.findByNaturalKey({
       nombre: payload.nombre,
@@ -53,17 +91,34 @@ export class ExamService {
     return exam;
   }
 
-  static async getById(id: string) {
+  static async getById(id: string, actor?: ActorUser) {
     const exam = await ExamsRepository.findByIdWithRelations(id);
 
     if (!exam || exam.isDeleted) {
       throw new AppError("Prueba no encontrada", 404, "NOT_FOUND");
     }
 
+    const assignments = await ExamsRepository.listAssignments(id);
+    this.assertDocenteExamScope(actor, assignments);
+
+    if (isDocenteUser(actor)) {
+      exam.examAttempts = exam.examAttempts.filter((attempt) =>
+        canAccessExamAssignment(actor, {
+          scope: "STUDENT",
+          schoolId: attempt.estudiante.schoolId,
+          groupId: attempt.estudiante.groupId,
+          student: {
+            schoolId: attempt.estudiante.schoolId,
+            groupId: attempt.estudiante.groupId
+          }
+        })
+      );
+    }
+
     return exam;
   }
 
-  static async list(query: Record<string, unknown>) {
+  static async list(query: Record<string, unknown>, actor?: ActorUser) {
     const pagination = getPagination(query);
     const typedQuery = query as {
       estado?: ExamStatus;
@@ -76,12 +131,41 @@ export class ExamService {
       ? normalizeGradoObjetivo(typedQuery.gradoObjetivo)
       : undefined;
 
-    const where = {
+    const where: Prisma.ExamWhereInput = {
       estado: typedQuery.estado,
       tipoPrueba: normalizedTipoPrueba,
       gradoObjetivo: normalizedGradoObjetivo,
       isDeleted: false
     };
+
+    if (isDocenteUser(actor)) {
+      const [, examsWithAssignments] = await ExamsRepository.listWithAssignments(where, 0, 5000);
+      const scopedExams = examsWithAssignments.filter((exam) =>
+        this.filterAssignmentsByScope(actor, exam.assignments).length > 0
+      );
+      const paged = scopedExams.slice(pagination.skip, pagination.skip + pagination.limit);
+      return {
+        page: pagination.page,
+        limit: pagination.limit,
+        total: scopedExams.length,
+        items: paged.map((exam) => ({
+          id: exam.id,
+          nombre: exam.nombre,
+          descripcion: exam.descripcion,
+          tipoPrueba: exam.tipoPrueba,
+          gradoObjetivo: exam.gradoObjetivo,
+          estado: exam.estado,
+          tiempoLimiteMinutos: exam.tiempoLimiteMinutos,
+          totalPreguntas: exam.totalPreguntas,
+          puntajeMaximo: exam.puntajeMaximo,
+          instrucciones: exam.instrucciones,
+          fechaPublicacion: exam.fechaPublicacion,
+          isDeleted: exam.isDeleted,
+          createdAt: exam.createdAt,
+          updatedAt: exam.updatedAt
+        }))
+      };
+    }
 
     const [total, exams] = await ExamsRepository.list(where, pagination.skip, pagination.limit);
 
@@ -362,12 +446,15 @@ export class ExamService {
     };
   }
 
-  static async listQuestions(examId: string) {
+  static async listQuestions(examId: string, actor?: ActorUser) {
     const exam = await ExamsRepository.findById(examId);
 
     if (!exam || exam.isDeleted) {
       throw new AppError("Prueba no encontrada", 404, "NOT_FOUND");
     }
+
+    const assignments = await ExamsRepository.listAssignments(examId);
+    this.assertDocenteExamScope(actor, assignments);
 
     const questions = await ExamsRepository.listExamQuestions(examId);
 
@@ -458,17 +545,19 @@ export class ExamService {
     return created;
   }
 
-  static async listAssignments(examId: string) {
+  static async listAssignments(examId: string, actor?: ActorUser) {
     const exam = await ExamsRepository.findById(examId);
     if (!exam || exam.isDeleted) {
       throw new AppError("Prueba no encontrada", 404, "NOT_FOUND");
     }
 
     const items = await ExamsRepository.listAssignments(examId);
+    this.assertDocenteExamScope(actor, items);
+    const scopedItems = this.filterAssignmentsByScope(actor, items);
     return {
       exam,
-      total: items.length,
-      items
+      total: scopedItems.length,
+      items: scopedItems
     };
   }
 }

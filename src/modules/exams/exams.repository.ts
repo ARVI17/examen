@@ -57,6 +57,15 @@ export class ExamsRepository {
             where: {
               isActive: true
             },
+            include: {
+              student: {
+                select: {
+                  id: true,
+                  schoolId: true,
+                  groupId: true
+                }
+              }
+            },
             orderBy: { createdAt: "desc" }
           }
         },
