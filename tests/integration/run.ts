@@ -54,13 +54,33 @@ const main = async () => {
   let adminToken = "";
   let createdQuestionId = "";
   let createdExamId = "";
+  let outOfScopeExamId = "";
   let createdAttemptId = "";
-  let publicAttemptId = "";
+  let studentAttemptId = "";
   let createdFileId = "";
   let selectedOptionId = "";
+  let studentToken = "";
+  let secondStudentToken = "";
+  let docenteToken = "";
+  let docenteUserId = "";
+  let scopedSchoolId = "";
+  let outOfScopeSchoolId = "";
+  let scopedGroupId = "";
   const testDocument = `IT-${runId}`;
   const publicDocument = `PUB-${runId}`;
+  const secondStudentDocument = `PUB2-${runId}`;
+  const scopedStudentDocument = `SCP-${runId}`;
+  const outScopeStudentDocument = `OUT-${runId}`;
   const testEmail = `it.docente.${runId}@saber11.local`;
+
+  await run("Auth | Invalid login does not lock next valid login", async () => {
+    const invalidResponse = await client.post("/api/auth/login").send({
+      email: "admin@saber11.com",
+      password: "admin123-invalid"
+    });
+
+    ensure(invalidResponse.status === 401, `status esperado 401, recibido ${invalidResponse.status}`);
+  });
 
   await run("Auth | Login admin", async () => {
     const response = await client.post("/api/auth/login").send({
@@ -99,6 +119,112 @@ const main = async () => {
 
     ensure(response.status === 201, `status esperado 201, recibido ${response.status}`);
     ensure(response.body?.data?.email === testEmail.toLowerCase(), "correo registrado invalido");
+    docenteUserId = response.body?.data?.id ?? response.body?.data?.user?.id ?? "";
+  });
+
+  await run("Users | Resolve DOCENTE id", async () => {
+    if (!docenteUserId) {
+      const lookupResponse = await client
+        .get(`/api/users?q=${encodeURIComponent(testEmail)}`)
+        .set("Authorization", `Bearer ${adminToken}`);
+
+      ensure(lookupResponse.status === 200, `status esperado 200, recibido ${lookupResponse.status}`);
+      const docente = (lookupResponse.body?.data?.items || []).find(
+        (item: { email?: string; id?: string }) => item.email === testEmail.toLowerCase()
+      );
+      docenteUserId = docente?.id || "";
+    }
+
+    ensure(Boolean(docenteUserId), "docente id no disponible");
+  });
+
+  await run("Schools | Create scoped school", async () => {
+    const response = await client
+      .post("/api/schools")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        code: `SCH-SCP-${runId}`,
+        name: `Colegio Scope ${runId}`
+      });
+
+    ensure(response.status === 201, `status esperado 201, recibido ${response.status}`);
+    scopedSchoolId = response.body?.data?.id;
+    ensure(Boolean(scopedSchoolId), "school id scope no generado");
+  });
+
+  await run("Schools | Create out-of-scope school", async () => {
+    const response = await client
+      .post("/api/schools")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        code: `SCH-OUT-${runId}`,
+        name: `Colegio Out ${runId}`
+      });
+
+    ensure(response.status === 201, `status esperado 201, recibido ${response.status}`);
+    outOfScopeSchoolId = response.body?.data?.id;
+    ensure(Boolean(outOfScopeSchoolId), "school id out-of-scope no generado");
+  });
+
+  await run("Schools | Create scoped group", async () => {
+    const response = await client
+      .post(`/api/schools/${scopedSchoolId}/groups`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        code: `GRP-SCP-${runId}`,
+        name: `Grupo Scope ${runId}`,
+        grade: "11",
+        academic_year: 2026
+      });
+
+    ensure(response.status === 201, `status esperado 201, recibido ${response.status}`);
+    scopedGroupId = response.body?.data?.id;
+    ensure(Boolean(scopedGroupId), "group id scope no generado");
+  });
+
+  await run("Users | Assign DOCENTE scope", async () => {
+    const response = await client
+      .put(`/api/users/${docenteUserId}/scopes`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        scope_school_ids: [scopedSchoolId],
+        scope_group_ids: [scopedGroupId]
+      });
+
+    ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
+  });
+
+  await run("Auth | Login DOCENTE", async () => {
+    const response = await client.post("/api/auth/login").send({
+      email: testEmail,
+      password: "admin12345"
+    });
+
+    ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
+    ensure(typeof response.body?.data?.token === "string", "token docente no presente");
+    docenteToken = response.body.data.token;
+  });
+
+  await run("DOCENTE | Scope keeps access to assigned school", async () => {
+    const response = await client.get("/api/schools").set("Authorization", `Bearer ${docenteToken}`);
+
+    ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
+    const schoolIds = (response.body?.data?.items || []).map((item: { id?: string }) => item.id);
+    ensure(schoolIds.includes(scopedSchoolId), "docente no ve colegio asignado");
+    ensure(!schoolIds.includes(outOfScopeSchoolId), "docente ve colegio fuera de alcance");
+  });
+
+  await run("DOCENTE | Cannot create exam (ADMIN only)", async () => {
+    const response = await client
+      .post("/api/exams")
+      .set("Authorization", `Bearer ${docenteToken}`)
+      .send({
+        nombre: `DOCENTE EXAM ${runId}`,
+        tipo_prueba: "SIMULACRO",
+        grado_objetivo: "11"
+      });
+
+    ensure(response.status === 403, `status esperado 403, recibido ${response.status}`);
   });
 
   await run("Files | Protected route requires token", async () => {
@@ -171,6 +297,24 @@ const main = async () => {
     ensure(Boolean(createdExamId), "exam id no generado");
   });
 
+  await run("Exams | Create out-of-scope exam", async () => {
+    const response = await client
+      .post("/api/exams")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        nombre: `IT OUT EXAM ${runId}`,
+        descripcion: "examen fuera de alcance docente",
+        tipo_prueba: "SIMULACRO",
+        grado_objetivo: "11",
+        tiempo_limite_minutos: 30,
+        puntaje_maximo: 10
+      });
+
+    ensure(response.status === 201, `status esperado 201, recibido ${response.status}`);
+    outOfScopeExamId = response.body?.data?.id;
+    ensure(Boolean(outOfScopeExamId), "exam out-of-scope id no generado");
+  });
+
   await run("Exams | Assign question", async () => {
     const response = await client
       .post(`/api/exams/${createdExamId}/questions`)
@@ -215,6 +359,21 @@ const main = async () => {
     ensure(response.body?.data?.scope === "GLOBAL", "asignacion global no creada");
   });
 
+  await run("Exams | Create out-of-scope SCHOOL assignment", async () => {
+    const response = await client
+      .post(`/api/exams/${outOfScopeExamId}/assignments`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        scope: "SCHOOL",
+        school_id: outOfScopeSchoolId,
+        max_attempts: 1,
+        allow_retake: false
+      });
+
+    ensure(response.status === 201, `status esperado 201, recibido ${response.status}`);
+    ensure(response.body?.data?.scope === "SCHOOL", "asignacion out-of-scope no creada");
+  });
+
   await run("Exams | Public list", async () => {
     const response = await client.get("/api/exams/public?grado_objetivo=11");
     ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
@@ -256,33 +415,245 @@ const main = async () => {
     ensure([200, 201].includes(response.status), `status esperado 200|201, recibido ${response.status}`);
   });
 
-  await run("Attempts | Public start with registered student", async () => {
-    const response = await client.post("/api/attempts/public/start").send({
-      prueba_id: createdExamId,
-      estudiante_registrado: {
-        numero_identificacion: publicDocument
-      }
-    });
+  await run("Students | Create second student for cross-access checks", async () => {
+    const response = await client
+      .post("/api/students")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        nombres: "Publico",
+        apellidos: "Secundario",
+        tipo_identificacion: "TI",
+        numero_identificacion: secondStudentDocument,
+        grado: "11"
+      });
 
-    ensure(response.status === 201, `status esperado 201, recibido ${response.status}`);
-    ensure(response.body?.data?.attempt?.id, "attempt publico no generado");
-    publicAttemptId = response.body?.data?.attempt?.id;
+    ensure([200, 201].includes(response.status), `status esperado 200|201, recibido ${response.status}`);
   });
 
-  await run("Attempts | Public answer", async () => {
-    const response = await client.post(`/api/attempts/public/${publicAttemptId}/answer`).send({
-      pregunta_id: createdQuestionId,
-      opcion_id_seleccionada: selectedOptionId
-    });
+  await run("Students | Create scoped student", async () => {
+    const response = await client
+      .post("/api/students")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        nombres: "Scope",
+        apellidos: "Estudiante",
+        tipo_identificacion: "TI",
+        numero_identificacion: scopedStudentDocument,
+        grado: "11",
+        school_id: scopedSchoolId,
+        group_id: scopedGroupId
+      });
 
-    ensure(response.status === 201, `status esperado 201, recibido ${response.status}`);
+    ensure([200, 201].includes(response.status), `status esperado 200|201, recibido ${response.status}`);
   });
 
-  await run("Attempts | Public submit", async () => {
-    const response = await client.post(`/api/attempts/public/${publicAttemptId}/submit`).send({});
+  await run("Students | Create out-of-scope student", async () => {
+    const response = await client
+      .post("/api/students")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        nombres: "Out",
+        apellidos: "Scope",
+        tipo_identificacion: "TI",
+        numero_identificacion: outScopeStudentDocument,
+        grado: "11",
+        school_id: outOfScopeSchoolId
+      });
+
+    ensure([200, 201].includes(response.status), `status esperado 200|201, recibido ${response.status}`);
+  });
+
+  await run("DOCENTE | Can list assigned students and block out-of-scope student", async () => {
+    const listResponse = await client
+      .get(`/api/students?school_id=${scopedSchoolId}`)
+      .set("Authorization", `Bearer ${docenteToken}`);
+
+    ensure(listResponse.status === 200, `status esperado 200, recibido ${listResponse.status}`);
+    const docs = (listResponse.body?.data?.items || []).map(
+      (item: { numeroIdentificacion?: string }) => item.numeroIdentificacion
+    );
+    ensure(docs.includes(scopedStudentDocument), "docente no ve estudiante en alcance");
+
+    const blockedResponse = await client
+      .get(`/api/students/document/${outScopeStudentDocument}`)
+      .set("Authorization", `Bearer ${docenteToken}`);
+
+    ensure(blockedResponse.status === 403, `status esperado 403, recibido ${blockedResponse.status}`);
+  });
+
+  await run("DOCENTE | Cannot read out-of-scope student report", async () => {
+    const response = await client
+      .get(`/api/reports/student/${outScopeStudentDocument}/summary`)
+      .set("Authorization", `Bearer ${docenteToken}`);
+
+    ensure(response.status === 403, `status esperado 403, recibido ${response.status}`);
+  });
+
+  await run("DOCENTE | Cannot read out-of-scope exam attempts", async () => {
+    const response = await client
+      .get(`/api/attempts/exam/${outOfScopeExamId}`)
+      .set("Authorization", `Bearer ${docenteToken}`);
+
+    ensure(response.status === 403, `status esperado 403, recibido ${response.status}`);
+  });
+
+  await run("DOCENTE | Cannot access admin-only readiness report", async () => {
+    const response = await client
+      .get("/api/reports/questions/readiness")
+      .set("Authorization", `Bearer ${docenteToken}`);
+
+    ensure(response.status === 403, `status esperado 403, recibido ${response.status}`);
+  });
+
+  await run("DOCENTE | Cannot access admin-only files coverage report", async () => {
+    const response = await client
+      .get("/api/reports/files/coverage")
+      .set("Authorization", `Bearer ${docenteToken}`);
+
+    ensure(response.status === 403, `status esperado 403, recibido ${response.status}`);
+  });
+
+  await run("DOCENTE | Cannot upload files (ADMIN only)", async () => {
+    const payload = Buffer.from(JSON.stringify({ test: "docente-upload-forbidden", runId }), "utf-8");
+    const response = await client
+      .post("/api/files/upload")
+      .set("Authorization", `Bearer ${docenteToken}`)
+      .field("categoria", "SIMULACROS")
+      .field("grado_objetivo", "11")
+      .field("tipo_prueba", "Saber 11")
+      .attach("file", payload, {
+        filename: `docente_forbidden_${runId}.json`,
+        contentType: "application/json"
+      });
+
+    ensure(response.status === 403, `status esperado 403, recibido ${response.status}`);
+  });
+
+  await run("StudentAuth | Login by document", async () => {
+    const response = await client.post("/api/student-auth/login").send({
+      tipo_identificacion: "TI",
+      numero_identificacion: publicDocument
+    });
 
     ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
-    ensure(response.body?.data?.porcentajeTotal >= 0, "porcentaje total no retornado en submit publico");
+    ensure(typeof response.body?.data?.token === "string", "token estudiante no presente");
+    studentToken = response.body.data.token;
+  });
+
+  await run("StudentAuth | Login second student by document", async () => {
+    const response = await client.post("/api/student-auth/login").send({
+      tipo_identificacion: "TI",
+      numero_identificacion: secondStudentDocument
+    });
+
+    ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
+    ensure(typeof response.body?.data?.token === "string", "token segundo estudiante no presente");
+    secondStudentToken = response.body.data.token;
+  });
+
+  await run("StudentPortal | Home with student token", async () => {
+    const response = await client.get("/api/student/home").set("Authorization", `Bearer ${studentToken}`);
+
+    ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
+    ensure(response.body?.data?.student?.numeroIdentificacion === publicDocument, "home no corresponde al estudiante");
+  });
+
+  await run("Student token | Cannot access admin students route", async () => {
+    const response = await client.get("/api/students").set("Authorization", `Bearer ${studentToken}`);
+    ensure(response.status === 401, `status esperado 401, recibido ${response.status}`);
+  });
+
+  await run("StudentPortal | Home without student session fails", async () => {
+    const response = await client.get("/api/student/home");
+    ensure(response.status === 401, `status esperado 401, recibido ${response.status}`);
+  });
+
+  await run("StudentPortal | Start with student session", async () => {
+    const response = await client
+      .post("/api/student/attempts/start")
+      .set("Authorization", `Bearer ${studentToken}`)
+      .send({
+        prueba_id: createdExamId
+      });
+
+    ensure(response.status === 201, `status esperado 201, recibido ${response.status}`);
+    ensure(response.body?.data?.attempt?.id, "attempt estudiante no generado");
+    studentAttemptId = response.body?.data?.attempt?.id;
+  });
+
+  await run("StudentPortal | Answer own attempt", async () => {
+    const response = await client
+      .post(`/api/student/attempts/${studentAttemptId}/answer`)
+      .set("Authorization", `Bearer ${studentToken}`)
+      .send({
+        pregunta_id: createdQuestionId,
+        opcion_id_seleccionada: selectedOptionId
+      });
+
+    ensure(response.status === 201, `status esperado 201, recibido ${response.status}`);
+  });
+
+  await run("StudentPortal | Submit own attempt", async () => {
+    const response = await client
+      .post(`/api/student/attempts/${studentAttemptId}/submit`)
+      .set("Authorization", `Bearer ${studentToken}`)
+      .send({});
+
+    ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
+    ensure(response.body?.data?.porcentajeTotal >= 0, "porcentaje total no retornado en submit estudiante");
+  });
+
+  await run("StudentPortal | Authenticated student can read own attempt", async () => {
+    const response = await client
+      .get(`/api/student/attempts/${studentAttemptId}`)
+      .set("Authorization", `Bearer ${studentToken}`);
+
+    ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
+    ensure(response.body?.data?.attempt?.id === studentAttemptId, "detalle intento propio invalido");
+  });
+
+  await run("StudentPortal | Student cannot access other student's attempt", async () => {
+    const response = await client
+      .get(`/api/student/attempts/${studentAttemptId}`)
+      .set("Authorization", `Bearer ${secondStudentToken}`);
+
+    ensure(response.status === 404, `status esperado 404, recibido ${response.status}`);
+  });
+
+  await run("StudentPortal | Student cannot submit other student's attempt", async () => {
+    const response = await client
+      .post(`/api/student/attempts/${studentAttemptId}/submit`)
+      .set("Authorization", `Bearer ${secondStudentToken}`)
+      .send({});
+
+    ensure(response.status === 404, `status esperado 404, recibido ${response.status}`);
+  });
+
+  await run("StudentPortal | Student can read own result by attempt", async () => {
+    const response = await client
+      .get(`/api/student/results/${studentAttemptId}`)
+      .set("Authorization", `Bearer ${studentToken}`)
+      .send({});
+
+    ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
+    ensure(response.body?.data?.attemptId === studentAttemptId, "resultado propio invalido");
+  });
+
+  await run("StudentPortal | Student cannot read other student's result by attempt", async () => {
+    const response = await client
+      .get(`/api/student/results/${studentAttemptId}`)
+      .set("Authorization", `Bearer ${secondStudentToken}`)
+      .send({});
+
+    ensure(response.status === 404, `status esperado 404, recibido ${response.status}`);
+  });
+
+  await run("Attempts | Legacy public route removed", async () => {
+    const response = await client
+      .post("/api/attempts/public/start")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ prueba_id: createdExamId });
+    ensure([401, 404].includes(response.status), `status esperado 401|404, recibido ${response.status}`);
   });
 
   await run("Attempts | Answer question", async () => {
