@@ -4,67 +4,42 @@ import { AttemptService } from "./attempts.service";
 
 export class AttemptController {
   static async start(req: Request, res: Response) {
-    const data = await AttemptService.start(req.body, req.user?.id);
-    return sendSuccess(res, "Intento creado", data, 201);
-  }
-
-  static async publicStart(req: Request, res: Response) {
-    const data = await AttemptService.start(req.body);
+    const data = await AttemptService.start(req.body, req.user);
     return sendSuccess(res, "Intento creado", data, 201);
   }
 
   static async answer(req: Request, res: Response) {
-    const data = await AttemptService.answer(req.params.id, req.body, req.user?.id);
+    const data = await AttemptService.answer(req.params.id, req.body, req.user);
     return sendSuccess(res, "Respuesta registrada", data, 201);
   }
 
   static async submit(req: Request, res: Response) {
-    const data = await AttemptService.submit(req.params.id, req.user?.id);
-    return sendSuccess(res, "Intento enviado y calificado", data);
-  }
-
-  static async publicSubmit(req: Request, res: Response) {
-    const data = await AttemptService.submit(req.params.id);
+    const data = await AttemptService.submit(req.params.id, req.user);
     return sendSuccess(res, "Intento enviado y calificado", data);
   }
 
   static async getById(req: Request, res: Response) {
-    const data = await AttemptService.getById(req.params.id);
-    return sendSuccess(res, "Detalle de intento", data);
-  }
-
-  static async publicGetById(req: Request, res: Response) {
-    const data = await AttemptService.getPublicById(req.params.id);
+    const data = await AttemptService.getById(req.params.id, req.user);
     return sendSuccess(res, "Detalle de intento", data);
   }
 
   static async getByStudentDocument(req: Request, res: Response) {
-    const data = await AttemptService.getByStudentDocument(req.params.numero_identificacion);
+    const data = await AttemptService.getByStudentDocument(req.params.numero_identificacion, req.user);
     return sendSuccess(res, "Intentos por estudiante", data);
   }
 
   static async getByExam(req: Request, res: Response) {
-    const data = await AttemptService.getByExam(req.params.examId);
+    const data = await AttemptService.getByExam(req.params.examId, req.user);
     return sendSuccess(res, "Intentos por prueba", data);
   }
 
   static async stop(req: Request, res: Response) {
-    const data = await AttemptService.stop(req.params.id, req.body, req.user?.id);
-    return sendSuccess(res, "Intento detenido", data);
-  }
-
-  static async publicStop(req: Request, res: Response) {
-    const data = await AttemptService.stop(req.params.id, req.body);
+    const data = await AttemptService.stop(req.params.id, req.body, req.user);
     return sendSuccess(res, "Intento detenido", data);
   }
 
   static async restart(req: Request, res: Response) {
-    const data = await AttemptService.restart(req.params.id, req.body, req.user?.id);
-    return sendSuccess(res, "Intento reiniciado", data);
-  }
-
-  static async publicRestart(req: Request, res: Response) {
-    const data = await AttemptService.restart(req.params.id, req.body);
+    const data = await AttemptService.restart(req.params.id, req.body, req.user);
     return sendSuccess(res, "Intento reiniciado", data);
   }
 
@@ -74,13 +49,14 @@ export class AttemptController {
   }
 
   static async enableSessionTwo(req: Request, res: Response) {
-    const data = await AttemptService.enableSessionTwo(req.params.id, req.user?.id);
+    const data = await AttemptService.enableSessionTwo(req.params.id, req.user);
     return sendSuccess(res, "Jornada 2 habilitada", data);
   }
 
   static async pendingSessionTwo(req: Request, res: Response) {
     const data = await AttemptService.pendingSessionTwo(
-      req.query as unknown as { grado?: string; grupo?: string; limit: number }
+      req.query as unknown as { grado?: string; grupo?: string; limit: number },
+      req.user
     );
     return sendSuccess(res, "Intentos pendientes de jornada 2", data);
   }

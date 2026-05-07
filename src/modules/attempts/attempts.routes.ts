@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { RoleCode } from "@prisma/client";
 import { authenticate, authorize } from "../../middlewares/auth.middleware";
-import { adminRouteRateLimiter, publicSimulatorRateLimiter } from "../../middlewares/rate-limit.middleware";
+import { adminRouteRateLimiter } from "../../middlewares/rate-limit.middleware";
 import { validateRequest } from "../../middlewares/validation.middleware";
 import { AttemptController } from "./attempts.controller";
 import {
@@ -15,31 +15,6 @@ import {
 } from "./attempts.schema";
 
 const router = Router();
-
-router.use("/public", publicSimulatorRateLimiter);
-router.post("/public/start", validateRequest({ body: startAttemptSchema }), AttemptController.publicStart);
-router.get("/public/:id", validateRequest({ params: attemptParamsSchema }), AttemptController.publicGetById);
-router.post(
-  "/public/:id/answer",
-  validateRequest({ params: attemptParamsSchema, body: answerAttemptSchema }),
-  AttemptController.answer
-);
-router.post("/public/:id/submit", validateRequest({ params: attemptParamsSchema }), AttemptController.publicSubmit);
-router.post(
-  "/public/:id/stop",
-  validateRequest({ params: attemptParamsSchema, body: stopAttemptSchema }),
-  AttemptController.publicStop
-);
-router.post(
-  "/public/:id/restart",
-  validateRequest({ params: attemptParamsSchema, body: stopAttemptSchema }),
-  AttemptController.publicRestart
-);
-router.post(
-  "/public/:id/session1/complete",
-  validateRequest({ params: attemptParamsSchema }),
-  AttemptController.completeSessionOne
-);
 
 router.use(authenticate, authorize(RoleCode.ADMIN, RoleCode.DOCENTE), adminRouteRateLimiter);
 

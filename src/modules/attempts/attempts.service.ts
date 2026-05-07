@@ -1,5 +1,6 @@
 import { AttemptStatus, PerformanceLevel, QuestionArea } from "@prisma/client";
 import { AppError } from "../../common/errors/AppError";
+import { assertCanAccessExamAssignments, assertCanAccessStudent, isDocenteUser } from "../../common/security/access-scope";
 import { createAuditLog } from "../../common/utils/audit";
 import { StudentService } from "../students/students.service";
 import { AttemptsRepository } from "./attempts.repository";
@@ -13,6 +14,7 @@ import {
 } from "./attempts.types";
 
 type ExamWithRelations = NonNullable<Awaited<ReturnType<typeof AttemptsRepository.findExamById>>>;
+type ActorUser = Express.Request["user"];
 
 export class AttemptService {
   private static parsePresentation(value: unknown): AttemptPresentation | null {
@@ -282,7 +284,14 @@ export class AttemptService {
     };
   }
 
-  static async start(payload: StartAttemptInput, actorId?: string) {
+  private static assertActorCanAccessStudent(
+    actor: ActorUser | undefined,
+    student: { schoolId: string | null; groupId: string | null }
+  ) {
+    assertCanAccessStudent(actor, student);
+  }
+
+  static async start(payload: StartAttemptInput, actor?: ActorUser) {
     const exam = await AttemptsRepository.findExamById(payload.pruebaId);
 
     if (!exam || exam.isDeleted || exam.estado === "INACTIVO") {
@@ -295,6 +304,12 @@ export class AttemptService {
         if (!student || student.isDeleted) {
           throw new AppError("Estudiante no registrado", 404, "STUDENT_NOT_REGISTERED");
         }
+        if (
+          payload.estudianteRegistrado.tipoIdentificacion &&
+          student.tipoIdentificacion !== payload.estudianteRegistrado.tipoIdentificacion
+        ) {
+          throw new AppError("Estudiante no registrado", 404, "STUDENT_NOT_REGISTERED");
+        }
         return { student, reused: true };
       }
 
@@ -302,8 +317,17 @@ export class AttemptService {
         throw new AppError("Debe enviar estudiante o estudiante_registrado", 400, "VALIDATION_ERROR");
       }
 
-      return StudentService.createOrFind(payload.estudiante, actorId);
+      if (!actor) {
+        throw new AppError("No se permite autorregistro en simulador publico", 403, "STUDENT_SELF_REGISTER_DISABLED");
+      }
+
+      return StudentService.createOrFind(payload.estudiante, actor);
     })();
+
+    this.assertActorCanAccessStudent(actor, {
+      schoolId: resolvedStudent.student.schoolId,
+      groupId: resolvedStudent.student.groupId
+    });
 
     const assignment = this.findMatchingAssignment(exam, {
       id: resolvedStudent.student.id,
@@ -360,7 +384,7 @@ export class AttemptService {
       entidad: "exam_attempts",
       entidadId: attempt.id,
       accion: "START",
-      userId: actorId,
+      userId: actor?.id,
       datos: {
         estudianteId: attempt.estudianteId,
         reusedStudent: resolvedStudent.reused,
@@ -380,12 +404,17 @@ export class AttemptService {
     };
   }
 
-  static async answer(attemptId: string, payload: AnswerAttemptInput, actorId?: string) {
+  static async answer(attemptId: string, payload: AnswerAttemptInput, actor?: ActorUser) {
     const attempt = await AttemptsRepository.findAttemptForAnswer(attemptId);
 
     if (!attempt) {
       throw new AppError("Intento no encontrado", 404, "NOT_FOUND");
     }
+
+    this.assertActorCanAccessStudent(actor, {
+      schoolId: attempt.estudiante.schoolId,
+      groupId: attempt.estudiante.groupId
+    });
 
     if (attempt.estado !== AttemptStatus.INICIADA && attempt.estado !== AttemptStatus.PENDIENTE) {
       throw new AppError("El intento no permite registrar respuestas", 400, "ATTEMPT_CLOSED");
@@ -434,7 +463,7 @@ export class AttemptService {
       entidad: "student_answers",
       entidadId: answer.id,
       accion: "UPSERT",
-      userId: actorId,
+      userId: actor?.id,
       datos: {
         intentoId: attemptId,
         preguntaId: payload.preguntaId,
@@ -483,11 +512,15 @@ export class AttemptService {
     };
   }
 
-  static async enableSessionTwo(attemptId: string, actorId?: string) {
+  static async enableSessionTwo(attemptId: string, actor?: ActorUser) {
     const attempt = await AttemptsRepository.findAttemptById(attemptId);
     if (!attempt) {
       throw new AppError("Intento no encontrado", 404, "NOT_FOUND");
     }
+    this.assertActorCanAccessStudent(actor, {
+      schoolId: attempt.estudiante.schoolId,
+      groupId: attempt.estudiante.groupId
+    });
 
     const exam = await AttemptsRepository.findExamById(attempt.pruebaId);
     if (!exam) {
@@ -501,7 +534,7 @@ export class AttemptService {
 
     presentation.sessionControl.session2Enabled = true;
     presentation.sessionControl.session2EnabledAt = new Date().toISOString();
-    presentation.sessionControl.session2EnabledBy = actorId ?? "SYSTEM";
+    presentation.sessionControl.session2EnabledBy = actor?.id ?? "SYSTEM";
     presentation.sessionControl.currentSessionIndex = 1;
 
     await AttemptsRepository.updateAttemptPresentation(attempt.id, presentation);
@@ -510,7 +543,7 @@ export class AttemptService {
       entidad: "exam_attempts",
       entidadId: attempt.id,
       accion: "SESSION2_ENABLE",
-      userId: actorId,
+      userId: actor?.id,
       datos: {
         session2EnabledAt: presentation.sessionControl.session2EnabledAt
       }
@@ -523,12 +556,17 @@ export class AttemptService {
     };
   }
 
-  static async submit(attemptId: string, actorId?: string) {
+  static async submit(attemptId: string, actor?: ActorUser) {
     const attempt = await AttemptsRepository.findAttemptForSubmit(attemptId);
 
     if (!attempt) {
       throw new AppError("Intento no encontrado", 404, "NOT_FOUND");
     }
+
+    this.assertActorCanAccessStudent(actor, {
+      schoolId: attempt.estudiante.schoolId,
+      groupId: attempt.estudiante.groupId
+    });
 
     if (attempt.estado === AttemptStatus.CALIFICADA) {
       throw new AppError("El intento ya fue calificado", 400, "ATTEMPT_ALREADY_GRADED");
@@ -628,7 +666,7 @@ export class AttemptService {
       entidad: "exam_attempts",
       entidadId: attempt.id,
       accion: "SUBMIT_AND_GRADE",
-      userId: actorId,
+      userId: actor?.id,
       datos: {
         porcentajeTotal,
         puntajeTotal: Number(totalPuntaje.toFixed(2)),
@@ -651,11 +689,15 @@ export class AttemptService {
     };
   }
 
-  static async stop(attemptId: string, payload: StopAttemptInput, actorId?: string) {
+  static async stop(attemptId: string, payload: StopAttemptInput, actor?: ActorUser) {
     const attempt = await AttemptsRepository.findAttemptById(attemptId);
     if (!attempt) {
       throw new AppError("Intento no encontrado", 404, "NOT_FOUND");
     }
+    this.assertActorCanAccessStudent(actor, {
+      schoolId: attempt.estudiante.schoolId,
+      groupId: attempt.estudiante.groupId
+    });
 
     if (attempt.estado === AttemptStatus.CALIFICADA) {
       throw new AppError("No se puede detener un intento calificado", 400, "ATTEMPT_ALREADY_GRADED");
@@ -679,7 +721,7 @@ export class AttemptService {
       entidad: "exam_attempts",
       entidadId: attempt.id,
       accion: "STOP",
-      userId: actorId,
+      userId: actor?.id,
       datos: {
         motivo: payload.motivo
       }
@@ -692,11 +734,15 @@ export class AttemptService {
     };
   }
 
-  static async restart(attemptId: string, payload: StopAttemptInput, actorId?: string) {
+  static async restart(attemptId: string, payload: StopAttemptInput, actor?: ActorUser) {
     const attempt = await AttemptsRepository.findAttemptById(attemptId);
     if (!attempt) {
       throw new AppError("Intento no encontrado", 404, "NOT_FOUND");
     }
+    this.assertActorCanAccessStudent(actor, {
+      schoolId: attempt.estudiante.schoolId,
+      groupId: attempt.estudiante.groupId
+    });
 
     const exam = await AttemptsRepository.findExamById(attempt.pruebaId);
     if (!exam || exam.isDeleted || exam.estado === "INACTIVO") {
@@ -704,7 +750,7 @@ export class AttemptService {
     }
 
     const oldPresentation = this.parsePresentation(attempt.presentacion) ?? this.buildInitialPresentation(exam);
-    await this.stop(attemptId, { motivo: payload.motivo ?? "Reinicio de intento" }, actorId);
+    await this.stop(attemptId, { motivo: payload.motivo ?? "Reinicio de intento" }, actor);
 
     const attemptCount = await AttemptsRepository.countStudentAttemptsByExam({
       estudianteId: attempt.estudianteId,
@@ -740,7 +786,7 @@ export class AttemptService {
       entidad: "exam_attempts",
       entidadId: created.id,
       accion: "RESTART",
-      userId: actorId,
+      userId: actor?.id,
       datos: {
         fromAttemptId: attempt.id,
         motivo: payload.motivo
@@ -750,12 +796,17 @@ export class AttemptService {
     return this.buildAttemptResponse(created.id);
   }
 
-  static async getById(id: string) {
+  static async getById(id: string, actor?: ActorUser) {
     const attempt = await AttemptsRepository.findAttemptById(id);
 
     if (!attempt) {
       throw new AppError("Intento no encontrado", 404, "NOT_FOUND");
     }
+
+    this.assertActorCanAccessStudent(actor, {
+      schoolId: attempt.estudiante.schoolId,
+      groupId: attempt.estudiante.groupId
+    });
 
     return attempt;
   }
@@ -764,8 +815,8 @@ export class AttemptService {
     return this.buildAttemptResponse(id);
   }
 
-  static async getByStudentDocument(numeroIdentificacion: string) {
-    const student = await StudentService.getByDocument(numeroIdentificacion);
+  static async getByStudentDocument(numeroIdentificacion: string, actor?: ActorUser) {
+    const student = await StudentService.getByDocument(numeroIdentificacion, actor);
     const attempts = await AttemptsRepository.listByStudentId(student.id);
 
     return {
@@ -775,14 +826,31 @@ export class AttemptService {
     };
   }
 
-  static async getByExam(examId: string) {
+  static async getByExam(examId: string, actor?: ActorUser) {
     const exam = await AttemptsRepository.findExamById(examId);
 
     if (!exam || exam.isDeleted) {
       throw new AppError("Prueba no encontrada", 404, "NOT_FOUND");
     }
+    if (isDocenteUser(actor)) {
+      assertCanAccessExamAssignments(actor, exam.assignments);
+    }
 
-    const attempts = await AttemptsRepository.listByExamId(examId);
+    const attempts = (await AttemptsRepository.listByExamId(examId)).filter((attempt) => {
+      if (!isDocenteUser(actor)) {
+        return true;
+      }
+
+      try {
+        this.assertActorCanAccessStudent(actor, {
+          schoolId: attempt.estudiante.schoolId,
+          groupId: attempt.estudiante.groupId
+        });
+        return true;
+      } catch {
+        return false;
+      }
+    });
 
     return {
       exam: {
@@ -795,12 +863,22 @@ export class AttemptService {
     };
   }
 
-  static async pendingSessionTwo(query: { grado?: string; grupo?: string; limit: number }) {
+  static async pendingSessionTwo(query: { grado?: string; grupo?: string; limit: number }, actor?: ActorUser) {
     const attempts = await AttemptsRepository.listPendingSessionTwo({ limit: query.limit });
     const now = Date.now();
 
     const items = attempts
       .filter((attempt) => {
+        if (isDocenteUser(actor)) {
+          try {
+            this.assertActorCanAccessStudent(actor, {
+              schoolId: attempt.estudiante.schoolId,
+              groupId: attempt.estudiante.groupId
+            });
+          } catch {
+            return false;
+          }
+        }
         const presentation = this.parsePresentation(attempt.presentacion);
         if (!presentation?.sessionControl?.strictMode) {
           return false;

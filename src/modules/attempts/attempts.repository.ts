@@ -9,6 +9,14 @@ export class AttemptsRepository {
       include: {
         assignments: {
           where: { isActive: true },
+          include: {
+            student: {
+              select: {
+                schoolId: true,
+                groupId: true
+              }
+            }
+          },
           orderBy: { createdAt: "desc" }
         },
         examQuestions: {
@@ -349,4 +357,3 @@ export class AttemptsRepository {
     });
   }
 }
-
