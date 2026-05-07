@@ -16,9 +16,9 @@ export const apiRateLimiter = rateLimit({
   skip: (req) => {
     const routePath = req.path ?? "";
     return (
-      routePath.startsWith("/api/attempts/public") ||
       routePath.startsWith("/api/exams/public") ||
       routePath === "/api/auth/login" ||
+      routePath === "/api/student-auth/login" ||
       routePath === "/api/auth/register"
     );
   },

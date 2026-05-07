@@ -7,12 +7,16 @@ import performanceLevelRoutes from "../modules/performance-levels/performance-le
 import questionRoutes from "../modules/questions/questions.routes";
 import reportRoutes from "../modules/reports/reports.routes";
 import schoolRoutes from "../modules/schools/schools.routes";
+import studentAuthRoutes from "../modules/student-auth/student-auth.routes";
+import studentPortalRoutes from "../modules/student-portal/student-portal.routes";
 import studentRoutes from "../modules/students/students.routes";
 import userRoutes from "../modules/users/users.routes";
 
 const router = Router();
 
 router.use("/auth", authRoutes);
+router.use("/student-auth", studentAuthRoutes);
+router.use("/student", studentPortalRoutes);
 router.use("/users", userRoutes);
 router.use("/schools", schoolRoutes);
 router.use("/students", studentRoutes);
