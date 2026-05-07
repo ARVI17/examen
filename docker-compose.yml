@@ -26,6 +26,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      ollama:
+        condition: service_started
     environment:
       DATABASE_URL: "postgresql://saber11:saber11password@db:5432/saber11db?schema=public"
       PORT: "4000"
@@ -60,12 +62,29 @@ services:
       BACKUP_DB_USER: "saber11"
       BACKUP_DB_PASSWORD: "saber11password"
       BACKUP_DB_NAME: "saber11db"
+      AI_PROVIDER: "ollama"
+      AI_BASE_URL: "http://ollama:11434/v1"
+      AI_API_KEY: "ollama"
+      OLLAMA_BASE_URL: "http://ollama:11434"
+      OLLAMA_HOST: "http://ollama:11434"
+      OLLAMA_OPENAI_BASE_URL: "http://ollama:11434/v1"
     ports:
       - "4000:4000"
     volumes:
       - ./storage:/app/storage
+      - ./material:/app/material:ro
     command: sh -c "npx prisma migrate deploy && npm run start"
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: saber11-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
 
 volumes:
   db-data:
+  ollama-data:
 
