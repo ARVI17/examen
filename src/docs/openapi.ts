@@ -6,7 +6,7 @@ export const openApiDocument = {
     title: "Saber11 Backend API",
     version: "1.2.0",
     description:
-      "API REST para gestion de evaluacion academica (auth, estudiantes, preguntas, examenes, intentos, reportes) y modulo documental."
+      "API REST para gestion de evaluacion academica (auth, estudiantes, preguntas, examenes, intentos, reportes) y modulo documental. Breaking change: las rutas /api/attempts/public/* fueron retiradas; usar /api/student/* con sesion de estudiante."
   },
   servers: [{ url: "http://localhost:4000", description: "Local" }],
   components: {
@@ -60,6 +60,19 @@ export const openApiDocument = {
       get: {
         tags: ["Auth"],
         summary: "Usuario autenticado actual",
+        security: bearerSecurity
+      }
+    },
+    "/api/student-auth/login": {
+      post: {
+        tags: ["StudentAuth"],
+        summary: "Login de estudiante por tipo y numero de identificacion"
+      }
+    },
+    "/api/student-auth/me": {
+      get: {
+        tags: ["StudentAuth"],
+        summary: "Sesion de estudiante actual",
         security: bearerSecurity
       }
     },
@@ -236,30 +249,6 @@ export const openApiDocument = {
         security: bearerSecurity
       }
     },
-    "/api/attempts/public/start": {
-      post: {
-        tags: ["Attempts"],
-        summary: "Iniciar intento publico"
-      }
-    },
-    "/api/attempts/public/{id}": {
-      get: {
-        tags: ["Attempts"],
-        summary: "Detalle de intento publico"
-      }
-    },
-    "/api/attempts/public/{id}/answer": {
-      post: {
-        tags: ["Attempts"],
-        summary: "Registrar respuesta en intento publico"
-      }
-    },
-    "/api/attempts/public/{id}/submit": {
-      post: {
-        tags: ["Attempts"],
-        summary: "Enviar intento publico y calificar"
-      }
-    },
     "/api/attempts/{id}/session2/enable": {
       post: {
         tags: ["Attempts"],
@@ -285,6 +274,69 @@ export const openApiDocument = {
       get: {
         tags: ["Attempts"],
         summary: "Intentos por examen",
+        security: bearerSecurity
+      }
+    },
+    "/api/student/home": {
+      get: {
+        tags: ["StudentPortal"],
+        summary: "Inicio del portal estudiante (ruta oficial)",
+        security: bearerSecurity
+      }
+    },
+    "/api/student/exams": {
+      get: {
+        tags: ["StudentPortal"],
+        summary: "Pruebas disponibles para el estudiante",
+        security: bearerSecurity
+      }
+    },
+    "/api/student/attempts/start": {
+      post: {
+        tags: ["StudentPortal"],
+        summary: "Iniciar intento para estudiante autenticado",
+        security: bearerSecurity
+      }
+    },
+    "/api/student/attempts/{id}": {
+      get: {
+        tags: ["StudentPortal"],
+        summary: "Detalle de intento del estudiante",
+        security: bearerSecurity
+      }
+    },
+    "/api/student/attempts/{id}/answer": {
+      post: {
+        tags: ["StudentPortal"],
+        summary: "Responder pregunta en intento propio",
+        security: bearerSecurity
+      }
+    },
+    "/api/student/attempts/{id}/submit": {
+      post: {
+        tags: ["StudentPortal"],
+        summary: "Enviar intento propio",
+        security: bearerSecurity
+      }
+    },
+    "/api/student/attempts/{id}/session1/complete": {
+      post: {
+        tags: ["StudentPortal"],
+        summary: "Completar sesion 1 y esperar sesion 2",
+        security: bearerSecurity
+      }
+    },
+    "/api/student/results": {
+      get: {
+        tags: ["StudentPortal"],
+        summary: "Historial de resultados propios",
+        security: bearerSecurity
+      }
+    },
+    "/api/student/results/{id}": {
+      get: {
+        tags: ["StudentPortal"],
+        summary: "Resultado propio por intento",
         security: bearerSecurity
       }
     },
@@ -343,7 +395,7 @@ export const openApiDocument = {
     "/api/reports/questions/readiness": {
       get: {
         tags: ["Reports"],
-        summary: "Cobertura de banco por area",
+        summary: "Cobertura de banco por area (admin-only)",
         security: bearerSecurity
       }
     },
@@ -371,14 +423,14 @@ export const openApiDocument = {
     "/api/reports/files/coverage": {
       get: {
         tags: ["Reports"],
-        summary: "Cobertura documental por anio/tipo/categoria",
+        summary: "Cobertura documental por anio/tipo/categoria (admin-only)",
         security: bearerSecurity
       }
     },
     "/api/reports/files/coverage/export.csv": {
       get: {
         tags: ["Reports"],
-        summary: "Exportar cobertura documental CSV",
+        summary: "Exportar cobertura documental CSV (admin-only)",
         security: bearerSecurity
       }
     },
@@ -404,7 +456,7 @@ export const openApiDocument = {
     "/api/files/upload": {
       post: {
         tags: ["Files"],
-        summary: "Subir archivo y registrar metadata",
+        summary: "Subir archivo y registrar metadata (admin-only)",
         security: bearerSecurity
       }
     },
@@ -437,12 +489,12 @@ export const openApiDocument = {
       },
       patch: {
         tags: ["Files"],
-        summary: "Actualizar metadata",
+        summary: "Actualizar metadata (admin-only)",
         security: bearerSecurity
       },
       delete: {
         tags: ["Files"],
-        summary: "Eliminar logicamente",
+        summary: "Eliminar logicamente (admin-only)",
         security: bearerSecurity
       }
     },
@@ -456,14 +508,14 @@ export const openApiDocument = {
     "/api/files/{id}/new-version": {
       post: {
         tags: ["Files"],
-        summary: "Crear nueva version desde archivo base",
+        summary: "Crear nueva version desde archivo base (admin-only)",
         security: bearerSecurity
       }
     },
     "/api/files/{id}/duplicate": {
       post: {
         tags: ["Files"],
-        summary: "Duplicar archivo para reutilizacion",
+        summary: "Duplicar archivo para reutilizacion (admin-only)",
         security: bearerSecurity
       }
     }

@@ -199,6 +199,31 @@ API:
 - `http://localhost:4000/connection-info`
 - `http://localhost:4000/api/docs`
 
+### Portal estudiante seguro (sin autorregistro)
+
+- Login estudiante: `POST /api/student-auth/login` con `tipo_identificacion` y `numero_identificacion`.
+- Sesion estudiante: `GET /api/student-auth/me`.
+- Portal estudiante (requiere token de estudiante):
+  - `GET /api/student/home`
+  - `GET /api/student/exams`
+  - `POST /api/student/attempts/start`
+  - `GET /api/student/attempts/:id`
+  - `POST /api/student/attempts/:id/answer`
+  - `POST /api/student/attempts/:id/submit`
+  - `GET /api/student/results`
+- La vista web estudiante usa estas rutas en `http://localhost:4000/simulador`.
+- Breaking change:
+  - Las rutas `/api/attempts/public/*` fueron retiradas.
+  - Usa exclusivamente `/api/student/*` con sesion de estudiante.
+
+### Alcance docente por colegio/grupo
+
+- El rol `DOCENTE` ahora requiere alcance explícito en backend (colegios/grupos asignados).
+- Administración de alcance:
+  - `GET /api/users/:id/scopes`
+  - `PUT /api/users/:id/scopes` con `scope_school_ids` y/o `scope_group_ids`.
+- Sin alcance configurado, el docente recibe `DOCENTE_SCOPE_NOT_CONFIGURED` en rutas protegidas.
+
 ### Nuevos comandos utiles (multi-colegio / ingesta / MCP)
 
 ```bash
@@ -371,8 +396,8 @@ storage/bancos_preguntas/icfes/audits/
 - `GET /api/exams`
 - `POST /api/attempts/start`
 - `GET /api/reports/dashboard/overview`
-- `GET /api/reports/files/coverage`
-- `GET /api/reports/files/coverage/export.csv`
+- `GET /api/reports/files/coverage` (**admin-only**)
+- `GET /api/reports/files/coverage/export.csv` (**admin-only**)
 - `GET /api/exams/public`
 - `POST /api/exams/:id/assignments`
 - `GET /api/exams/:id/assignments`
@@ -383,18 +408,18 @@ storage/bancos_preguntas/icfes/audits/
 - `POST /api/schools/:id/groups`
 - `POST /api/students/bulk`
 - `GET /api/students/bulk/template.csv`
-- `POST /api/attempts/public/start`
-- `POST /api/attempts/public/:id/answer`
-- `POST /api/attempts/public/:id/submit`
-- `GET /api/attempts/public/:id`
-- `POST /api/attempts/public/:id/session1/complete`
+- `POST /api/student/attempts/start` (oficial portal estudiante)
+- `POST /api/student/attempts/:id/answer` (oficial portal estudiante)
+- `POST /api/student/attempts/:id/submit` (oficial portal estudiante)
+- `GET /api/student/attempts/:id` (oficial portal estudiante)
+- `GET /api/student/results` (oficial portal estudiante)
 - `POST /api/attempts/:id/session2/enable`
 - `GET /api/attempts/pending-session2`
 - `GET /api/reports/classroom/summary`
 - `GET /api/reports/school/:schoolId/summary`
 - `GET /api/reports/group/:groupId/summary`
-- `GET /api/reports/questions/readiness`
-- `GET /api/reports/files/material-local/coverage`
+- `GET /api/reports/questions/readiness` (**admin-only**)
+- `GET /api/reports/files/material-local/coverage` (**admin-only**)
 - `GET /api/reports/student/:numero_identificacion/performance`
 - `GET /api/reports/student/:numero_identificacion/performance/export.csv`
 
@@ -434,9 +459,9 @@ Herramientas disponibles:
    - `PATCH /api/exams/:id` (`estado=PUBLICADO`)
    - `POST /api/exams/:id/assignments`
 8. Estudiante inicia intento:
-   - `POST /api/attempts/public/start`
-   - `POST /api/attempts/public/:id/answer`
-   - `POST /api/attempts/public/:id/submit`
+   - `POST /api/student/attempts/start`
+   - `POST /api/student/attempts/:id/answer`
+   - `POST /api/student/attempts/:id/submit`
 9. Revisa resultados:
    - `GET /api/reports/student/:numero_identificacion/performance`
    - `GET /api/reports/classroom/summary`
@@ -467,14 +492,17 @@ curl -H "Authorization: Bearer <TOKEN>" \
   -o files_coverage.csv
 ```
 
-## Endpoints del modulo Files (requieren JWT + rol `ADMIN|DOCENTE`)
+## Endpoints del modulo Files
 
-- `POST /api/files/upload`
+Lectura (`ADMIN|DOCENTE`):
 - `GET /api/files`
 - `GET /api/files/search`
 - `GET /api/files/:id`
 - `GET /api/files/:id/download`
 - `GET /api/files/download`
+
+Mutaciones (**admin-only**):
+- `POST /api/files/upload`
 - `PATCH /api/files/:id`
 - `DELETE /api/files/:id`
 - `POST /api/files/:id/new-version`
