@@ -10,7 +10,7 @@ export class StudentController {
         csvText: typeof req.body?.csv === "string" ? req.body.csv : undefined,
         delimiter: typeof req.body?.delimiter === "string" ? req.body.delimiter : undefined
       },
-      req.user?.id
+      req.user
     );
 
     return sendSuccess(res, "Carga masiva de estudiantes procesada", data, 201);
@@ -29,7 +29,7 @@ export class StudentController {
   }
 
   static async create(req: Request, res: Response) {
-    const data = await StudentService.createOrFind(req.body, req.user?.id);
+    const data = await StudentService.createOrFind(req.body, req.user);
 
     return sendSuccess(
       res,
@@ -40,37 +40,37 @@ export class StudentController {
   }
 
   static async list(req: Request, res: Response) {
-    const data = await StudentService.list(req.query as Record<string, unknown>);
+    const data = await StudentService.list(req.query as Record<string, unknown>, req.user);
     return sendSuccess(res, "Listado de estudiantes", data);
   }
 
   static async getById(req: Request, res: Response) {
-    const data = await StudentService.getById(req.params.id);
+    const data = await StudentService.getById(req.params.id, req.user);
     return sendSuccess(res, "Detalle de estudiante", data);
   }
 
   static async getByDocument(req: Request, res: Response) {
-    const data = await StudentService.getByDocument(req.params.numero_identificacion);
+    const data = await StudentService.getByDocument(req.params.numero_identificacion, req.user);
     return sendSuccess(res, "Detalle de estudiante", data);
   }
 
   static async update(req: Request, res: Response) {
-    const data = await StudentService.update(req.params.id, req.body, req.user?.id);
+    const data = await StudentService.update(req.params.id, req.body, req.user);
     return sendSuccess(res, "Estudiante actualizado", data);
   }
 
   static async softDelete(req: Request, res: Response) {
-    await StudentService.softDelete(req.params.id, req.user?.id);
+    await StudentService.softDelete(req.params.id, req.user);
     return sendSuccess(res, "Estudiante eliminado logicamente", null);
   }
 
   static async historyById(req: Request, res: Response) {
-    const data = await StudentService.historyById(req.params.id);
+    const data = await StudentService.historyById(req.params.id, req.user);
     return sendSuccess(res, "Historial por id", data);
   }
 
   static async historyByDocument(req: Request, res: Response) {
-    const data = await StudentService.historyByDocument(req.params.numero_identificacion);
+    const data = await StudentService.historyByDocument(req.params.numero_identificacion, req.user);
     return sendSuccess(res, "Historial por documento", data);
   }
 }

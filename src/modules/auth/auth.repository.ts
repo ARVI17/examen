@@ -5,14 +5,36 @@ export class AuthRepository {
   static findUserByEmail(email: string) {
     return prisma.user.findUnique({
       where: { email },
-      include: { role: true }
+      include: {
+        role: true,
+        scopeAssignments: {
+          include: {
+            group: {
+              select: {
+                schoolId: true
+              }
+            }
+          }
+        }
+      }
     });
   }
 
   static findUserById(id: string) {
     return prisma.user.findUnique({
       where: { id },
-      include: { role: true }
+      include: {
+        role: true,
+        scopeAssignments: {
+          include: {
+            group: {
+              select: {
+                schoolId: true
+              }
+            }
+          }
+        }
+      }
     });
   }
 

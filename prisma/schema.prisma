@@ -119,6 +119,7 @@ model User {
   reportRecords ReportRecord[]
   examAssignments ExamAssignment[] @relation("ExamAssignmentCreator")
   questionGenerations QuestionGeneration[]
+  scopeAssignments UserScopeAssignment[]
 
   @@index([roleId])
   @@map("users")
@@ -169,6 +170,7 @@ model School {
   groups      SchoolGroup[]
   students    Student[]
   assignments ExamAssignment[]
+  userScopeAssignments UserScopeAssignment[]
 
   @@index([name])
   @@index([isActive])
@@ -188,10 +190,29 @@ model SchoolGroup {
   updatedAt    DateTime         @updatedAt
   students     Student[]
   assignments  ExamAssignment[]
+  userScopeAssignments UserScopeAssignment[]
 
   @@unique([schoolId, name, academicYear])
   @@index([schoolId, isActive])
   @@map("school_groups")
+}
+
+model UserScopeAssignment {
+  id        String      @id @default(uuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schoolId  String?
+  school    School?     @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  groupId   String?
+  group     SchoolGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([schoolId])
+  @@index([groupId])
+  @@unique([userId, schoolId, groupId])
+  @@map("user_scope_assignments")
 }
 
 model Subject {

@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { AppError } from "../../common/errors/AppError";
+import { ensureDocenteScopeConfigured, getNormalizedScope, isDocenteUser } from "../../common/security/access-scope";
 import { createAuditLog } from "../../common/utils/audit";
 import { getPagination } from "../../common/utils/pagination";
 import { SchoolsRepository } from "./schools.repository";
@@ -9,6 +10,8 @@ import {
   SchoolGroupUpdateInput,
   SchoolUpdateInput
 } from "./schools.types";
+
+type ActorUser = Express.Request["user"];
 
 export class SchoolsService {
   static async createSchool(payload: SchoolCreateInput, actorId?: string) {
@@ -35,11 +38,11 @@ export class SchoolsService {
     return school;
   }
 
-  static async listSchools(query: Record<string, unknown>) {
+  static async listSchools(query: Record<string, unknown>, actor?: ActorUser) {
     const pagination = getPagination(query);
     const typedQuery = query as { q?: string; isActive?: boolean };
 
-    const where: Prisma.SchoolWhereInput = {
+    let where: Prisma.SchoolWhereInput = {
       isActive: typedQuery.isActive,
       OR: typedQuery.q
         ? [
@@ -48,6 +51,17 @@ export class SchoolsService {
           ]
         : undefined
     };
+
+    if (isDocenteUser(actor)) {
+      ensureDocenteScopeConfigured(actor);
+      const scope = getNormalizedScope(actor);
+      where = {
+        ...where,
+        id: {
+          in: scope.schoolIds
+        }
+      };
+    }
 
     const [total, items] = await SchoolsRepository.listSchools(where, pagination.skip, pagination.limit);
     return {
@@ -58,7 +72,15 @@ export class SchoolsService {
     };
   }
 
-  static async getSchoolById(id: string) {
+  static async getSchoolById(id: string, actor?: ActorUser) {
+    if (isDocenteUser(actor)) {
+      ensureDocenteScopeConfigured(actor);
+      const scope = getNormalizedScope(actor);
+      if (!scope.schoolIds.includes(id)) {
+        throw new AppError("No autorizado para este colegio", 403, "DOCENTE_SCOPE_FORBIDDEN");
+      }
+    }
+
     const school = await SchoolsRepository.findSchoolById(id);
     if (!school) {
       throw new AppError("Colegio no encontrado", 404, "NOT_FOUND");
@@ -129,8 +151,8 @@ export class SchoolsService {
     return created;
   }
 
-  static async listGroupsBySchool(schoolId: string, query: Record<string, unknown>) {
-    await this.getSchoolById(schoolId);
+  static async listGroupsBySchool(schoolId: string, query: Record<string, unknown>, actor?: ActorUser) {
+    await this.getSchoolById(schoolId, actor);
 
     const pagination = getPagination(query);
     const typedQuery = query as {
@@ -153,6 +175,18 @@ export class SchoolsService {
     };
 
     const [total, items] = await SchoolsRepository.listGroupsBySchool(schoolId, where, pagination.skip, pagination.limit);
+
+    if (isDocenteUser(actor)) {
+      const scope = getNormalizedScope(actor);
+      const filtered = items.filter((group) => scope.groupIds.length === 0 || scope.groupIds.includes(group.id));
+      return {
+        page: pagination.page,
+        limit: pagination.limit,
+        total: filtered.length,
+        items: filtered
+      };
+    }
+
     return {
       page: pagination.page,
       limit: pagination.limit,
@@ -196,4 +230,3 @@ export class SchoolsService {
     return updated;
   }
 }
-

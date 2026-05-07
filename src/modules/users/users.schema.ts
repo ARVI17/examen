@@ -25,14 +25,20 @@ export const createUserSchema = z
     password: passwordSchema,
     role: z.nativeEnum(RoleCode).optional(),
     is_active: z.boolean().optional(),
-    isActive: z.boolean().optional()
+    isActive: z.boolean().optional(),
+    scope_school_ids: z.array(z.string().uuid("scope_school_ids invalido")).optional(),
+    scope_group_ids: z.array(z.string().uuid("scope_group_ids invalido")).optional(),
+    scopeSchoolIds: z.array(z.string().uuid("scopeSchoolIds invalido")).optional(),
+    scopeGroupIds: z.array(z.string().uuid("scopeGroupIds invalido")).optional()
   })
   .transform((value) => ({
     name: value.name,
     email: value.email,
     password: value.password,
     role: value.role,
-    isActive: value.is_active ?? value.isActive ?? true
+    isActive: value.is_active ?? value.isActive ?? true,
+    scopeSchoolIds: value.scope_school_ids ?? value.scopeSchoolIds,
+    scopeGroupIds: value.scope_group_ids ?? value.scopeGroupIds
   }));
 
 export const updateUserSchema = z
@@ -42,7 +48,11 @@ export const updateUserSchema = z
     password: passwordSchema.optional(),
     role: z.nativeEnum(RoleCode).optional(),
     is_active: z.boolean().optional(),
-    isActive: z.boolean().optional()
+    isActive: z.boolean().optional(),
+    scope_school_ids: z.array(z.string().uuid("scope_school_ids invalido")).optional(),
+    scope_group_ids: z.array(z.string().uuid("scope_group_ids invalido")).optional(),
+    scopeSchoolIds: z.array(z.string().uuid("scopeSchoolIds invalido")).optional(),
+    scopeGroupIds: z.array(z.string().uuid("scopeGroupIds invalido")).optional()
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: "Debe enviar al menos un campo para actualizar"
@@ -52,12 +62,26 @@ export const updateUserSchema = z
     email: value.email,
     password: value.password,
     role: value.role,
-    isActive: value.is_active ?? value.isActive
+    isActive: value.is_active ?? value.isActive,
+    scopeSchoolIds: value.scope_school_ids ?? value.scopeSchoolIds,
+    scopeGroupIds: value.scope_group_ids ?? value.scopeGroupIds
   }));
 
 export const userParamsSchema = z.object({
   id: z.string().uuid("id invalido")
 });
+
+export const updateUserScopesSchema = z
+  .object({
+    scope_school_ids: z.array(z.string().uuid("scope_school_ids invalido")).optional(),
+    scope_group_ids: z.array(z.string().uuid("scope_group_ids invalido")).optional(),
+    scopeSchoolIds: z.array(z.string().uuid("scopeSchoolIds invalido")).optional(),
+    scopeGroupIds: z.array(z.string().uuid("scopeGroupIds invalido")).optional()
+  })
+  .transform((value) => ({
+    scopeSchoolIds: value.scope_school_ids ?? value.scopeSchoolIds ?? [],
+    scopeGroupIds: value.scope_group_ids ?? value.scopeGroupIds ?? []
+  }));
 
 export const listUsersQuerySchema = z
   .object({

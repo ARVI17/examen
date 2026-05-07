@@ -9,12 +9,12 @@ export class SchoolsController {
   }
 
   static async listSchools(req: Request, res: Response) {
-    const data = await SchoolsService.listSchools(req.query as Record<string, unknown>);
+    const data = await SchoolsService.listSchools(req.query as Record<string, unknown>, req.user);
     return sendSuccess(res, "Listado de colegios", data);
   }
 
   static async getSchoolById(req: Request, res: Response) {
-    const data = await SchoolsService.getSchoolById(req.params.id);
+    const data = await SchoolsService.getSchoolById(req.params.id, req.user);
     return sendSuccess(res, "Detalle de colegio", data);
   }
 
@@ -29,7 +29,7 @@ export class SchoolsController {
   }
 
   static async listGroups(req: Request, res: Response) {
-    const data = await SchoolsService.listGroupsBySchool(req.params.id, req.query as Record<string, unknown>);
+    const data = await SchoolsService.listGroupsBySchool(req.params.id, req.query as Record<string, unknown>, req.user);
     return sendSuccess(res, "Listado de grupos", data);
   }
 
@@ -38,4 +38,3 @@ export class SchoolsController {
     return sendSuccess(res, "Grupo actualizado", data);
   }
 }
-

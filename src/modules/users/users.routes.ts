@@ -5,7 +5,13 @@ import { authenticate, authorize } from "../../middlewares/auth.middleware";
 import { adminRouteRateLimiter } from "../../middlewares/rate-limit.middleware";
 import { validateRequest } from "../../middlewares/validation.middleware";
 import { UsersController } from "./users.controller";
-import { createUserSchema, listUsersQuerySchema, updateUserSchema, userParamsSchema } from "./users.schema";
+import {
+  createUserSchema,
+  listUsersQuerySchema,
+  updateUserSchema,
+  updateUserScopesSchema,
+  userParamsSchema
+} from "./users.schema";
 
 const router = Router();
 const bulkUpload = multer({
@@ -21,6 +27,12 @@ router.get("/bulk/template.csv", UsersController.bulkTemplate);
 router.post("/bulk", bulkUpload.single("file"), UsersController.bulkCreate);
 router.get("/", validateRequest({ query: listUsersQuerySchema }), UsersController.list);
 router.post("/", validateRequest({ body: createUserSchema }), UsersController.create);
+router.get("/:id/scopes", validateRequest({ params: userParamsSchema }), UsersController.getScopes);
+router.put(
+  "/:id/scopes",
+  validateRequest({ params: userParamsSchema, body: updateUserScopesSchema }),
+  UsersController.setScopes
+);
 router.patch("/:id", validateRequest({ params: userParamsSchema, body: updateUserSchema }), UsersController.update);
 
 export default router;

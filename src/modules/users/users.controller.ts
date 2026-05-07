@@ -42,4 +42,14 @@ export class UsersController {
     const data = await UsersService.update(req.params.id, req.body, req.user!.id);
     return sendSuccess(res, "Usuario actualizado", data);
   }
+
+  static async getScopes(req: Request, res: Response) {
+    const data = await UsersService.getScopes(req.params.id);
+    return sendSuccess(res, "Alcance del usuario", data);
+  }
+
+  static async setScopes(req: Request, res: Response) {
+    const data = await UsersService.setScopes(req.params.id, req.body, req.user!.id);
+    return sendSuccess(res, "Alcance del usuario actualizado", data);
+  }
 }

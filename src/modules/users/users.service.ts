@@ -16,6 +16,7 @@ const serializeUser = (user: {
   createdAt: Date;
   updatedAt: Date;
   role: { code: RoleCode; name: string };
+  scopeAssignments: Array<{ schoolId: string | null; groupId: string | null; group?: { schoolId: string } | null }>;
 }) => ({
   id: user.id,
   name: user.name,
@@ -23,6 +24,18 @@ const serializeUser = (user: {
   isActive: user.isActive,
   role: user.role.code,
   roleLabel: user.role.name,
+  scope: {
+    schoolIds: Array.from(
+      new Set(
+        user.scopeAssignments
+          .map((scope) => scope.schoolId ?? scope.group?.schoolId ?? null)
+          .filter((value): value is string => Boolean(value))
+      )
+    ),
+    groupIds: Array.from(
+      new Set(user.scopeAssignments.map((scope) => scope.groupId).filter((value): value is string => Boolean(value)))
+    )
+  },
   createdAt: user.createdAt,
   updatedAt: user.updatedAt
 });
@@ -115,6 +128,47 @@ const delimiterToLabel = (delimiter: string) => {
 };
 
 export class UsersService {
+  private static async validateScopeAssignments(payload: { schoolIds: string[]; groupIds: string[] }) {
+    const schoolIds = Array.from(new Set(payload.schoolIds));
+    const groupIds = Array.from(new Set(payload.groupIds));
+
+    if (schoolIds.length > 0) {
+      const schools = await UsersRepository.findSchoolsByIds(schoolIds);
+      if (schools.length !== schoolIds.length) {
+        throw new AppError("Uno o mas colegios de alcance no existen o estan inactivos", 400, "INVALID_SCOPE_SCHOOL");
+      }
+    }
+
+    if (groupIds.length > 0) {
+      const groups = await UsersRepository.findGroupsByIds(groupIds);
+      if (groups.length !== groupIds.length) {
+        throw new AppError("Uno o mas grupos de alcance no existen o estan inactivos", 400, "INVALID_SCOPE_GROUP");
+      }
+    }
+
+    return { schoolIds, groupIds };
+  }
+
+  private static async applyScopeIfProvided(
+    userId: string,
+    payload: { scopeSchoolIds?: string[]; scopeGroupIds?: string[] }
+  ) {
+    if (payload.scopeSchoolIds === undefined && payload.scopeGroupIds === undefined) {
+      return UsersRepository.findById(userId);
+    }
+
+    const validated = await this.validateScopeAssignments({
+      schoolIds: payload.scopeSchoolIds ?? [],
+      groupIds: payload.scopeGroupIds ?? []
+    });
+
+    return UsersRepository.replaceScopeAssignments({
+      userId,
+      schoolIds: validated.schoolIds,
+      groupIds: validated.groupIds
+    });
+  }
+
   static async create(payload: UserCreateInput, actorId: string) {
     logger.info(
       {
@@ -145,19 +199,29 @@ export class UsersService {
       isActive: payload.isActive ?? true
     });
 
+    const withScope = await this.applyScopeIfProvided(created.id, {
+      scopeSchoolIds: payload.scopeSchoolIds,
+      scopeGroupIds: payload.scopeGroupIds
+    });
+    if (!withScope) {
+      throw new AppError("Usuario no encontrado", 404, "NOT_FOUND");
+    }
+
     await createAuditLog({
       entidad: "users",
-      entidadId: created.id,
+      entidadId: withScope.id,
       accion: "CREATE",
       userId: actorId,
       datos: {
-        email: created.email,
-        role: created.role.code,
-        isActive: created.isActive
+        email: withScope.email,
+        role: withScope.role.code,
+        isActive: withScope.isActive,
+        scopeSchoolIds: payload.scopeSchoolIds ?? [],
+        scopeGroupIds: payload.scopeGroupIds ?? []
       }
     });
 
-    return serializeUser(created);
+    return serializeUser(withScope);
   }
 
   static async list(query: Record<string, unknown>) {
@@ -240,9 +304,17 @@ export class UsersService {
       isActive: payload.isActive
     });
 
+    const updatedWithScope = await this.applyScopeIfProvided(updated.id, {
+      scopeSchoolIds: payload.scopeSchoolIds,
+      scopeGroupIds: payload.scopeGroupIds
+    });
+    if (!updatedWithScope) {
+      throw new AppError("Usuario no encontrado", 404, "NOT_FOUND");
+    }
+
     await createAuditLog({
       entidad: "users",
-      entidadId: updated.id,
+      entidadId: updatedWithScope.id,
       accion: "UPDATE",
       userId: actorId,
       datos: {
@@ -253,16 +325,60 @@ export class UsersService {
           isActive: existing.isActive
         },
         after: {
-          name: updated.name,
-          email: updated.email,
-          role: updated.role.code,
-          isActive: updated.isActive
+          name: updatedWithScope.name,
+          email: updatedWithScope.email,
+          role: updatedWithScope.role.code,
+          isActive: updatedWithScope.isActive,
+          scopeSchoolIds: payload.scopeSchoolIds ?? undefined,
+          scopeGroupIds: payload.scopeGroupIds ?? undefined
         },
         changedPassword: Boolean(nextPasswordHash)
       }
     });
 
-    return serializeUser(updated);
+    return serializeUser(updatedWithScope);
+  }
+
+  static async getScopes(id: string) {
+    const user = await UsersRepository.findById(id);
+    if (!user) {
+      throw new AppError("Usuario no encontrado", 404, "NOT_FOUND");
+    }
+    return serializeUser(user).scope;
+  }
+
+  static async setScopes(id: string, payload: { scopeSchoolIds: string[]; scopeGroupIds: string[] }, actorId: string) {
+    const existing = await UsersRepository.findById(id);
+    if (!existing) {
+      throw new AppError("Usuario no encontrado", 404, "NOT_FOUND");
+    }
+
+    const validated = await this.validateScopeAssignments({
+      schoolIds: payload.scopeSchoolIds,
+      groupIds: payload.scopeGroupIds
+    });
+
+    const updated = await UsersRepository.replaceScopeAssignments({
+      userId: id,
+      schoolIds: validated.schoolIds,
+      groupIds: validated.groupIds
+    });
+    if (!updated) {
+      throw new AppError("Usuario no encontrado", 404, "NOT_FOUND");
+    }
+
+    await createAuditLog({
+      entidad: "users",
+      entidadId: id,
+      accion: "UPDATE_SCOPE",
+      userId: actorId,
+      datos: {
+        scopeSchoolIds: validated.schoolIds,
+        scopeGroupIds: validated.groupIds
+      }
+    });
+
+    return serializeUser(updated).scope;
   }
 
   static async bulkCreate(

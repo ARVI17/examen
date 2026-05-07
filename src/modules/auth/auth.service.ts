@@ -9,6 +9,22 @@ import { AuthSecurityService } from "./auth-security.service";
 import { LoginInput, RegisterInput } from "./auth.types";
 
 export class AuthService {
+  private static buildUserScope(user: {
+    scopeAssignments: Array<{ schoolId: string | null; groupId: string | null; group?: { schoolId: string } | null }>;
+  }) {
+    const schoolIds = Array.from(
+      new Set(
+        user.scopeAssignments
+          .map((scope) => scope.schoolId ?? scope.group?.schoolId ?? null)
+          .filter((value): value is string => Boolean(value))
+      )
+    );
+    const groupIds = Array.from(
+      new Set(user.scopeAssignments.map((scope) => scope.groupId).filter((value): value is string => Boolean(value)))
+    );
+    return { schoolIds, groupIds };
+  }
+
   static async register(payload: RegisterInput, actorId?: string) {
     const normalizedEmail = payload.email.toLowerCase();
     const existingUser = await AuthRepository.findUserByEmail(normalizedEmail);
@@ -94,7 +110,8 @@ export class AuthService {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role.code
+        role: user.role.code,
+        scope: this.buildUserScope(user)
       }
     };
   }
@@ -111,6 +128,7 @@ export class AuthService {
       name: user.name,
       email: user.email,
       role: user.role.code,
+      scope: this.buildUserScope(user),
       createdAt: user.createdAt,
       updatedAt: user.updatedAt
     };

@@ -6,21 +6,36 @@ import { config } from "../config";
 import { AppError } from "../common/errors/AppError";
 import { createAuditLog } from "../common/utils/audit";
 import { AuthRepository } from "../modules/auth/auth.repository";
+import { StudentAuthRepository } from "../modules/student-auth/student-auth.repository";
 
 type AuthTokenPayload = {
   id: string;
   email: string;
   role: RoleCode;
+  kind?: string;
 };
 
 type CachedAuthContext = {
   email: string;
   role: RoleCode;
   isActive: boolean;
+  scope: {
+    schoolIds: string[];
+    groupIds: string[];
+  };
   expiresAt: number;
 };
 
+type StudentTokenPayload = {
+  kind: "student";
+  studentId: string;
+  tipoIdentificacion: string;
+  numeroIdentificacion: string;
+};
+
 const authContextCache = new Map<string, CachedAuthContext>();
+
+const unique = (values: string[]) => Array.from(new Set(values.filter(Boolean)));
 
 const getCachedAuthContext = (userId: string) => {
   const cached = authContextCache.get(userId);
@@ -62,7 +77,19 @@ const resolveAuthenticatedUser = async (userId: string) => {
   const context = {
     email: user.email,
     role: user.role.code,
-    isActive: user.isActive
+    isActive: user.isActive,
+    scope: {
+      schoolIds: unique(
+        user.scopeAssignments
+          .map((scope) => scope.schoolId ?? scope.group?.schoolId ?? "")
+          .filter((value): value is string => Boolean(value))
+      ),
+      groupIds: unique(
+        user.scopeAssignments
+          .map((scope) => scope.groupId ?? "")
+          .filter((value): value is string => Boolean(value))
+      )
+    }
   } as const;
 
   cacheAuthContext(userId, context);
@@ -103,6 +130,12 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
 
   try {
     const payload = verifyAuthToken(token);
+    if (payload.kind === "student") {
+      throw new AppError("Token de estudiante no valido para rutas administrativas", 401, "UNAUTHORIZED");
+    }
+    if (!payload.role || !payload.id) {
+      throw new AppError("Token invalido o expirado", 401, "UNAUTHORIZED");
+    }
     const authContext = await resolveAuthenticatedUser(payload.id);
 
     if (!authContext?.isActive) {
@@ -124,7 +157,8 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
     req.user = {
       id: payload.id,
       email: authContext.email,
-      role: authContext.role
+      role: authContext.role,
+      scope: authContext.scope
     };
     next();
   } catch (error) {
@@ -190,4 +224,48 @@ export const authorize = (...roles: RoleCode[]) => {
 
     next();
   };
+};
+
+const verifyStudentToken = (token: string) => {
+  for (const secret of config.jwtVerificationSecrets) {
+    try {
+      const payload = jwt.verify(token, secret) as StudentTokenPayload;
+      if (payload?.kind === "student" && payload.studentId) {
+        return payload;
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  throw new AppError("Token invalido o expirado", 401, "UNAUTHORIZED");
+};
+
+export const authenticateStudent = async (req: Request, _res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    throw new AppError("Token no proporcionado", 401, "UNAUTHORIZED");
+  }
+
+  const token = authHeader.replace("Bearer ", "").trim();
+  const payload = verifyStudentToken(token);
+  const student = await StudentAuthRepository.findById(payload.studentId);
+
+  if (!student || student.isDeleted) {
+    throw new AppError("Sesion de estudiante invalida", 401, "INVALID_STUDENT_SESSION");
+  }
+
+  req.studentSession = {
+    studentId: student.id,
+    tipoIdentificacion: student.tipoIdentificacion,
+    numeroIdentificacion: student.numeroIdentificacion,
+    nombres: student.nombres,
+    apellidos: student.apellidos,
+    grado: student.grado,
+    schoolId: student.schoolId,
+    groupId: student.groupId
+  };
+
+  next();
 };

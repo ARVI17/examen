@@ -6,6 +6,8 @@ export type UserCreateInput = {
   password: string;
   role?: RoleCode;
   isActive?: boolean;
+  scopeSchoolIds?: string[];
+  scopeGroupIds?: string[];
 };
 
 export type UserUpdateInput = {
@@ -14,4 +16,6 @@ export type UserUpdateInput = {
   password?: string;
   role?: RoleCode;
   isActive?: boolean;
+  scopeSchoolIds?: string[];
+  scopeGroupIds?: string[];
 };

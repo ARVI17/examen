@@ -16,6 +16,14 @@ const loginFailuresByUserAndIp = new RateLimiterMemory({
 
 const normalizeIp = (ip: string) => ip.replace(/^::ffff:/, "") || "unknown";
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
+const isBlockedState = (state: {
+  remainingPoints?: number;
+  msBeforeNext?: number;
+} | null | undefined) =>
+  typeof state?.remainingPoints === "number" &&
+  state.remainingPoints <= 0 &&
+  typeof state.msBeforeNext === "number" &&
+  state.msBeforeNext > 0;
 
 export class AuthSecurityService {
   static async ensureLoginAllowed(email: string, ip: string) {
@@ -28,7 +36,12 @@ export class AuthSecurityService {
       loginFailuresByUserAndIp.get(userAndIpKey)
     ]);
 
-    const retryAfterMs = Math.max(ipState?.msBeforeNext ?? 0, userAndIpState?.msBeforeNext ?? 0);
+    const ipRetryAfterMs = isBlockedState(ipState) && typeof ipState?.msBeforeNext === "number" ? ipState.msBeforeNext : 0;
+    const userAndIpRetryAfterMs =
+      isBlockedState(userAndIpState) && typeof userAndIpState?.msBeforeNext === "number"
+        ? userAndIpState.msBeforeNext
+        : 0;
+    const retryAfterMs = Math.max(ipRetryAfterMs, userAndIpRetryAfterMs);
 
     if (retryAfterMs > 0) {
       throw new AppError(

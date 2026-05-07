@@ -154,7 +154,7 @@ async function seedUsers() {
     }
   });
 
-  await prisma.user.upsert({
+  const docenteUser = await prisma.user.upsert({
     where: { email: "docente@saber11.com" },
     update: {
       name: "Docente",
@@ -170,6 +170,56 @@ async function seedUsers() {
       isActive: true
     }
   });
+
+  const demoSchool = await prisma.school.findUnique({
+    where: { code: "COLEGIO_DEMO" }
+  });
+
+  const demoGroup = demoSchool
+    ? await prisma.schoolGroup.findFirst({
+        where: {
+          schoolId: demoSchool.id,
+          name: "11-A",
+          academicYear: new Date().getUTCFullYear()
+        }
+      })
+    : null;
+
+  if (demoSchool) {
+    const existingSchoolScope = await prisma.userScopeAssignment.findFirst({
+      where: {
+        userId: docenteUser.id,
+        schoolId: demoSchool.id,
+        groupId: null
+      }
+    });
+    if (!existingSchoolScope) {
+      await prisma.userScopeAssignment.create({
+        data: {
+          userId: docenteUser.id,
+          schoolId: demoSchool.id
+        }
+      });
+    }
+  }
+
+  if (demoGroup) {
+    const existingGroupScope = await prisma.userScopeAssignment.findFirst({
+      where: {
+        userId: docenteUser.id,
+        groupId: demoGroup.id
+      }
+    });
+    if (!existingGroupScope) {
+      await prisma.userScopeAssignment.create({
+        data: {
+          userId: docenteUser.id,
+          schoolId: demoSchool?.id ?? undefined,
+          groupId: demoGroup.id
+        }
+      });
+    }
+  }
 }
 
 async function main() {

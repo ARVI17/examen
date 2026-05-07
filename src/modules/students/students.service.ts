@@ -1,10 +1,21 @@
 import { DocumentTypeCode, Prisma } from "@prisma/client";
 import { AppError } from "../../common/errors/AppError";
+import {
+  applyDocenteStudentWhereScope,
+  assertCanAccessStudent,
+  assertDocenteCanUseGroup,
+  assertDocenteCanUseSchool,
+  ensureDocenteScopeConfigured,
+  getNormalizedScope,
+  isDocenteUser
+} from "../../common/security/access-scope";
 import logger from "../../common/logger";
 import { createAuditLog } from "../../common/utils/audit";
 import { getPagination } from "../../common/utils/pagination";
 import { StudentsRepository } from "./students.repository";
 import { StudentCreateInput, StudentUpdateInput } from "./students.types";
+
+type ActorUser = Express.Request["user"];
 
 const normalizeHeader = (value: string) => {
   return value
@@ -106,44 +117,74 @@ export class StudentService {
     };
   }
 
-  static async createOrFind(payload: StudentCreateInput, actorId?: string) {
-    const normalizedSchoolGroup = await this.normalizeSchoolGroup({
-      schoolId: payload.schoolId,
-      groupId: payload.groupId
-    });
+  private static assertDocenteStudentScope(actor: ActorUser | undefined, payload: { schoolId?: string; groupId?: string }) {
+    if (isDocenteUser(actor)) {
+      ensureDocenteScopeConfigured(actor);
+      if (!payload.schoolId && !payload.groupId) {
+        throw new AppError("Debes indicar colegio o grupo para registrar/consultar estudiantes", 400, "SCOPE_REQUIRED");
+      }
+    }
+    assertDocenteCanUseSchool(actor, payload.schoolId);
+    assertDocenteCanUseGroup(actor, payload.groupId);
+  }
 
-    const existing = await StudentsRepository.findByDocument(payload.numeroIdentificacion);
+  static async createOrFind(payload: StudentCreateInput, actor?: ActorUser) {
+    const scope = getNormalizedScope(actor);
+    const scopedPayload: StudentCreateInput = {
+      ...payload,
+      schoolId:
+        payload.schoolId ??
+        (isDocenteUser(actor) && !payload.groupId && scope.groupIds.length === 0 && scope.schoolIds.length === 1
+          ? scope.schoolIds[0]
+          : undefined),
+      groupId:
+        payload.groupId ??
+        (isDocenteUser(actor) && !payload.schoolId && scope.groupIds.length === 1 ? scope.groupIds[0] : undefined)
+    };
+
+    const normalizedSchoolGroup = await this.normalizeSchoolGroup({
+      schoolId: scopedPayload.schoolId,
+      groupId: scopedPayload.groupId
+    });
+    this.assertDocenteStudentScope(actor, normalizedSchoolGroup);
+
+    const existing = await StudentsRepository.findByDocument(scopedPayload.numeroIdentificacion);
 
     if (existing) {
+      assertCanAccessStudent(actor, {
+        schoolId: existing.schoolId,
+        groupId: existing.groupId
+      });
+
       if (existing.isDeleted) {
         const reactivated = await StudentsRepository.update(existing.id, {
           isDeleted: false,
-          nombres: payload.nombres,
-          apellidos: payload.apellidos,
-          tipoIdentificacion: payload.tipoIdentificacion,
-          grado: payload.grado,
+          nombres: scopedPayload.nombres,
+          apellidos: scopedPayload.apellidos,
+          tipoIdentificacion: scopedPayload.tipoIdentificacion,
+          grado: scopedPayload.grado,
           schoolId: normalizedSchoolGroup.schoolId,
           groupId: normalizedSchoolGroup.groupId,
-          fechaNacimiento: payload.fechaNacimiento,
-          genero: payload.genero,
-          institucion: payload.institucion,
-          jornada: payload.jornada,
-          grupo: payload.grupo,
-          departamento: payload.departamento,
-          municipio: payload.municipio,
-          email: payload.email,
-          telefono: payload.telefono,
-          acudienteNombre: payload.acudienteNombre,
-          acudienteEmail: payload.acudienteEmail,
-          acudienteTelefono: payload.acudienteTelefono
+          fechaNacimiento: scopedPayload.fechaNacimiento,
+          genero: scopedPayload.genero,
+          institucion: scopedPayload.institucion,
+          jornada: scopedPayload.jornada,
+          grupo: scopedPayload.grupo,
+          departamento: scopedPayload.departamento,
+          municipio: scopedPayload.municipio,
+          email: scopedPayload.email,
+          telefono: scopedPayload.telefono,
+          acudienteNombre: scopedPayload.acudienteNombre,
+          acudienteEmail: scopedPayload.acudienteEmail,
+          acudienteTelefono: scopedPayload.acudienteTelefono
         });
 
         await createAuditLog({
           entidad: "students",
           entidadId: reactivated.id,
           accion: "REACTIVATE",
-          userId: actorId,
-          datos: { numeroIdentificacion: payload.numeroIdentificacion }
+          userId: actor?.id,
+          datos: { numeroIdentificacion: scopedPayload.numeroIdentificacion }
         });
 
         return { student: reactivated, reused: true };
@@ -153,7 +194,7 @@ export class StudentService {
     }
 
     const created = await StudentsRepository.create({
-      ...payload,
+      ...scopedPayload,
       schoolId: normalizedSchoolGroup.schoolId,
       groupId: normalizedSchoolGroup.groupId
     });
@@ -162,7 +203,7 @@ export class StudentService {
       entidad: "students",
       entidadId: created.id,
       accion: "CREATE",
-      userId: actorId,
+      userId: actor?.id,
       datos: {
         numeroIdentificacion: created.numeroIdentificacion,
         grado: created.grado,
@@ -174,37 +215,44 @@ export class StudentService {
     return { student: created, reused: false };
   }
 
-  static async getByDocument(numeroIdentificacion: string) {
+  static async getByDocument(numeroIdentificacion: string, actor?: ActorUser) {
     const student = await StudentsRepository.findByDocument(numeroIdentificacion);
 
     if (!student || student.isDeleted) {
       throw new AppError("Estudiante no encontrado", 404, "NOT_FOUND");
     }
 
+    assertCanAccessStudent(actor, {
+      schoolId: student.schoolId,
+      groupId: student.groupId
+    });
+
     return student;
   }
 
-  static async getById(id: string) {
+  static async getById(id: string, actor?: ActorUser) {
     const student = await StudentsRepository.findById(id);
 
     if (!student || student.isDeleted) {
       throw new AppError("Estudiante no encontrado", 404, "NOT_FOUND");
     }
 
+    assertCanAccessStudent(actor, {
+      schoolId: student.schoolId,
+      groupId: student.groupId
+    });
+
     return student;
   }
 
-  static async update(id: string, payload: StudentUpdateInput, actorId?: string) {
-    const student = await StudentsRepository.findById(id);
-
-    if (!student || student.isDeleted) {
-      throw new AppError("Estudiante no encontrado", 404, "NOT_FOUND");
-    }
+  static async update(id: string, payload: StudentUpdateInput, actor?: ActorUser) {
+    const student = await this.getById(id, actor);
 
     const normalizedSchoolGroup = await this.normalizeSchoolGroup({
       schoolId: payload.schoolId ?? student.schoolId ?? undefined,
       groupId: payload.groupId ?? student.groupId ?? undefined
     });
+    this.assertDocenteStudentScope(actor, normalizedSchoolGroup);
 
     const updated = await StudentsRepository.update(id, {
       nombres: payload.nombres,
@@ -231,7 +279,7 @@ export class StudentService {
       entidad: "students",
       entidadId: updated.id,
       accion: "UPDATE",
-      userId: actorId,
+      userId: actor?.id,
       datos: {
         before: student,
         after: updated
@@ -241,12 +289,8 @@ export class StudentService {
     return updated;
   }
 
-  static async softDelete(id: string, actorId?: string) {
-    const student = await StudentsRepository.findById(id);
-
-    if (!student || student.isDeleted) {
-      throw new AppError("Estudiante no encontrado", 404, "NOT_FOUND");
-    }
+  static async softDelete(id: string, actor?: ActorUser) {
+    const student = await this.getById(id, actor);
 
     await StudentsRepository.update(id, { isDeleted: true });
 
@@ -254,12 +298,12 @@ export class StudentService {
       entidad: "students",
       entidadId: id,
       accion: "SOFT_DELETE",
-      userId: actorId,
+      userId: actor?.id,
       datos: { numeroIdentificacion: student.numeroIdentificacion }
     });
   }
 
-  static async list(query: Record<string, unknown>) {
+  static async list(query: Record<string, unknown>, actor?: ActorUser) {
     const pagination = getPagination(query);
     const typedQuery = query as {
       nombres?: string;
@@ -274,7 +318,7 @@ export class StudentService {
       includeDeleted?: boolean;
     };
 
-    const where: Prisma.StudentWhereInput = {
+    let where: Prisma.StudentWhereInput = {
       isDeleted: typedQuery.includeDeleted ? undefined : false,
       nombres: typedQuery.nombres
         ? {
@@ -307,6 +351,8 @@ export class StudentService {
         : undefined
     };
 
+    where = applyDocenteStudentWhereScope(actor, where);
+
     const [total, students] = await StudentsRepository.list(where, pagination.skip, pagination.limit);
 
     return {
@@ -317,8 +363,8 @@ export class StudentService {
     };
   }
 
-  static async historyById(id: string) {
-    const student = await this.getById(id);
+  static async historyById(id: string, actor?: ActorUser) {
+    const student = await this.getById(id, actor);
     const attempts = await StudentsRepository.historyByStudentId(student.id);
 
     return {
@@ -328,8 +374,8 @@ export class StudentService {
     };
   }
 
-  static async historyByDocument(numeroIdentificacion: string) {
-    const student = await this.getByDocument(numeroIdentificacion);
+  static async historyByDocument(numeroIdentificacion: string, actor?: ActorUser) {
+    const student = await this.getByDocument(numeroIdentificacion, actor);
     const attempts = await StudentsRepository.historyByStudentId(student.id);
 
     return {
@@ -345,7 +391,7 @@ export class StudentService {
       csvText?: string;
       delimiter?: string;
     },
-    actorId?: string
+    actor?: ActorUser
   ) {
     const sourceText = payload.csvText ?? payload.fileBuffer?.toString("utf-8") ?? "";
     const normalizedText = sourceText.replace(/^\uFEFF/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
@@ -438,7 +484,7 @@ export class StudentService {
             schoolId: schoolIdIndex >= 0 ? cells[schoolIdIndex]?.trim() || undefined : undefined,
             groupId: groupIdIndex >= 0 ? cells[groupIdIndex]?.trim() || undefined : undefined
           },
-          actorId
+          actor
         );
 
         if (result.reused) {
@@ -457,7 +503,7 @@ export class StudentService {
 
     logger.info(
       {
-        actorId,
+        actorId: actor?.id,
         created: created.length,
         reused: reused.length,
         errors: errors.length
@@ -478,4 +524,3 @@ export class StudentService {
     };
   }
 }
-
