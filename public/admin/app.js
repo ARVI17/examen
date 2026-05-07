@@ -2,25 +2,42 @@
 
 (() => {
   const TOKEN_KEY = "saber11_admin_token";
+  const VIEW_META = {
+    dashboard: ["Inicio", "Resumen operativo y desempeño académico."],
+    schools: ["Colegios", "Gestión de instituciones activas."],
+    groups: ["Salones", "Grupos por colegio y año académico."],
+    students: ["Estudiantes", "Registro, carga masiva y edición de estudiantes."],
+    exams: ["Pruebas", "Creación y publicación de simulacros."],
+    simulator: ["Simulador", "Ejecución rápida de intentos y control de jornadas."],
+    results: ["Resultados", "Ranking, promedios y desempeño por salón."],
+    analysis: ["Análisis", "Fortalezas, debilidades y recomendaciones."],
+    reports: ["Reportes", "Cobertura documental y banco de preguntas."],
+    settings: ["Configuración", "Usuarios, conexión y datos técnicos."]
+  };
+
   const state = {
     token: localStorage.getItem(TOKEN_KEY) || "",
+    user: null,
     apiBase: `${window.location.origin}/api`,
-    connection: null,
-    clientLogs: [],
+    activeView: "dashboard",
+    schools: [],
+    groups: [],
     students: [],
+    users: [],
+    exams: [],
+    charts: {},
     editingStudentId: null,
-    strictPendingAutoRefresh: true,
-    strictPendingPollId: null,
+    editingSchoolId: null,
     simulator: {
       attemptId: null,
       questionDeck: [],
       currentIndex: 0,
-      answersByQuestionId: {},
-      result: null
+      answersByQuestionId: {}
     }
   };
 
   const $ = (id) => document.getElementById(id);
+  const moneyDash = (value) => (value === undefined || value === null || value === "" ? "-" : value);
   const pretty = (value) => JSON.stringify(value ?? {}, null, 2);
 
   const escapeHtml = (value) =>
@@ -44,128 +61,85 @@
   const toQueryString = (params) => {
     const query = new URLSearchParams();
     Object.entries(params || {}).forEach(([key, value]) => {
-      if (value === undefined || value === null) return;
-      if (typeof value === "string" && value.trim().length === 0) return;
+      if (value === undefined || value === null || value === "") return;
       query.set(key, String(value));
     });
     const text = query.toString();
     return text ? `?${text}` : "";
   };
 
-  const setStatus = (elementId, message, tone = "") => {
-    const element = $(elementId);
+  const setText = (id, text) => {
+    const element = $(id);
+    if (element) element.textContent = text ?? "";
+  };
+
+  const setStatus = (id, message, tone = "") => {
+    const element = $(id);
     if (!element) return;
     element.textContent = message;
-    element.className = "status";
-    if (tone === "ok") element.classList.add("ok");
-    if (tone === "warn") element.classList.add("warn");
-    if (tone === "bad") element.classList.add("bad");
+    element.className = "status-message";
+    if (tone) element.classList.add(tone);
   };
 
-  const setText = (elementId, value) => {
-    const element = $(elementId);
-    if (element) element.textContent = value ?? "";
+  const showToast = (message) => {
+    const toast = $("toast");
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add("show");
+    window.setTimeout(() => toast.classList.remove("show"), 2800);
   };
 
-  const appendClientLog = (level, message, details) => {
-    const timestamp = new Date().toISOString();
-    const suffix = details ? ` | ${typeof details === "string" ? details : JSON.stringify(details)}` : "";
-    const line = `[${timestamp}] [${level}] ${message}${suffix}`;
-    state.clientLogs.unshift(line);
-    if (state.clientLogs.length > 200) {
-      state.clientLogs.length = 200;
-    }
-    const logBox = $("adminClientLog");
-    if (logBox) {
-      logBox.textContent = state.clientLogs.join("\n");
-    }
-
-    if (level === "ERROR" || level === "WARN") {
-      console.warn(line);
-    } else {
-      console.info(line);
-    }
-  };
-
-  const parseErrorResponse = async (response) => {
-    const text = await response.text();
-    let message = text || `Error HTTP ${response.status}`;
-    let code = "HTTP_ERROR";
-    let requestId = null;
-    try {
-      const payload = JSON.parse(text);
-      message = payload?.error?.message || payload?.message || message;
-      code = payload?.error?.code || code;
-      requestId = payload?.error?.requestId || payload?.meta?.requestId || null;
-    } catch {}
-
-    const error = new Error(message);
-    error.code = code;
-    error.requestId = requestId;
-    throw error;
+  const setButtonLoading = (buttonId, loading, label = "Procesando...") => {
+    const button = $(buttonId);
+    if (!button) return;
+    if (!button.dataset.defaultLabel) button.dataset.defaultLabel = button.innerHTML;
+    button.disabled = loading;
+    button.innerHTML = loading
+      ? `<span class="btn-spinner" aria-hidden="true"></span><span>${escapeHtml(label)}</span>`
+      : button.dataset.defaultLabel;
   };
 
   const apiRequest = async (path, options = {}) => {
-    const { method = "GET", body, auth = true, headers = {}, responseType = "json" } = options;
-    const requestHeaders = new Headers(headers);
+    const { method = "GET", body, auth = true, responseType = "json" } = options;
+    const headers = new Headers();
     let payloadBody = body;
-    const startedAt = Date.now();
 
     if (auth) {
-      if (!state.token) throw new Error("No hay sesion activa. Inicia sesion.");
-      requestHeaders.set("Authorization", `Bearer ${state.token}`);
+      if (!state.token) throw new Error("No hay sesión activa.");
+      headers.set("Authorization", `Bearer ${state.token}`);
     }
-
     if (body && !(body instanceof FormData)) {
-      requestHeaders.set("Content-Type", "application/json");
+      headers.set("Content-Type", "application/json");
       payloadBody = JSON.stringify(body);
     }
 
-    let response;
-    try {
-      response = await fetch(`${state.apiBase}${path}`, {
-        method,
-        headers: requestHeaders,
-        body: payloadBody
-      });
-    } catch (error) {
-      appendClientLog("ERROR", `${method} ${path} network_error`, {
-        message: error?.message || "fetch_failed",
-        apiBase: state.apiBase
-      });
-      throw new Error(
-        `No se pudo conectar con la API (${state.apiBase}). Verifica IP del servidor, red local y firewall.`
-      );
-    }
-
+    const response = await fetch(`${state.apiBase}${path}`, { method, headers, body: payloadBody });
     if (!response.ok) {
+      const text = await response.text();
+      let message = `Error HTTP ${response.status}`;
+      let code = "HTTP_ERROR";
+      let details = null;
       try {
-        await parseErrorResponse(response);
-      } catch (error) {
-        appendClientLog("ERROR", `${method} ${path} -> ${response.status}`, {
-          message: error.message,
-          code: error.code || "HTTP_ERROR",
-          requestId: error.requestId || null,
-          durationMs: Date.now() - startedAt
-        });
-        throw error;
+        const payload = JSON.parse(text);
+        message = payload?.message || payload?.error?.message || message;
+        code = payload?.error?.code || code;
+        details = payload?.error?.details ?? null;
+      } catch {
+        message = text || message;
       }
+      const error = new Error(message);
+      error.code = code;
+      error.details = details;
+      error.status = response.status;
+      throw error;
     }
-
-    appendClientLog("INFO", `${method} ${path} -> ${response.status}`, {
-      durationMs: Date.now() - startedAt
-    });
 
     if (responseType === "blob") return response.blob();
-    const payload = await response.json();
-    if (payload?.meta?.requestId) {
-      appendClientLog("INFO", `${method} ${path} requestId`, payload.meta.requestId);
-    }
-    return payload;
+    return response.json();
   };
 
   const downloadWithAuth = async (path, fallbackName) => {
-    const blob = await apiRequest(path, { auth: true, responseType: "blob" });
+    const blob = await apiRequest(path, { responseType: "blob" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -176,248 +150,370 @@
     URL.revokeObjectURL(url);
   };
 
-  const setSessionUi = () => {
-    setText("sessionText", state.token ? `token cargado (${state.token.slice(0, 14)}...)` : "sin token");
+  const performanceClass = (value) => {
+    const numeric = Number(value || 0);
+    if (numeric >= 80) return "high";
+    if (numeric >= 60) return "medium";
+    if (numeric >= 40) return "low";
+    return "critical";
   };
 
-  const initTabs = () => {
-    const tabs = document.querySelectorAll("#tabs .tab");
-    tabs.forEach((tabButton) => {
-      tabButton.addEventListener("click", () => {
-        const sectionName = tabButton.getAttribute("data-section");
-        tabs.forEach((tab) => tab.classList.remove("active"));
-        tabButton.classList.add("active");
-        document.querySelectorAll(".section").forEach((section) => section.classList.remove("active"));
-        const section = $(`sec-${sectionName}`);
-        if (section) section.classList.add("active");
-      });
+  const renderBadge = (value, label) => {
+    const cls = performanceClass(value);
+    return `<span class="badge-soft ${cls}">${escapeHtml(label ?? value ?? "-")}</span>`;
+  };
+
+  const chartColors = ["#2563eb", "#0f766e", "#7c3aed", "#d97706", "#dc2626", "#475569"];
+
+  const renderChart = (id, config) => {
+    if (!window.Chart) return;
+    const canvas = $(id);
+    if (!canvas) return;
+    if (state.charts[id]) state.charts[id].destroy();
+    state.charts[id] = new Chart(canvas, {
+      ...config,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true, labels: { boxWidth: 10, usePointStyle: true } },
+          tooltip: { enabled: true }
+        },
+        scales: config.type === "doughnut" ? undefined : { y: { beginAtZero: true, max: 100 } },
+        ...(config.options || {})
+      }
+    });
+  };
+
+  const setAuthenticatedUi = (authenticated) => {
+    $("loginView").classList.toggle("is-hidden", authenticated);
+    $("appShell").classList.toggle("is-hidden", !authenticated);
+    setText(
+      "sessionText",
+      authenticated && state.user ? `${state.user.name || state.user.email} · ${state.user.role || ""}` : "Sin sesión"
+    );
+  };
+
+  const setupPasswordToggle = (inputId, buttonId) => {
+    const input = $(inputId);
+    const button = $(buttonId);
+    if (!input || !button) return;
+    button.addEventListener("click", () => {
+      const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      button.innerHTML = `<i class="bi ${show ? "bi-eye-slash" : "bi-eye"}"></i>`;
+      button.setAttribute("aria-label", show ? "Ocultar contraseña" : "Mostrar contraseña");
+    });
+  };
+
+  const setView = (view) => {
+    state.activeView = view;
+    document.querySelectorAll(".view").forEach((element) => element.classList.remove("active"));
+    document.querySelectorAll(".nav-item").forEach((element) => element.classList.remove("active"));
+    $(`view-${view}`)?.classList.add("active");
+    document.querySelector(`[data-view="${view}"]`)?.classList.add("active");
+    const [title, subtitle] = VIEW_META[view] || VIEW_META.dashboard;
+    setText("viewTitle", title);
+    setText("viewSubtitle", subtitle);
+    $("sidebar")?.classList.remove("open");
+  };
+
+  const fillSelect = (id, items, { placeholder = "Todos", value = "id", label = "name" } = {}) => {
+    const select = $(id);
+    if (!select) return;
+    select.innerHTML = `<option value="">${escapeHtml(placeholder)}</option>`;
+    items.forEach((item) => {
+      const option = document.createElement("option");
+      option.value = item[value] || "";
+      option.textContent = typeof label === "function" ? label(item) : item[label] || "";
+      select.appendChild(option);
     });
   };
 
   const loadConnectionInfo = async () => {
     try {
       const response = await fetch("/connection-info");
-      if (!response.ok) throw new Error(`No se pudo leer /connection-info (${response.status})`);
       const payload = await response.json();
-      state.connection = payload?.data || null;
+      const data = payload.data || {};
       $("connectionOut").textContent = pretty(payload);
-      const docsUrl = state.connection?.docsUrl || `${window.location.origin}/api/docs`;
-      const apiFromRequest = state.connection?.apiBaseUrl || `${window.location.origin}/api`;
-      const preferredApi = state.connection?.preferredApiBaseUrl || null;
-      const lanUrls = state.connection?.sharedLanUrls?.length
-        ? state.connection.sharedLanUrls
-        : state.connection?.lanUrls || [];
-
       state.apiBase = `${window.location.origin}/api`;
-      $("docsLink").href = docsUrl;
-      $("simLink").href = state.connection?.preferredSimulatorWebUrl || state.connection?.simulatorWebUrl || "/simulador";
-      setText(
-        "apiText",
-        preferredApi && preferredApi !== apiFromRequest
-          ? `${apiFromRequest} (preferida: ${preferredApi})`
-          : apiFromRequest
-      );
-      setText("adminText", state.connection?.preferredAdminWebUrl || state.connection?.adminWebUrl || `${window.location.origin}/admin`);
-      setText("lanText", Array.isArray(lanUrls) && lanUrls.length ? lanUrls.join(" | ") : "sin URLs LAN detectadas");
-      appendClientLog("INFO", "connection-info loaded", {
-        effectiveApiBase: state.apiBase,
-        apiFromRequest,
-        preferredApi
-      });
+      $("docsLink").href = data.docsUrl || "/api/docs";
+      $("simLink").href = data.preferredSimulatorWebUrl || data.simulatorWebUrl || "/simulador";
+      setText("apiText", data.apiBaseUrl || state.apiBase);
+      setText("adminText", data.preferredAdminWebUrl || data.adminWebUrl || `${window.location.origin}/admin`);
+      setText("lanText", (data.sharedLanUrls || data.lanUrls || []).join(" | ") || "Sin URL LAN detectada");
     } catch (error) {
       $("connectionOut").textContent = pretty({ error: error.message });
-      setText("apiText", state.apiBase);
-      setText("lanText", "sin datos");
-      setText("adminText", `${window.location.origin}/admin`);
-      appendClientLog("WARN", "connection-info unavailable", error.message);
-    }
-  };
-
-  const stopStrictPendingAutoRefresh = () => {
-    if (state.strictPendingPollId) {
-      window.clearInterval(state.strictPendingPollId);
-      state.strictPendingPollId = null;
-    }
-  };
-
-  const renderStrictPendingRows = (items) => {
-    const rows = Array.isArray(items) ? items : [];
-    $("simPendingRows").innerHTML = rows
-      .map(
-        (item) => `<tr>
-          <td class="mono">${escapeHtml(item.attemptId)}</td>
-          <td>${escapeHtml(`${item.student?.nombres || ""} ${item.student?.apellidos || ""}`.trim())}</td>
-          <td>${escapeHtml(`${item.student?.tipoIdentificacion || ""} ${item.student?.numeroIdentificacion || ""}`.trim())}</td>
-          <td>${escapeHtml(item.exam?.nombre || "")}</td>
-          <td>${escapeHtml(item.waitingMinutes ?? 0)}</td>
-          <td>
-            <div class="inline">
-              <button class="btn warn" data-enable-attempt="${escapeHtml(item.attemptId)}">Habilitar J2</button>
-              <button class="btn alt" data-stop-attempt="${escapeHtml(item.attemptId)}">Detener</button>
-              <button class="btn" data-restart-attempt="${escapeHtml(item.attemptId)}">Reiniciar</button>
-            </div>
-          </td>
-        </tr>`
-      )
-      .join("");
-  };
-
-  const loadPendingStrictAttempts = async ({ silent = false } = {}) => {
-    const query = toQueryString({
-      grado: $("simPendingGrade").value.trim(),
-      grupo: $("simPendingGroup").value.trim(),
-      limit: $("simPendingLimit").value.trim()
-    });
-
-    const response = await apiRequest(`/attempts/pending-session2${query}`);
-    const data = response.data || {};
-    renderStrictPendingRows(data.items || []);
-
-    if (!silent) {
-      setStatus("simPendingStatus", `Pendientes jornada 2: ${data.total ?? 0}`, data.total ? "warn" : "ok");
-    }
-  };
-
-  const startStrictPendingAutoRefresh = () => {
-    stopStrictPendingAutoRefresh();
-    if (!state.strictPendingAutoRefresh || !state.token) return;
-
-    state.strictPendingPollId = window.setInterval(async () => {
-      try {
-        await loadPendingStrictAttempts({ silent: true });
-      } catch (error) {
-        setStatus("simPendingStatus", `Auto-refresh pendientes: ${error.message}`, "warn");
-      }
-    }, 10000);
-  };
-
-  const updateStrictAutoButton = () => {
-    $("simPendingAutoBtn").textContent = `Auto-refresh: ${state.strictPendingAutoRefresh ? "ON" : "OFF"}`;
-  };
-
-  const toggleStrictPendingAutoRefresh = () => {
-    state.strictPendingAutoRefresh = !state.strictPendingAutoRefresh;
-    updateStrictAutoButton();
-    if (state.strictPendingAutoRefresh) {
-      startStrictPendingAutoRefresh();
-    } else {
-      stopStrictPendingAutoRefresh();
     }
   };
 
   const login = async () => {
     try {
+      setButtonLoading("loginBtn", true, "Validando...");
       const email = $("loginEmail").value.trim();
       const password = $("loginPassword").value;
-      if (!email || !password) throw new Error("Debes ingresar email y password");
+      if (!email || !password) throw new Error("Ingresa correo y contraseña.");
       const response = await apiRequest("/auth/login", { method: "POST", auth: false, body: { email, password } });
-      const token = response?.data?.token;
-      if (!token) throw new Error("Login sin token en respuesta");
-      state.token = token;
-      localStorage.setItem(TOKEN_KEY, token);
-      setSessionUi();
-      setStatus("loginStatus", "Sesion iniciada correctamente.", "ok");
-      appendClientLog("INFO", "Sesion admin iniciada", { email });
-      await Promise.all([loadDashboard(), loadExams(), listStudents(), listUsers(), loadPendingStrictAttempts()]);
-      startStrictPendingAutoRefresh();
+      state.token = response.data?.token || "";
+      state.user = response.data?.user || null;
+      if (!state.token) throw new Error("La API no devolvió token.");
+      localStorage.setItem(TOKEN_KEY, state.token);
+      setStatus("loginStatus", "Sesión iniciada correctamente.", "ok");
+      setAuthenticatedUi(true);
+      await bootstrapData();
+      showToast("Panel actualizado.");
     } catch (error) {
-      setStatus("loginStatus", error.message, "bad");
-      appendClientLog("ERROR", "Error de login admin", error.message);
+      const retryAfter = Number(error?.details?.retryAfterSeconds ?? 0);
+      const safeMessage = (() => {
+        if (error.code === "INVALID_CREDENTIALS" || error.code === "AUTH_FAILED") {
+          return "Credenciales invalidas o cuenta sin permisos.";
+        }
+        if (error.code === "AUTH_TEMPORARILY_BLOCKED" && retryAfter > 0) {
+          return `Cuenta bloqueada temporalmente. Reintenta en ${retryAfter}s.`;
+        }
+        if (error.code === "AUTH_RATE_LIMITED" || error.status === 429) {
+          return "Demasiados intentos. Espera un momento e intenta de nuevo.";
+        }
+        return error.message;
+      })();
+      setStatus("loginStatus", safeMessage, "bad");
+    } finally {
+      setButtonLoading("loginBtn", false);
     }
   };
 
   const logout = () => {
-    stopStrictPendingAutoRefresh();
     state.token = "";
+    state.user = null;
     localStorage.removeItem(TOKEN_KEY);
-    setSessionUi();
-    setStatus("loginStatus", "Sesion cerrada localmente.", "warn");
-    appendClientLog("WARN", "Sesion admin cerrada localmente");
+    setAuthenticatedUi(false);
+    setStatus("loginStatus", "Sesión cerrada.", "warn");
   };
 
-  const renderKpis = (containerId, items) => {
-    const container = $(containerId);
-    if (!container) return;
-    container.innerHTML = items
-      .map((item) => `<div class="kpi"><div class="label">${escapeHtml(item.label)}</div><div class="value">${escapeHtml(item.value)}</div></div>`)
+  const loadCurrentUser = async () => {
+    if (!state.token) return false;
+    try {
+      const response = await apiRequest("/auth/me");
+      state.user = response.data?.user || response.data || null;
+      setAuthenticatedUi(true);
+      return true;
+    } catch {
+      logout();
+      return false;
+    }
+  };
+
+  const renderStatCards = (items) => {
+    $("dashKpis").innerHTML = items
+      .map(
+        (item) => `<article class="stat-card">
+          <div class="stat-head"><span>${escapeHtml(item.title)}</span><i class="bi ${item.icon}"></i></div>
+          <strong>${escapeHtml(item.value)}</strong>
+          <small>${escapeHtml(item.hint)}</small>
+        </article>`
+      )
       .join("");
   };
 
-  const renderBars = (containerId, rows) => {
-    const container = $(containerId);
+  const renderBars = (id, rows) => {
+    const container = $(id);
     if (!container) return;
-    container.innerHTML = rows
+    container.innerHTML = (rows || [])
       .map((row) => {
-        const value = Number(row.percent || 0);
-        const width = Math.max(0, Math.min(100, value));
-        return `<div class="bar-row"><div>${escapeHtml(row.label)}</div><div class="bar-track"><div class="bar-fill" style="width:${width}%"></div></div><div>${width.toFixed(1)}%</div></div>`;
+        const value = Math.max(0, Math.min(100, Number(row.percent || 0)));
+        return `<div class="bar-row"><span>${escapeHtml(row.label)}</span><div class="bar-track"><div class="bar-fill" style="width:${value}%"></div></div><strong>${value.toFixed(1)}%</strong></div>`;
       })
+      .join("");
+  };
+
+  const metricLabel = (row) => row.area || row.subject || row.materia || row.tema || "Materia";
+  const metricPercent = (row) =>
+    Number(row.porcentajeAcierto ?? row.percentage ?? row.porcentajeArea ?? row.averagePercentage ?? row.promedioPorcentaje ?? 0);
+
+  const makeRecommendations = (byArea = [], average = 0) => {
+    const sorted = [...byArea].sort((a, b) => metricPercent(b) - metricPercent(a));
+    const best = sorted[0];
+    const weak = sorted[sorted.length - 1];
+    const messages = [];
+    if (best) messages.push(["Fortaleza", `${metricLabel(best)} mantiene el mejor desempeño con ${metricPercent(best)}%.`, "bi-award"]);
+    if (weak) messages.push(["Refuerzo", `${metricLabel(weak)} requiere seguimiento: ${metricPercent(weak)}% de acierto.`, "bi-exclamation-triangle"]);
+    if (Number(average) < 60) {
+      messages.push(["Riesgo académico", "El promedio general está por debajo de 60%. Prioriza planes por materia.", "bi-clipboard-pulse"]);
+    } else {
+      messages.push(["Tendencia", "El promedio general permite avanzar con seguimiento regular.", "bi-graph-up"]);
+    }
+    return messages;
+  };
+
+  const renderRecommendations = (id, messages) => {
+    const container = $(id);
+    if (!container) return;
+    container.innerHTML = messages
+      .map(
+        ([title, text, icon]) => `<article class="recommendation-card"><i class="bi ${icon}"></i><div><strong>${escapeHtml(
+          title
+        )}</strong><span>${escapeHtml(text)}</span></div></article>`
+      )
       .join("");
   };
 
   const loadDashboard = async () => {
     try {
+      setButtonLoading("dashLoadBtn", true, "Actualizando...");
       const query = toQueryString({
+        school_id: $("dashSchoolSelect").value,
+        group_id: $("dashGroupSelect").value,
         grado: $("dashGrado").value.trim(),
-        from: $("dashFrom").value.trim(),
-        to: $("dashTo").value.trim(),
-        limit: 50
+        from: $("dashFrom").value ? `${$("dashFrom").value}T00:00:00.000Z` : "",
+        to: $("dashTo").value ? `${$("dashTo").value}T23:59:59.999Z` : "",
+        limit: 80
       });
       const response = await apiRequest(`/reports/dashboard/overview${query}`);
       const data = response.data || {};
+      const byArea = data.percentageByArea || [];
+      const sorted = [...byArea].sort((a, b) => b.porcentajeAcierto - a.porcentajeAcierto);
+      const weak = sorted[sorted.length - 1];
+      const best = sorted[0];
+      const riskCount = (data.studentsWithLatestResults || []).filter(
+        (item) => Number(item.ultimoResultado?.porcentajeTotal || 0) < 60
+      ).length;
 
-      renderKpis("dashKpis", [
-        { label: "Estudiantes", value: data.totalStudents ?? 0 },
-        { label: "Pruebas", value: data.totalExams ?? 0 },
-        { label: "Intentos", value: data.totalAttempts ?? 0 },
-        { label: "Calificadas", value: data.totalGradedAttempts ?? 0 },
-        { label: "Promedio %", value: data.averageGlobalPercentage ?? 0 }
+      renderStatCards([
+        { title: "Estudiantes", value: data.totalStudents ?? 0, hint: "Registros activos", icon: "bi-people" },
+        { title: "Pruebas", value: data.totalExams ?? 0, hint: "Simulacros y exámenes", icon: "bi-journal-check" },
+        { title: "Intentos", value: data.totalAttempts ?? 0, hint: "Presentaciones registradas", icon: "bi-pencil-square" },
+        { title: "Promedio", value: `${data.averageGlobalPercentage ?? 0}%`, hint: "Resultado general", icon: "bi-speedometer2" },
+        { title: "Mejor materia", value: best?.area || "-", hint: `${best?.porcentajeAcierto ?? 0}% de acierto`, icon: "bi-arrow-up-circle" },
+        { title: "Menor materia", value: weak?.area || "-", hint: `${weak?.porcentajeAcierto ?? 0}% de acierto`, icon: "bi-arrow-down-circle" },
+        { title: "En riesgo", value: riskCount, hint: "Estudiantes bajo 60%", icon: "bi-exclamation-circle" },
+        { title: "Calificadas", value: data.totalGradedAttempts ?? 0, hint: "Intentos cerrados", icon: "bi-check-circle" }
       ]);
 
       renderBars(
         "dashAreaBars",
-        (data.percentageByArea || []).map((row) => ({ label: row.area, percent: row.porcentajeAcierto }))
+        byArea.map((row) => ({ label: row.area, percent: row.porcentajeAcierto }))
       );
+      renderRecommendations("dashRecommendations", makeRecommendations(byArea, data.averageGlobalPercentage));
+      renderRecommendations("globalRecommendations", makeRecommendations(byArea, data.averageGlobalPercentage));
 
       $("dashRows").innerHTML = (data.studentsWithLatestResults || [])
         .map((item) => {
           const student = item.estudiante || {};
           const result = item.ultimoResultado || {};
-          return `<tr><td>${escapeHtml(`${student.nombres || ""} ${student.apellidos || ""}`.trim())}</td><td>${escapeHtml(student.numeroIdentificacion || "")}</td><td>${escapeHtml(result.prueba || "")}</td><td>${escapeHtml(result.porcentajeTotal ?? "-")}</td><td>${escapeHtml(result.nivelDesempenoGlobal || "-")}</td></tr>`;
+          return `<tr><td>${escapeHtml(`${student.nombres || ""} ${student.apellidos || ""}`.trim())}</td><td>${escapeHtml(
+            student.numeroIdentificacion || ""
+          )}</td><td>${escapeHtml(result.prueba || "")}</td><td>${renderBadge(
+            result.porcentajeTotal,
+            `${moneyDash(result.porcentajeTotal)}%`
+          )}</td><td>${escapeHtml(result.nivelDesempenoGlobal || "-")}</td></tr>`;
         })
         .join("");
+
+      renderChart("subjectChart", {
+        type: "bar",
+        data: {
+          labels: byArea.map((row) => row.area),
+          datasets: [{ label: "% acierto", data: byArea.map((row) => row.porcentajeAcierto), backgroundColor: chartColors }]
+        }
+      });
+      renderChart("summaryChart", {
+        type: "doughnut",
+        data: {
+          labels: ["Calificadas", "Pendientes"],
+          datasets: [
+            {
+              data: [data.totalGradedAttempts || 0, Math.max(0, (data.totalAttempts || 0) - (data.totalGradedAttempts || 0))],
+              backgroundColor: ["#2563eb", "#cbd5e1"]
+            }
+          ]
+        }
+      });
     } catch (error) {
-      setStatus("loginStatus", `Dashboard: ${error.message}`, "warn");
+      showToast(error.message);
+    } finally {
+      setButtonLoading("dashLoadBtn", false);
     }
   };
 
-  const resetStudentForm = () => {
-    state.editingStudentId = null;
-    $("stEditingId").value = "";
-    $("stNombres").value = "";
-    $("stApellidos").value = "";
-    $("stTipo").value = "TI";
-    $("stDocumento").value = "";
-    $("stGrado").value = "11";
-    $("stGrupo").value = "";
-    $("stInstitucion").value = "";
-    $("stDocumento").disabled = false;
-    $("stCreateBtn").textContent = "Crear estudiante";
+  const listSchools = async () => {
+    const response = await apiRequest("/schools?limit=200");
+    state.schools = response.data?.items || [];
+    fillSelect("dashSchoolSelect", state.schools, { placeholder: "Todos los colegios" });
+    fillSelect("groupSchoolSelect", state.schools, { placeholder: "Selecciona colegio" });
+    fillSelect("stSchoolSelect", state.schools, { placeholder: "Sin asignar" });
+    $("schoolRows").innerHTML = state.schools
+      .map(
+        (school) => `<tr><td>${escapeHtml(school.name)}</td><td>${escapeHtml(school.code || "-")}</td><td>${renderBadge(
+          school.isActive ? 80 : 20,
+          school.isActive ? "Activo" : "Inactivo"
+        )}</td><td><button class="ghost-button" data-school-edit="${school.id}">Editar</button></td></tr>`
+      )
+      .join("");
   };
 
-  const fillStudentFormForEdit = (student) => {
-    state.editingStudentId = student.id;
-    $("stEditingId").value = student.id;
-    $("stNombres").value = student.nombres || "";
-    $("stApellidos").value = student.apellidos || "";
-    $("stTipo").value = student.tipoIdentificacion || "TI";
-    $("stDocumento").value = student.numeroIdentificacion || "";
-    $("stGrado").value = student.grado || "";
-    $("stGrupo").value = student.grupo || "";
-    $("stInstitucion").value = student.institucion || "";
-    $("stDocumento").disabled = true;
-    $("stCreateBtn").textContent = "Guardar cambios";
-    setStatus("stCreateStatus", `Editando ${student.numeroIdentificacion}`, "warn");
+  const saveSchool = async () => {
+    try {
+      const body = cleanObject({
+        code: $("schoolCode").value.trim(),
+        name: $("schoolName").value.trim(),
+        description: $("schoolDescription").value.trim(),
+        is_active: $("schoolActive").value === "true"
+      });
+      if (!body.name) throw new Error("El nombre del colegio es obligatorio.");
+      const id = $("schoolEditingId").value;
+      await apiRequest(id ? `/schools/${id}` : "/schools", { method: id ? "PATCH" : "POST", body });
+      setStatus("schoolStatus", "Colegio guardado.", "ok");
+      resetSchoolForm();
+      await listSchools();
+    } catch (error) {
+      setStatus("schoolStatus", error.message, "bad");
+    }
+  };
+
+  const resetSchoolForm = () => {
+    ["schoolEditingId", "schoolCode", "schoolName", "schoolDescription"].forEach((id) => ($(id).value = ""));
+    $("schoolActive").value = "true";
+  };
+
+  const listGroups = async (schoolId = $("groupSchoolSelect").value || $("dashSchoolSelect").value) => {
+    if (!schoolId) {
+      state.groups = [];
+      fillSelect("dashGroupSelect", [], { placeholder: "Todos los salones" });
+      fillSelect("stGroupSelect", [], { placeholder: "Sin asignar" });
+      $("groupRows").innerHTML = "<tr><td colspan='4'>Selecciona un colegio.</td></tr>";
+      return;
+    }
+    const response = await apiRequest(`/schools/${schoolId}/groups?limit=200`);
+    state.groups = response.data?.items || [];
+    fillSelect("dashGroupSelect", state.groups, { placeholder: "Todos los salones", label: (item) => `${item.name} · ${item.grade || "-"}` });
+    fillSelect("stGroupSelect", state.groups, { placeholder: "Sin asignar", label: (item) => `${item.name} · ${item.grade || "-"}` });
+    $("groupRows").innerHTML = state.groups
+      .map(
+        (group) => `<tr><td>${escapeHtml(group.name)}</td><td>${escapeHtml(group.grade || "-")}</td><td>${escapeHtml(
+          group.academicYear || "-"
+        )}</td><td>${renderBadge(group.isActive ? 80 : 20, group.isActive ? "Activo" : "Inactivo")}</td></tr>`
+      )
+      .join("");
+  };
+
+  const saveGroup = async () => {
+    try {
+      const schoolId = $("groupSchoolSelect").value;
+      if (!schoolId) throw new Error("Selecciona un colegio.");
+      const body = cleanObject({
+        code: $("groupCode").value.trim(),
+        name: $("groupName").value.trim(),
+        grade: $("groupGrade").value.trim(),
+        academic_year: Number($("groupYear").value || new Date().getFullYear()),
+        is_active: true
+      });
+      await apiRequest(`/schools/${schoolId}/groups`, { method: "POST", body });
+      setStatus("groupStatus", "Salón guardado.", "ok");
+      ["groupCode", "groupName"].forEach((id) => ($(id).value = ""));
+      await listGroups(schoolId);
+    } catch (error) {
+      setStatus("groupStatus", error.message, "bad");
+    }
   };
 
   const collectStudentPayload = () =>
@@ -428,31 +524,34 @@
       numero_identificacion: $("stDocumento").value.trim(),
       grado: $("stGrado").value.trim(),
       grupo: $("stGrupo").value.trim(),
-      institucion: $("stInstitucion").value.trim()
+      institucion: $("stInstitucion").value.trim(),
+      email: $("stEmail").value.trim(),
+      school_id: $("stSchoolSelect").value,
+      group_id: $("stGroupSelect").value
     });
+
+  const resetStudentForm = () => {
+    state.editingStudentId = null;
+    ["stEditingId", "stNombres", "stApellidos", "stDocumento", "stGrupo", "stInstitucion", "stEmail"].forEach(
+      (id) => ($(id).value = "")
+    );
+    $("stTipo").value = "TI";
+    $("stGrado").value = "11";
+    $("stDocumento").disabled = false;
+    setText("stCreateBtn", "Guardar estudiante");
+  };
 
   const saveStudent = async () => {
     try {
       const payload = collectStudentPayload();
-      if (!payload.nombres || !payload.apellidos || !payload.grado) throw new Error("Nombres, apellidos y grado son obligatorios");
-
+      if (!payload.nombres || !payload.apellidos || !payload.grado) throw new Error("Nombres, apellidos y grado son obligatorios.");
       if (state.editingStudentId) {
-        const updatePayload = cleanObject({
-          nombres: payload.nombres,
-          apellidos: payload.apellidos,
-          tipo_identificacion: payload.tipo_identificacion,
-          grado: payload.grado,
-          grupo: payload.grupo,
-          institucion: payload.institucion
-        });
-        const response = await apiRequest(`/students/${state.editingStudentId}`, { method: "PATCH", body: updatePayload });
-        setStatus("stCreateStatus", response.message || "Estudiante actualizado", "ok");
+        const { numero_identificacion, ...updatePayload } = payload;
+        await apiRequest(`/students/${state.editingStudentId}`, { method: "PATCH", body: updatePayload });
       } else {
-        if (!payload.numero_identificacion || !payload.tipo_identificacion) throw new Error("Tipo y numero de identificacion son obligatorios");
-        const response = await apiRequest("/students", { method: "POST", body: payload });
-        setStatus("stCreateStatus", response.message || "Estudiante creado", "ok");
+        await apiRequest("/students", { method: "POST", body: payload });
       }
-
+      setStatus("stCreateStatus", "Estudiante guardado.", "ok");
       resetStudentForm();
       await listStudents();
     } catch (error) {
@@ -465,65 +564,48 @@
       const query = toQueryString({
         grado: $("stFilterGrado").value.trim(),
         numero_identificacion: $("stFilterDoc").value.trim(),
-        limit: 120
+        grupo: $("stFilterGrupo").value.trim(),
+        institucion: $("stFilterInstitucion").value.trim(),
+        limit: 150
       });
       const response = await apiRequest(`/students${query}`);
-      const data = response.data || {};
-      state.students = data.items || [];
-      setStatus("stListStatus", `Total: ${data.total ?? state.students.length}`, "ok");
+      state.students = response.data?.items || [];
+      setStatus("stListStatus", `Total: ${response.data?.total ?? state.students.length}`, "ok");
       $("stListRows").innerHTML = state.students
-        .map((student) => `<tr><td>${escapeHtml(student.numeroIdentificacion)}</td><td>${escapeHtml(`${student.nombres} ${student.apellidos}`)}</td><td>${escapeHtml(student.grado || "")}</td><td>${escapeHtml(student.grupo || "")}</td><td>${escapeHtml(student.institucion || "")}</td><td><div class="inline"><button class="btn alt" data-st-action="edit" data-st-id="${student.id}">Editar</button><button class="btn warn" data-st-action="delete" data-st-id="${student.id}">Eliminar</button></div></td></tr>`)
+        .map(
+          (student) => `<tr><td>${escapeHtml(student.numeroIdentificacion)}</td><td>${escapeHtml(
+            `${student.nombres} ${student.apellidos}`
+          )}</td><td>${escapeHtml(student.grado || "-")}</td><td>${escapeHtml(student.grupo || "-")}</td><td>${escapeHtml(
+            student.institucion || "-"
+          )}</td><td><button class="ghost-button" data-st-edit="${student.id}">Editar</button><button class="ghost-button" data-st-delete="${student.id}">Eliminar</button></td></tr>`
+        )
         .join("");
     } catch (error) {
       setStatus("stListStatus", error.message, "bad");
-      $("stListRows").innerHTML = "";
     }
   };
 
-  const handleStudentTableClick = async (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-    const action = target.getAttribute("data-st-action");
-    const studentId = target.getAttribute("data-st-id");
-    if (!action || !studentId) return;
-
-    const student = state.students.find((item) => item.id === studentId);
-    if (!student) {
-      setStatus("stListStatus", "No se encontro el estudiante seleccionado", "bad");
-      return;
-    }
-
-    if (action === "edit") {
-      fillStudentFormForEdit(student);
-      return;
-    }
-
-    if (action === "delete") {
-      const confirmed = window.confirm(`Eliminar logicamente a ${student.nombres} ${student.apellidos}?`);
-      if (!confirmed) return;
-      try {
-        await apiRequest(`/students/${studentId}`, { method: "DELETE" });
-        setStatus("stListStatus", "Estudiante eliminado logicamente", "ok");
-        if (state.editingStudentId === studentId) resetStudentForm();
-        await listStudents();
-      } catch (error) {
-        setStatus("stListStatus", error.message, "bad");
-      }
-    }
-  };
-  const downloadStudentsTemplate = async () => {
-    try {
-      await downloadWithAuth("/students/bulk/template.csv", "students_bulk_template.csv");
-      setStatus("stBulkStatus", "Plantilla descargada.", "ok");
-    } catch (error) {
-      setStatus("stBulkStatus", error.message, "bad");
-    }
+  const fillStudentForm = (student) => {
+    state.editingStudentId = student.id;
+    $("stEditingId").value = student.id;
+    $("stNombres").value = student.nombres || "";
+    $("stApellidos").value = student.apellidos || "";
+    $("stTipo").value = student.tipoIdentificacion || "TI";
+    $("stDocumento").value = student.numeroIdentificacion || "";
+    $("stGrado").value = student.grado || "";
+    $("stGrupo").value = student.grupo || "";
+    $("stInstitucion").value = student.institucion || "";
+    $("stEmail").value = student.email || "";
+    $("stSchoolSelect").value = student.schoolId || "";
+    $("stDocumento").disabled = true;
+    setText("stCreateBtn", "Guardar cambios");
+    setView("students");
   };
 
   const uploadStudentsCsv = async () => {
     try {
       const file = $("stFile").files?.[0];
-      if (!file) throw new Error("Selecciona un archivo CSV");
+      if (!file) throw new Error("Selecciona un archivo CSV.");
       const form = new FormData();
       form.append("file", file);
       const response = await apiRequest("/students/bulk", { method: "POST", body: form });
@@ -535,31 +617,113 @@
     }
   };
 
+  const listUsers = async () => {
+    try {
+      const response = await apiRequest("/users?limit=150");
+      state.users = response.data?.items || [];
+      const admins = state.users.filter((user) => user.role === "ADMIN").length;
+      const docentes = state.users.filter((user) => user.role === "DOCENTE").length;
+      setText("uSummary", `Usuarios: ${state.users.length} | Admin: ${admins} | Docente: ${docentes}`);
+      $("uTableRows").innerHTML = state.users
+        .map(
+          (user) => `<tr><td>${escapeHtml(user.name)}</td><td>${escapeHtml(user.email)}</td><td>${escapeHtml(user.role)}</td><td>${renderBadge(
+            user.isActive ? 80 : 20,
+            user.isActive ? "Activo" : "Inactivo"
+          )}</td></tr>`
+        )
+        .join("");
+      $("uOutput").textContent = pretty(response.data);
+      setStatus("uStatus", "Usuarios actualizados.", "ok");
+    } catch (error) {
+      setStatus("uStatus", error.message, "bad");
+    }
+  };
+
   const createUser = async () => {
     try {
-      const payload = cleanObject({
+      const body = cleanObject({
         name: $("uNombre").value.trim(),
         email: $("uEmail").value.trim(),
         password: $("uPassword").value,
         role: $("uRol").value,
         is_active: $("uActivo").value === "true"
       });
-      const response = await apiRequest("/users", { method: "POST", body: payload });
-      setStatus("uStatus", response.message || "Usuario creado", "ok");
+      await apiRequest("/users", { method: "POST", body });
+      setStatus("uStatus", "Usuario creado.", "ok");
+      ["uNombre", "uEmail", "uPassword"].forEach((id) => ($(id).value = ""));
       await listUsers();
     } catch (error) {
       setStatus("uStatus", error.message, "bad");
     }
   };
 
-  const listUsers = async () => {
+  const uploadUsersCsv = async () => {
     try {
-      const response = await apiRequest("/users?limit=150");
+      const file = $("uBulkFile").files?.[0];
+      if (!file) throw new Error("Selecciona un archivo CSV.");
+      const form = new FormData();
+      form.append("file", file);
+      const response = await apiRequest("/users/bulk", { method: "POST", body: form });
       $("uOutput").textContent = pretty(response.data);
-      setStatus("uStatus", `Usuarios: ${response.data?.total ?? 0}`, "ok");
+      setStatus("uStatus", "Carga masiva procesada.", "ok");
+      await listUsers();
     } catch (error) {
       setStatus("uStatus", error.message, "bad");
     }
+  };
+
+  const createExam = async () => {
+    try {
+      const body = cleanObject({
+        nombre: $("examName").value.trim(),
+        descripcion: $("examDescription").value.trim(),
+        tipo_prueba: $("examType").value,
+        grado_objetivo: $("examGrade").value.trim(),
+        estado: $("examStatus").value,
+        tiempo_limite_minutos: Number($("examTime").value || 120),
+        total_preguntas: Number($("examTotalQuestions").value || 0),
+        puntaje_maximo: Number($("examMaxScore").value || 100)
+      });
+      await apiRequest("/exams", { method: "POST", body });
+      setStatus("examStatusBox", "Prueba guardada.", "ok");
+      ["examName", "examDescription"].forEach((id) => ($(id).value = ""));
+      await listExams();
+    } catch (error) {
+      setStatus("examStatusBox", error.message, "bad");
+    }
+  };
+
+  const listExams = async () => {
+    try {
+      const query = toQueryString({
+        tipo_prueba: $("examFilterType").value.trim(),
+        grado_objetivo: $("examFilterGrade").value.trim() || "11",
+        limit: 200
+      });
+      const response = await apiRequest(`/exams${query}`);
+      state.exams = response.data?.items || [];
+      fillSelect("simExamSelect", state.exams, {
+        placeholder: "Selecciona prueba",
+        label: (item) => `${item.nombre} · ${item.tipoPrueba} · ${item.gradoObjetivo}`
+      });
+      $("examRows").innerHTML = state.exams
+        .map(
+          (exam) => `<tr><td>${escapeHtml(exam.nombre)}</td><td>${escapeHtml(exam.tipoPrueba)}</td><td>${escapeHtml(
+            exam.gradoObjetivo
+          )}</td><td>${escapeHtml(exam.totalPreguntas ?? 0)}</td><td>${renderBadge(
+            exam.estado === "PUBLICADO" ? 80 : 45,
+            exam.estado
+          )}</td><td><button class="ghost-button" data-exam-publish="${exam.id}">Publicar</button></td></tr>`
+        )
+        .join("");
+    } catch (error) {
+      setStatus("examStatusBox", error.message, "bad");
+    }
+  };
+
+  const publishExam = async (examId) => {
+    await apiRequest(`/exams/${examId}`, { method: "PATCH", body: { estado: "PUBLICADO" } });
+    await listExams();
   };
 
   const collectSimulatorStudent = () =>
@@ -572,283 +736,71 @@
       grupo: $("simGrupo").value.trim()
     });
 
-  const renderExamOptions = (items) => {
-    const select = $("simExamSelect");
-    select.innerHTML = "";
-    if (!Array.isArray(items) || items.length === 0) {
-      const option = document.createElement("option");
-      option.value = "";
-      option.textContent = "Sin pruebas disponibles";
-      select.appendChild(option);
-      return;
-    }
-
-    items.forEach((item) => {
-      const option = document.createElement("option");
-      option.value = item.id;
-      option.textContent = `${item.nombre} | ${item.tipoPrueba} | ${item.gradoObjetivo} | ${item.estado}`;
-      select.appendChild(option);
-    });
-  };
-
-  const loadExams = async () => {
-    try {
-      const query = toQueryString({
-        tipo_prueba: $("simTipoFiltro").value.trim(),
-        grado_objetivo: $("simGradoFiltro").value.trim(),
-        limit: 200
-      });
-      const response = await apiRequest(`/exams${query}`);
-      renderExamOptions(response.data?.items || []);
-      setStatus("simStatus", `Pruebas cargadas: ${response.data?.total ?? 0}`, "ok");
-    } catch (error) {
-      setStatus("simStatus", error.message, "bad");
-      renderExamOptions([]);
-    }
-  };
-
-  const renderSimulatorNav = () => {
-    const nav = $("simNav");
-    nav.innerHTML = "";
-    state.simulator.questionDeck.forEach((question, index) => {
-      const button = document.createElement("button");
-      button.textContent = String(index + 1);
-      if (index === state.simulator.currentIndex) button.classList.add("current");
-      if (state.simulator.answersByQuestionId[question.questionId]) button.style.borderColor = "#59a884";
-      button.addEventListener("click", () => {
-        state.simulator.currentIndex = index;
-        renderSimulatorQuestion();
-      });
-      nav.appendChild(button);
-    });
-  };
-
-  const renderSimulatorQuestion = () => {
-    const deck = state.simulator.questionDeck;
-    if (!deck.length) {
-      $("simQuestionTitle").textContent = "Pregunta";
-      $("simQuestionBody").textContent = "Sin intento activo.";
-      $("simOptions").innerHTML = "";
-      $("simNav").innerHTML = "";
-      return;
-    }
-
-    const current = deck[state.simulator.currentIndex];
-    const total = deck.length;
-    $("simQuestionTitle").textContent = `Pregunta ${state.simulator.currentIndex + 1} de ${total}`;
-
-    const context = current.contextoTextoBase
-      ? `<div><strong>Contexto:</strong> ${escapeHtml(current.contextoTextoBase)}</div>`
-      : "";
-    const meta = `<div style="margin-top:6px;font-size:12px;color:#55675d">Area: ${escapeHtml(current.area)} | Dificultad: ${escapeHtml(current.nivelDificultad)} | Competencia: ${escapeHtml(current.competencia)}</div>`;
-    $("simQuestionBody").innerHTML = `${context}<div style="margin-top:8px">${escapeHtml(current.enunciado)}</div>${meta}`;
-
-    const selectedId = state.simulator.answersByQuestionId[current.questionId] || current.selectedOptionId || null;
-    $("simOptions").innerHTML = (current.options || [])
-      .map((option) => {
-        const selectedClass = option.id === selectedId ? " selected" : "";
-        return `<label class="option-item${selectedClass}" data-opt-id="${option.id}"><input type="radio" name="simOption" value="${option.id}" ${option.id === selectedId ? "checked" : ""} /><div><strong>${escapeHtml(option.ordenPresentacion)}.</strong> ${escapeHtml(option.textoOpcion)}</div></label>`;
-      })
-      .join("");
-
-    $("simOptions").querySelectorAll(".option-item").forEach((item) => {
-      item.addEventListener("click", () => {
-        const optionId = item.getAttribute("data-opt-id");
-        if (!optionId) return;
-        state.simulator.answersByQuestionId[current.questionId] = optionId;
-        renderSimulatorQuestion();
-      });
-    });
-
-    renderSimulatorNav();
-  };
-
   const applySimulatorAttemptData = (data) => {
     state.simulator.attemptId = data.attempt?.id || null;
-    state.simulator.questionDeck = Array.isArray(data.questionDeck)
-      ? data.questionDeck.slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-      : [];
+    state.simulator.questionDeck = (data.questionDeck || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
     state.simulator.currentIndex = 0;
     state.simulator.answersByQuestionId = {};
-    state.simulator.result = null;
-    state.simulator.questionDeck.forEach((q) => {
-      if (q.selectedOptionId) state.simulator.answersByQuestionId[q.questionId] = q.selectedOptionId;
-    });
-
     $("simStrictAttemptId").value = state.simulator.attemptId || "";
-    renderKpis("simKpis", []);
-    renderBars("simAreaBars", []);
-    $("simResultOutput").textContent = "{}";
     renderSimulatorQuestion();
   };
 
   const startSimulatorAttempt = async () => {
     try {
-      const examId = $("simExamSelect").value;
-      if (!examId) throw new Error("Selecciona una prueba");
       const student = collectSimulatorStudent();
-      if (!student.nombres || !student.apellidos || !student.numero_identificacion || !student.grado) {
-        throw new Error("Completa datos obligatorios del estudiante");
-      }
-
+      if (!student.nombres || !student.apellidos || !student.numero_identificacion) throw new Error("Completa datos del estudiante.");
       const response = await apiRequest("/attempts/start", {
         method: "POST",
-        body: {
-          prueba_id: examId,
-          estudiante: student
-        }
+        body: { prueba_id: $("simExamSelect").value, estudiante: student }
       });
-
-      const data = response.data || {};
-      applySimulatorAttemptData(data);
+      applySimulatorAttemptData(response.data || {});
       setStatus("simStatus", `Intento iniciado: ${state.simulator.attemptId}`, "ok");
     } catch (error) {
       setStatus("simStatus", error.message, "bad");
     }
   };
 
-  const enableSessionTwoForAttempt = async () => {
-    try {
-      const attemptId = $("simStrictAttemptId").value.trim();
-      if (!attemptId) throw new Error("Ingresa el attempt ID");
-      const response = await apiRequest(`/attempts/${attemptId}/session2/enable`, { method: "POST" });
-      $("simResultOutput").textContent = pretty(response.data || {});
-      setStatus("simStrictStatus", "Jornada 2 habilitada correctamente.", "ok");
-      await loadPendingStrictAttempts();
-    } catch (error) {
-      setStatus("simStrictStatus", error.message, "bad");
+  const renderSimulatorQuestion = () => {
+    const deck = state.simulator.questionDeck;
+    if (!deck.length) {
+      setText("simQuestionTitle", "Pregunta");
+      setText("simQuestionBody", "Sin pregunta activa.");
+      $("simOptions").innerHTML = "";
+      $("simNav").innerHTML = "";
+      return;
     }
-  };
-
-  const stopAttemptByIdAdmin = async (attemptId) => {
-    if (!attemptId) {
-      throw new Error("Ingresa el attempt ID");
-    }
-
-    const reason = window.prompt("Motivo para detener el intento (opcional):", "") || "";
-    const response = await apiRequest(`/attempts/${attemptId}/stop`, {
-      method: "POST",
-      body: cleanObject({ motivo: reason })
-    });
-    $("simResultOutput").textContent = pretty(response.data || {});
-    setStatus("simStrictStatus", "Intento detenido.", "ok");
-    if (state.simulator.attemptId === attemptId) {
-      state.simulator.attemptId = null;
-      state.simulator.questionDeck = [];
-      state.simulator.answersByQuestionId = {};
-      state.simulator.currentIndex = 0;
-      renderSimulatorQuestion();
-    }
-    await loadPendingStrictAttempts();
-  };
-
-  const restartAttemptByIdAdmin = async (attemptId) => {
-    if (!attemptId) {
-      throw new Error("Ingresa el attempt ID");
-    }
-
-    const reason = window.prompt("Motivo para reiniciar el intento (opcional):", "") || "";
-    const response = await apiRequest(`/attempts/${attemptId}/restart`, {
-      method: "POST",
-      body: cleanObject({ motivo: reason })
-    });
-    const data = response.data || {};
-    applySimulatorAttemptData(data);
-    $("simResultOutput").textContent = pretty(data);
-    setStatus("simStrictStatus", `Intento reiniciado. Nuevo ID: ${data.attempt?.id || "-"}`, "ok");
-    await loadPendingStrictAttempts();
-  };
-
-  const findPendingStrictAttemptByStudent = async () => {
-    try {
-      const documentId = $("simStrictStudentDoc").value.trim();
-      if (!documentId) throw new Error("Ingresa el documento del estudiante");
-
-      const response = await apiRequest(`/attempts/student/${encodeURIComponent(documentId)}`);
-      const items = Array.isArray(response.data?.items) ? response.data.items : [];
-
-      if (!items.length) {
-        throw new Error("El estudiante no tiene intentos registrados");
-      }
-
-      const getSessionControl = (attempt) => {
-        const presentation = attempt?.presentacion;
-        if (!presentation || typeof presentation !== "object" || Array.isArray(presentation)) return null;
-        const sessionControl = presentation.sessionControl;
-        if (!sessionControl || typeof sessionControl !== "object" || Array.isArray(sessionControl)) return null;
-        return sessionControl;
-      };
-
-      const candidate =
-        items.find((attempt) => {
-          const sessionControl = getSessionControl(attempt);
-          return (
-            (attempt.estado === "PENDIENTE" || attempt.estado === "INICIADA") &&
-            sessionControl?.strictMode === true &&
-            sessionControl?.session2Enabled !== true
-          );
-        }) ??
-        items.find((attempt) => attempt.estado === "PENDIENTE" || attempt.estado === "INICIADA") ??
-        items[0];
-
-      $("simStrictAttemptId").value = candidate?.id || "";
-      setStatus(
-        "simStrictStatus",
-        candidate?.id
-          ? `Intento seleccionado: ${candidate.id} (${candidate.estado})`
-          : "No se encontro intento seleccionable",
-        candidate?.id ? "ok" : "warn"
-      );
-    } catch (error) {
-      setStatus("simStrictStatus", error.message, "bad");
-    }
-  };
-
-  const handlePendingStrictTableClick = async (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-    const attemptId = target.getAttribute("data-enable-attempt");
-    const stopAttemptId = target.getAttribute("data-stop-attempt");
-    const restartAttemptId = target.getAttribute("data-restart-attempt");
-
-    try {
-      if (attemptId) {
-        $("simStrictAttemptId").value = attemptId;
-        await enableSessionTwoForAttempt();
-        return;
-      }
-
-      if (stopAttemptId) {
-        $("simStrictAttemptId").value = stopAttemptId;
-        await stopAttemptByIdAdmin(stopAttemptId);
-        return;
-      }
-
-      if (restartAttemptId) {
-        $("simStrictAttemptId").value = restartAttemptId;
-        await restartAttemptByIdAdmin(restartAttemptId);
-      }
-    } catch (error) {
-      setStatus("simStrictStatus", error.message, "bad");
-    }
+    const current = deck[state.simulator.currentIndex];
+    setText("simQuestionTitle", `Pregunta ${state.simulator.currentIndex + 1} de ${deck.length}`);
+    $("simQuestionBody").innerHTML = `${current.contextoTextoBase ? `<strong>Contexto:</strong> ${escapeHtml(current.contextoTextoBase)}<br><br>` : ""}${escapeHtml(
+      current.enunciado
+    )}`;
+    const selected = state.simulator.answersByQuestionId[current.questionId] || current.selectedOptionId;
+    $("simOptions").innerHTML = (current.options || [])
+      .map(
+        (option) => `<label class="option-item ${option.id === selected ? "selected" : ""}" data-option-id="${option.id}">
+          <input type="radio" name="simOption" ${option.id === selected ? "checked" : ""} />
+          <span><strong>${escapeHtml(option.ordenPresentacion)}.</strong> ${escapeHtml(option.textoOpcion)}</span>
+        </label>`
+      )
+      .join("");
+    $("simNav").innerHTML = deck
+      .map(
+        (question, index) =>
+          `<button class="${index === state.simulator.currentIndex ? "current" : ""}" data-sim-index="${index}">${index + 1}</button>`
+      )
+      .join("");
   };
 
   const saveCurrentAnswer = async () => {
     try {
-      if (!state.simulator.attemptId) throw new Error("No hay intento activo");
       const question = state.simulator.questionDeck[state.simulator.currentIndex];
-      if (!question) throw new Error("No hay pregunta activa");
-      const optionId = state.simulator.answersByQuestionId[question.questionId];
-      if (!optionId) throw new Error("Selecciona una opcion antes de guardar");
+      const optionId = state.simulator.answersByQuestionId[question?.questionId];
+      if (!state.simulator.attemptId || !question || !optionId) throw new Error("Selecciona una respuesta.");
       await apiRequest(`/attempts/${state.simulator.attemptId}/answer`, {
         method: "POST",
-        body: {
-          pregunta_id: question.questionId,
-          opcion_id_seleccionada: optionId
-        }
+        body: { pregunta_id: question.questionId, opcion_id_seleccionada: optionId }
       });
-      renderSimulatorNav();
-      setStatus("simStatus", `Respuesta guardada para pregunta ${state.simulator.currentIndex + 1}`, "ok");
+      setStatus("simStatus", `Respuesta guardada: pregunta ${state.simulator.currentIndex + 1}`, "ok");
     } catch (error) {
       setStatus("simStatus", error.message, "bad");
     }
@@ -856,124 +808,109 @@
 
   const submitSimulatorAttempt = async () => {
     try {
-      if (!state.simulator.attemptId) throw new Error("No hay intento activo");
-      const confirmed = window.confirm("Enviar intento y calificar ahora?");
-      if (!confirmed) return;
-
+      if (!state.simulator.attemptId) throw new Error("No hay intento activo.");
       const response = await apiRequest(`/attempts/${state.simulator.attemptId}/submit`, { method: "POST" });
       const data = response.data || {};
-      state.simulator.result = data;
-
-      renderKpis("simKpis", [
-        { label: "Correctas", value: data.correctas ?? 0 },
-        { label: "Incorrectas", value: data.incorrectas ?? 0 },
-        { label: "Puntaje", value: data.puntajeTotalObtenido ?? 0 },
-        { label: "Porcentaje", value: data.porcentajeTotal ?? 0 },
-        { label: "Nivel", value: data.nivelDesempenoGlobal ?? "-" }
-      ]);
-
-      renderBars(
-        "simAreaBars",
-        (data.areaResults || []).map((row) => ({ label: row.area, percent: row.porcentajeArea }))
-      );
-
       $("simResultOutput").textContent = pretty(data);
-      setStatus("simStatus", "Intento enviado y calificado.", "ok");
+      $("simKpis").innerHTML = [
+        { title: "Correctas", value: data.correctas ?? 0, hint: "Respuestas correctas", icon: "bi-check-circle" },
+        { title: "Incorrectas", value: data.incorrectas ?? 0, hint: "Respuestas incorrectas", icon: "bi-x-circle" },
+        { title: "Porcentaje", value: `${data.porcentajeTotal ?? 0}%`, hint: data.nivelDesempenoGlobal || "Nivel", icon: "bi-speedometer2" },
+        { title: "Puntaje", value: data.puntajeTotalObtenido ?? 0, hint: "Puntaje obtenido", icon: "bi-award" }
+      ]
+        .map(
+          (item) => `<article class="stat-card"><div class="stat-head"><span>${item.title}</span><i class="bi ${item.icon}"></i></div><strong>${item.value}</strong><small>${item.hint}</small></article>`
+        )
+        .join("");
+      renderBars("simAreaBars", (data.areaResults || []).map((row) => ({ label: row.area, percent: row.porcentajeArea })));
       state.simulator.attemptId = null;
+      setStatus("simStatus", "Intento enviado y calificado.", "ok");
     } catch (error) {
       setStatus("simStatus", error.message, "bad");
     }
   };
 
-  const goToPreviousQuestion = () => {
-    if (!state.simulator.questionDeck.length) return;
-    state.simulator.currentIndex = Math.max(0, state.simulator.currentIndex - 1);
-    renderSimulatorQuestion();
-  };
+  const buildClassroomReportQuery = () =>
+    toQueryString({
+      grado: $("repClassGrado").value.trim(),
+      grupo: $("repClassGrupo").value.trim(),
+      institucion: $("repClassInstitucion").value.trim(),
+      from: $("repClassFrom").value ? `${$("repClassFrom").value}T00:00:00.000Z` : "",
+      to: $("repClassTo").value ? `${$("repClassTo").value}T23:59:59.999Z` : "",
+      limit: 3000
+    });
 
-  const goToNextQuestion = () => {
-    if (!state.simulator.questionDeck.length) return;
-    state.simulator.currentIndex = Math.min(state.simulator.questionDeck.length - 1, state.simulator.currentIndex + 1);
-    renderSimulatorQuestion();
-  };
-  const loadStudentReport = async () => {
-    try {
-      const documentId = $("repStudentDoc").value.trim();
-      if (!documentId) throw new Error("Ingresa el documento");
-      const query = toQueryString({ grado: $("repStudentGrado").value.trim() });
-      const response = await apiRequest(`/reports/student/${encodeURIComponent(documentId)}/performance${query}`);
-      $("repStudentOutput").textContent = pretty(response.data);
-      setStatus("repStudentStatus", `Riesgo: ${response.data?.totals?.riskLevel || "N/A"}`, "ok");
-    } catch (error) {
-      setStatus("repStudentStatus", error.message, "bad");
-      $("repStudentOutput").textContent = "{}";
-    }
-  };
-
-  const downloadStudentReport = async (format) => {
-    try {
-      const documentId = $("repStudentDoc").value.trim();
-      if (!documentId) throw new Error("Ingresa el documento");
-      const query = toQueryString({ grado: $("repStudentGrado").value.trim() });
-      const extension = format === "pdf" ? "pdf" : "csv";
-      await downloadWithAuth(
-        `/reports/student/${encodeURIComponent(documentId)}/performance/export.${extension}${query}`,
-        `student_${documentId}_performance.${extension}`
-      );
-      setStatus("repStudentStatus", `Export ${extension.toUpperCase()} generado.`, "ok");
-    } catch (error) {
-      setStatus("repStudentStatus", error.message, "bad");
-    }
-  };
+  const buildStudentReportQuery = () => toQueryString({ grado: $("repStudentGrado").value.trim() });
 
   const loadClassroomReport = async () => {
     try {
-      const query = toQueryString({
-        grado: $("repClassGrado").value.trim(),
-        grupo: $("repClassGrupo").value.trim(),
-        institucion: $("repClassInstitucion").value.trim(),
-        limit: 3000
-      });
+      const query = buildClassroomReportQuery();
       const response = await apiRequest(`/reports/classroom/summary${query}`);
-      $("repClassOutput").textContent = pretty(response.data);
-      setStatus("repClassStatus", `Estudiantes con intentos: ${response.data?.totals?.studentsWithAttempts ?? 0}`, "ok");
+      const data = response.data || {};
+      $("repClassOutput").textContent = pretty(data);
+      setStatus("repClassStatus", `Estudiantes con intentos: ${data.totals?.studentsWithAttempts ?? 0}`, "ok");
+      $("classroomRows").innerHTML = (data.ranking || [])
+        .map(
+          (row) => `<tr><td>${escapeHtml(`${row.nombres} ${row.apellidos}`)}</td><td>${escapeHtml(row.numeroIdentificacion)}</td><td>${escapeHtml(
+            row.grado || "-"
+          )}</td><td>${escapeHtml(row.grupo || "-")}</td><td>${row.attempts}</td><td>${renderBadge(
+            row.averagePercentage,
+            `${row.averagePercentage}%`
+          )}</td><td>${renderBadge(row.averagePercentage, performanceClass(row.averagePercentage).toUpperCase())}</td></tr>`
+        )
+        .join("");
+      renderRecommendations("classroomSummaryCards", makeRecommendations(data.bySubject || [], data.totals?.averagePercentage).map((item) => item));
+      renderChart("classroomChart", {
+        type: "bar",
+        data: {
+          labels: (data.bySubject || []).map((row) => row.subject || row.area),
+          datasets: [
+            {
+              label: "% acierto",
+              data: (data.bySubject || []).map((row) => Number(row.percentage ?? row.porcentajeAcierto ?? 0)),
+              backgroundColor: chartColors
+            }
+          ]
+        }
+      });
     } catch (error) {
       setStatus("repClassStatus", error.message, "bad");
-      $("repClassOutput").textContent = "{}";
     }
   };
 
-  const downloadClassroomReport = async (format) => {
+  const loadStudentReport = async () => {
     try {
-      const query = toQueryString({
-        grado: $("repClassGrado").value.trim(),
-        grupo: $("repClassGrupo").value.trim(),
-        institucion: $("repClassInstitucion").value.trim(),
-        limit: 5000
-      });
-      const extension = format === "pdf" ? "pdf" : "csv";
-      await downloadWithAuth(`/reports/classroom/summary/export.${extension}${query}`, `classroom_summary.${extension}`);
-      setStatus("repClassStatus", `Export ${extension.toUpperCase()} generado.`, "ok");
+      const doc = $("repStudentDoc").value.trim();
+      if (!doc) throw new Error("Ingresa el documento.");
+      const query = buildStudentReportQuery();
+      const response = await apiRequest(`/reports/student/${encodeURIComponent(doc)}/performance${query}`);
+      const data = response.data || {};
+      $("repStudentOutput").textContent = pretty(data);
+      setStatus("repStudentStatus", `Riesgo: ${data.totals?.riskLevel || "N/A"}`, "ok");
+      const bySubject = data.areas || data.bySubject || data.subjects || [];
+      const average = data.totals?.averagePercentage ?? data.totals?.average ?? 0;
+      renderRecommendations("studentAnalysisCards", makeRecommendations(bySubject, average));
     } catch (error) {
-      setStatus("repClassStatus", error.message, "bad");
+      setStatus("repStudentStatus", error.message, "bad");
     }
   };
 
   const loadQuestionReadiness = async () => {
     try {
-      const query = toQueryString({
-        grado_objetivo: $("covGrade").value.trim(),
-        target_per_area: $("covTarget").value.trim()
-      });
+      const query = toQueryString({ grado_objetivo: $("covGrade").value.trim(), target_per_area: $("covTarget").value.trim() });
       const response = await apiRequest(`/reports/questions/readiness${query}`);
       const rows = response.data?.byArea || [];
       $("covRows").innerHTML = rows
-        .map((row) => `<tr><td>${escapeHtml(row.area)}</td><td>${escapeHtml(row.totalQuestions)}</td><td>${escapeHtml(row.target)}</td><td>${escapeHtml(row.deficit)}</td><td>${escapeHtml(row.coveragePercent ?? 0)}</td></tr>`)
+        .map(
+          (row) => `<tr><td>${escapeHtml(row.area)}</td><td>${row.totalQuestions}</td><td>${row.target}</td><td>${row.deficit}</td><td>${renderBadge(
+            row.coveragePercent,
+            `${row.coveragePercent ?? 0}%`
+          )}</td></tr>`
+        )
         .join("");
       setStatus("covStatus", `Cobertura global: ${response.data?.totals?.overallCoveragePercent ?? 0}%`, "ok");
     } catch (error) {
       setStatus("covStatus", error.message, "bad");
-      $("covRows").innerHTML = "";
     }
   };
 
@@ -981,100 +918,183 @@
     try {
       const response = await apiRequest("/reports/files/material-local/coverage");
       $("materialOutput").textContent = pretty(response.data);
-      const totals = response.data?.totals || {};
-      setStatus("materialStatus", `Assets: ${totals.totalAssets ?? 0} | Cobertura: ${totals.coveragePercent ?? "N/A"}%`, "ok");
+      setStatus("materialStatus", `Assets: ${response.data?.totals?.totalAssets ?? 0}`, "ok");
     } catch (error) {
       setStatus("materialStatus", error.message, "bad");
-      $("materialOutput").textContent = "{}";
     }
   };
 
-  const downloadFilesCoverageCsv = async () => {
+  const findPendingStrictAttemptByStudent = async () => {
     try {
-      await downloadWithAuth("/reports/files/coverage/export.csv", "files_coverage.csv");
-      setStatus("materialStatus", "CSV de cobertura descargado.", "ok");
+      const doc = $("simStrictStudentDoc").value.trim();
+      if (!doc) throw new Error("Ingresa documento.");
+      const response = await apiRequest(`/attempts/student/${encodeURIComponent(doc)}`);
+      const items = response.data?.items || [];
+      const candidate = items.find((item) => item.estado === "PENDIENTE" || item.estado === "INICIADA") || items[0];
+      $("simStrictAttemptId").value = candidate?.id || "";
+      setStatus("simStrictStatus", candidate ? `Intento seleccionado: ${candidate.id}` : "Sin intentos.", candidate ? "ok" : "warn");
     } catch (error) {
-      setStatus("materialStatus", error.message, "bad");
+      setStatus("simStrictStatus", error.message, "bad");
     }
+  };
+
+  const attemptAction = async (kind) => {
+    try {
+      const id = $("simStrictAttemptId").value.trim();
+      if (!id) throw new Error("Ingresa Attempt ID.");
+      const path =
+        kind === "enable" ? `/attempts/${id}/session2/enable` : kind === "stop" ? `/attempts/${id}/stop` : `/attempts/${id}/restart`;
+      await apiRequest(path, { method: "POST", body: kind === "enable" ? undefined : { motivo: "Acción administrativa" } });
+      setStatus("simStrictStatus", "Acción aplicada correctamente.", "ok");
+    } catch (error) {
+      setStatus("simStrictStatus", error.message, "bad");
+    }
+  };
+
+  const bootstrapData = async () => {
+    await loadConnectionInfo();
+    await listSchools();
+    await Promise.allSettled([listGroups(), listStudents(), listUsers(), listExams(), loadDashboard()]);
   };
 
   const bindEvents = () => {
-    $("loginBtn").addEventListener("click", login);
+    $("loginForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      void login();
+    });
     $("logoutBtn").addEventListener("click", logout);
+    $("menuToggle").addEventListener("click", () => $("sidebar").classList.toggle("open"));
+    document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => setView(button.dataset.view)));
+    setupPasswordToggle("loginPassword", "loginTogglePassword");
 
     $("dashLoadBtn").addEventListener("click", loadDashboard);
+    $("dashSchoolSelect").addEventListener("change", () => listGroups($("dashSchoolSelect").value));
+    $("groupSchoolSelect").addEventListener("change", () => listGroups($("groupSchoolSelect").value));
+    $("stSchoolSelect").addEventListener("change", () => listGroups($("stSchoolSelect").value));
 
-    $("stCreateBtn").addEventListener("click", saveStudent);
+    $("schoolForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      void saveSchool();
+    });
+    $("schoolCancelBtn").addEventListener("click", resetSchoolForm);
+    $("schoolLoadBtn").addEventListener("click", listSchools);
+    $("schoolRows").addEventListener("click", (event) => {
+      const id = event.target?.dataset?.schoolEdit;
+      if (!id) return;
+      const school = state.schools.find((item) => item.id === id);
+      if (!school) return;
+      $("schoolEditingId").value = school.id;
+      $("schoolCode").value = school.code || "";
+      $("schoolName").value = school.name || "";
+      $("schoolDescription").value = school.description || "";
+      $("schoolActive").value = school.isActive ? "true" : "false";
+    });
+
+    $("groupForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      void saveGroup();
+    });
+    $("groupLoadBtn").addEventListener("click", () => listGroups($("groupSchoolSelect").value));
+
+    $("studentForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      void saveStudent();
+    });
     $("stCancelEditBtn").addEventListener("click", resetStudentForm);
-    $("stTemplateBtn").addEventListener("click", downloadStudentsTemplate);
-    $("stBulkBtn").addEventListener("click", uploadStudentsCsv);
     $("stListBtn").addEventListener("click", listStudents);
-    $("stListRows").addEventListener("click", handleStudentTableClick);
+    $("stTemplateBtn").addEventListener("click", () => downloadWithAuth("/students/bulk/template.csv", "students_bulk_template.csv"));
+    $("stBulkBtn").addEventListener("click", uploadStudentsCsv);
+    $("stListRows").addEventListener("click", async (event) => {
+      const editId = event.target?.dataset?.stEdit;
+      const deleteId = event.target?.dataset?.stDelete;
+      if (editId) fillStudentForm(state.students.find((item) => item.id === editId));
+      if (deleteId && window.confirm("Eliminar lógicamente este estudiante?")) {
+        await apiRequest(`/students/${deleteId}`, { method: "DELETE" });
+        await listStudents();
+      }
+    });
 
-    $("uCreateBtn").addEventListener("click", createUser);
+    $("userForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      void createUser();
+    });
     $("uListBtn").addEventListener("click", listUsers);
+    $("uTemplateBtn").addEventListener("click", () => downloadWithAuth("/users/bulk/template.csv", "users_bulk_template.csv"));
+    $("uBulkBtn").addEventListener("click", uploadUsersCsv);
 
-    $("simLoadExamsBtn").addEventListener("click", loadExams);
+    $("examForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      void createExam();
+    });
+    $("examLoadBtn").addEventListener("click", listExams);
+    $("simLoadExamsBtn").addEventListener("click", listExams);
+    $("examRows").addEventListener("click", async (event) => {
+      const id = event.target?.dataset?.examPublish;
+      if (id) await publishExam(id);
+    });
+
     $("simStartBtn").addEventListener("click", startSimulatorAttempt);
-    $("simFindStrictAttemptBtn").addEventListener("click", findPendingStrictAttemptByStudent);
-    $("simEnableSession2Btn").addEventListener("click", enableSessionTwoForAttempt);
-    $("simStopAttemptBtn").addEventListener("click", async () => {
-      try {
-        await stopAttemptByIdAdmin($("simStrictAttemptId").value.trim());
-      } catch (error) {
-        setStatus("simStrictStatus", error.message, "bad");
-      }
+    $("simPrevBtn").addEventListener("click", () => {
+      state.simulator.currentIndex = Math.max(0, state.simulator.currentIndex - 1);
+      renderSimulatorQuestion();
     });
-    $("simRestartAttemptBtn").addEventListener("click", async () => {
-      try {
-        await restartAttemptByIdAdmin($("simStrictAttemptId").value.trim());
-      } catch (error) {
-        setStatus("simStrictStatus", error.message, "bad");
-      }
+    $("simNextBtn").addEventListener("click", () => {
+      state.simulator.currentIndex = Math.min(state.simulator.questionDeck.length - 1, state.simulator.currentIndex + 1);
+      renderSimulatorQuestion();
     });
-    $("simPendingRefreshBtn").addEventListener("click", async () => {
-      try {
-        await loadPendingStrictAttempts();
-      } catch (error) {
-        setStatus("simPendingStatus", error.message, "bad");
-      }
+    $("simNav").addEventListener("click", (event) => {
+      const index = event.target?.dataset?.simIndex;
+      if (index === undefined) return;
+      state.simulator.currentIndex = Number(index);
+      renderSimulatorQuestion();
     });
-    $("simPendingAutoBtn").addEventListener("click", toggleStrictPendingAutoRefresh);
-    $("simPendingRows").addEventListener("click", handlePendingStrictTableClick);
-    $("simPrevBtn").addEventListener("click", goToPreviousQuestion);
-    $("simNextBtn").addEventListener("click", goToNextQuestion);
+    $("simOptions").addEventListener("click", (event) => {
+      const item = event.target.closest?.("[data-option-id]");
+      if (!item) return;
+      const question = state.simulator.questionDeck[state.simulator.currentIndex];
+      state.simulator.answersByQuestionId[question.questionId] = item.dataset.optionId;
+      renderSimulatorQuestion();
+    });
     $("simSaveBtn").addEventListener("click", saveCurrentAnswer);
     $("simSubmitBtn").addEventListener("click", submitSimulatorAttempt);
+    $("simFindStrictAttemptBtn").addEventListener("click", findPendingStrictAttemptByStudent);
+    $("simEnableSession2Btn").addEventListener("click", () => attemptAction("enable"));
+    $("simStopAttemptBtn").addEventListener("click", () => attemptAction("stop"));
+    $("simRestartAttemptBtn").addEventListener("click", () => attemptAction("restart"));
 
-    $("repStudentBtn").addEventListener("click", loadStudentReport);
-    $("repStudentCsvBtn").addEventListener("click", () => downloadStudentReport("csv"));
-    $("repStudentPdfBtn").addEventListener("click", () => downloadStudentReport("pdf"));
     $("repClassBtn").addEventListener("click", loadClassroomReport);
-    $("repClassCsvBtn").addEventListener("click", () => downloadClassroomReport("csv"));
-    $("repClassPdfBtn").addEventListener("click", () => downloadClassroomReport("pdf"));
-
+    $("repClassCsvBtn").addEventListener("click", () =>
+      downloadWithAuth(`/reports/classroom/summary/export.csv${buildClassroomReportQuery()}`, "classroom_summary.csv")
+    );
+    $("repClassPdfBtn").addEventListener("click", () =>
+      downloadWithAuth(`/reports/classroom/summary/export.pdf${buildClassroomReportQuery()}`, "classroom_summary.pdf")
+    );
+    $("repStudentBtn").addEventListener("click", loadStudentReport);
+    $("repStudentCsvBtn").addEventListener("click", () =>
+      downloadWithAuth(
+        `/reports/student/${encodeURIComponent($("repStudentDoc").value.trim())}/performance/export.csv${buildStudentReportQuery()}`,
+        "student_performance.csv"
+      )
+    );
+    $("repStudentPdfBtn").addEventListener("click", () =>
+      downloadWithAuth(
+        `/reports/student/${encodeURIComponent($("repStudentDoc").value.trim())}/performance/export.pdf${buildStudentReportQuery()}`,
+        "student_performance.pdf"
+      )
+    );
     $("covLoadBtn").addEventListener("click", loadQuestionReadiness);
     $("materialLoadBtn").addEventListener("click", loadMaterialCoverage);
-    $("filesCsvBtn").addEventListener("click", downloadFilesCoverageCsv);
+    $("filesCsvBtn").addEventListener("click", () => downloadWithAuth("/reports/files/coverage/export.csv", "files_coverage.csv"));
   };
 
-  const bootstrap = async () => {
-    initTabs();
+  const init = async () => {
     bindEvents();
-    setSessionUi();
-    appendClientLog("INFO", "Admin UI iniciada");
-    updateStrictAutoButton();
-    resetStudentForm();
+    $("groupYear").value = String(new Date().getFullYear());
     await loadConnectionInfo();
-
-    if (state.token) {
-      setStatus("loginStatus", "Sesion recuperada localmente.", "ok");
-      await Promise.all([loadDashboard(), loadExams(), listStudents(), listUsers(), loadPendingStrictAttempts()]);
-      startStrictPendingAutoRefresh();
-    } else {
-      setStatus("loginStatus", "Debes iniciar sesion.", "warn");
-    }
+    const hasSession = await loadCurrentUser();
+    if (hasSession) await bootstrapData();
+    else setAuthenticatedUi(false);
   };
 
-  bootstrap();
+  init();
 })();

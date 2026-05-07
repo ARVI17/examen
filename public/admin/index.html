@@ -1,492 +1,424 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Saber11 Admin</title>
-    <style>
-      :root {
-        --bg: #f2f7f4;
-        --card: #ffffff;
-        --line: #d7e2dc;
-        --ink: #122119;
-        --muted: #55675d;
-        --brand: #166f4f;
-        --brand-dark: #0f583d;
-        --warn: #8f5d12;
-        --bad: #8c2331;
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        font-family: "Segoe UI", Tahoma, sans-serif;
-        color: var(--ink);
-        background:
-          radial-gradient(circle at 8% -8%, #d7efe3 0, transparent 32%),
-          radial-gradient(circle at 95% 0, #f4e8d2 0, transparent 24%),
-          var(--bg);
-      }
-      .wrap { width: min(1300px, calc(100vw - 24px)); margin: 12px auto 20px; }
-      .hero {
-        background: linear-gradient(145deg, #103224, #185a40 65%, #22764f);
-        color: #e9fff3;
-        border: 1px solid #2b7a5b;
-        border-radius: 16px;
-        padding: 15px;
-      }
-      .hero h1 { margin: 0; font-size: clamp(1.2rem, 2.1vw, 1.7rem); }
-      .hero p { margin: 6px 0 0; color: #d8f7e8; }
-      .hero-grid {
-        margin-top: 10px;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 10px;
-      }
-      .hero-box {
-        background: #0f3a2b66;
-        border: 1px solid #8fd8b455;
-        border-radius: 12px;
-        padding: 10px;
-      }
-      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
-      .tabs { margin: 12px 0; display: flex; gap: 8px; flex-wrap: wrap; }
-      .tab {
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        background: var(--card);
-        padding: 8px 12px;
-        font-weight: 700;
-        font-size: 13px;
-        cursor: pointer;
-      }
-      .tab.active { background: linear-gradient(120deg, var(--brand), var(--brand-dark)); color: #fff; border-color: transparent; }
-      .section { display: none; }
-      .section.active { display: block; }
-      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 12px; }
-      .card {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: 14px;
-        padding: 12px;
-        box-shadow: 0 8px 18px rgba(19, 53, 37, 0.08);
-      }
-      .card h2, .card h3 { margin: 0 0 8px; font-size: 1.02rem; }
-      .row2, .row3 { display: grid; gap: 8px; }
-      .row2 { grid-template-columns: 1fr 1fr; }
-      .row3 { grid-template-columns: repeat(3, 1fr); }
-      label { display: block; margin-bottom: 3px; font-size: 12px; color: var(--muted); }
-      input, select, textarea, button { width: 100%; font: inherit; }
-      input, select, textarea {
-        border: 1px solid var(--line);
-        border-radius: 9px;
-        background: #f8fcfa;
-        color: var(--ink);
-        padding: 8px 9px;
-      }
-      button {
-        border: 0;
-        border-radius: 9px;
-        padding: 9px 10px;
-        font-weight: 700;
-        cursor: pointer;
-      }
-      .btn { background: linear-gradient(120deg, var(--brand), var(--brand-dark)); color: #fff; }
-      .btn.alt { background: #eaf4ef; color: #0d5239; }
-      .btn.warn { background: #f8edd8; color: #83540c; }
-      .inline { display: flex; gap: 8px; flex-wrap: wrap; }
-      .inline button { width: auto; }
-      .status {
-        margin-top: 8px;
-        padding: 7px 9px;
-        border-radius: 9px;
-        border: 1px solid var(--line);
-        background: #f5fbf8;
-        font-size: 13px;
-      }
-      .ok { border-color: #bce5cd; color: #0f6738; }
-      .warn { border-color: #eed39c; color: var(--warn); }
-      .bad { border-color: #f0bfc6; color: var(--bad); }
-      .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 8px; }
-      .kpi { border: 1px solid var(--line); border-radius: 10px; background: #f8fcfa; padding: 8px; }
-      .kpi .label { font-size: 12px; color: var(--muted); }
-      .kpi .value { font-weight: 700; font-size: 1.16rem; margin-top: 2px; }
-      .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
-      table { width: 100%; border-collapse: collapse; }
-      th, td { padding: 7px; border-bottom: 1px solid var(--line); text-align: left; font-size: 12px; vertical-align: top; }
-      th { background: #f1f8f4; }
-      pre {
-        margin: 0;
-        white-space: pre-wrap;
-        word-break: break-word;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        background: #f8fcfa;
-        max-height: 260px;
-        overflow: auto;
-        padding: 8px;
-        font-size: 12px;
-      }
-      .sim-layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 10px; }
-      .qnav { display: flex; gap: 6px; flex-wrap: wrap; }
-      .qnav button { width: 34px; padding: 6px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7fbf9; color: var(--ink); }
-      .qnav button.current { background: var(--brand); color: #fff; border-color: transparent; }
-      .option-list { display: grid; gap: 7px; }
-      .option-item {
-        display: flex;
-        gap: 8px;
-        align-items: flex-start;
-        border: 1px solid var(--line);
-        border-radius: 9px;
-        padding: 7px;
-        background: #f8fcfa;
-      }
-      .option-item.selected { border-color: #87cba9; background: #ebf8f0; }
-      .bar-list { display: grid; gap: 6px; }
-      .bar-row { display: grid; grid-template-columns: 180px 1fr 52px; gap: 8px; align-items: center; font-size: 12px; }
-      .bar-track { height: 10px; border-radius: 999px; background: #e7f1eb; overflow: hidden; }
-      .bar-fill { height: 100%; background: linear-gradient(120deg, #1b8b60, #58b995); }
-      @media (max-width: 980px) { .sim-layout { grid-template-columns: 1fr; } }
-      @media (max-width: 720px) {
-        .row2, .row3 { grid-template-columns: 1fr; }
-        .wrap { width: calc(100vw - 14px); }
-      }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="/admin/styles.css" />
   </head>
   <body>
-    <div class="wrap">
-      <header class="hero">
-        <h1>Saber11 Control Center</h1>
-        <p>Resultados, estudiantes, simulador y reportes en una sola vista.</p>
-        <div class="hero-grid">
-          <div class="hero-box">
-            <div><strong>API</strong></div>
-            <div id="apiText" class="mono"></div>
-            <div style="margin-top:6px"><a id="docsLink" href="#" target="_blank" rel="noreferrer">Abrir docs</a></div>
-            <div style="margin-top:4px"><a id="simLink" href="/simulador" target="_blank" rel="noreferrer">Abrir vista estudiante</a></div>
-          </div>
-          <div class="hero-box">
-            <div><strong>LAN</strong></div>
-            <div id="lanText" class="mono"></div>
-            <div style="margin-top:6px"><strong>Admin URL</strong></div>
-            <div id="adminText" class="mono"></div>
-          </div>
-          <div class="hero-box">
-            <div><strong>Sesion</strong></div>
-            <div id="sessionText">sin token</div>
-            <button id="logoutBtn" class="btn warn" style="margin-top:8px">Cerrar sesion local</button>
-          </div>
-        </div>
-      </header>
-
-      <nav class="tabs" id="tabs">
-        <button class="tab active" data-section="access">Acceso</button>
-        <button class="tab" data-section="dashboard">Dashboard</button>
-        <button class="tab" data-section="students">Estudiantes</button>
-        <button class="tab" data-section="simulator">Simulador</button>
-        <button class="tab" data-section="reports">Reportes</button>
-        <button class="tab" data-section="coverage">Cobertura IA</button>
-      </nav>
-
-      <section class="section active" id="sec-access">
-        <div class="grid">
-          <article class="card">
-            <h2>Login admin</h2>
-            <label>Email</label>
-            <input id="loginEmail" value="admin@saber11.com" />
-            <label style="margin-top:8px">Password</label>
-            <input id="loginPassword" value="admin123" type="password" />
-            <button id="loginBtn" class="btn" style="margin-top:9px">Iniciar sesion</button>
-            <div id="loginStatus" class="status warn">Debes iniciar sesion.</div>
-          </article>
-          <article class="card">
-            <h2>Connection info</h2>
-            <pre id="connectionOut">{}</pre>
-          </article>
-        </div>
-      </section>
-
-      <section class="section" id="sec-dashboard">
-        <div class="grid">
-          <article class="card">
-            <div class="inline"><button id="dashLoadBtn" class="btn">Actualizar dashboard</button></div>
-            <div class="row3" style="margin-top:8px">
-              <div><label>Grado</label><input id="dashGrado" placeholder="11" /></div>
-              <div><label>From ISO</label><input id="dashFrom" placeholder="2026-01-01T00:00:00.000Z" /></div>
-              <div><label>To ISO</label><input id="dashTo" placeholder="2026-12-31T23:59:59.999Z" /></div>
+    <main id="loginView" class="login-view">
+      <section class="login-card" aria-labelledby="loginTitle">
+        <div class="brand-mark" aria-hidden="true">S11</div>
+        <h1 id="loginTitle">Iniciar sesión</h1>
+        <p>Accede al panel académico para gestionar colegios, pruebas y resultados.</p>
+        <form id="loginForm" class="stack-form" novalidate>
+          <div class="field">
+            <label for="loginEmail">Correo</label>
+            <div class="input-wrap">
+              <i class="bi bi-envelope"></i>
+              <input id="loginEmail" type="email" autocomplete="username" value="admin@saber11.com" />
             </div>
-            <div id="dashKpis" class="kpis" style="margin-top:8px"></div>
-            <div id="dashAreaBars" class="bar-list" style="margin-top:10px"></div>
-          </article>
-          <article class="card">
-            <h2>Ultimos resultados por estudiante</h2>
-            <div class="table-wrap">
+          </div>
+          <div class="field">
+            <label for="loginPassword">Contraseña</label>
+            <div class="input-wrap">
+              <i class="bi bi-key"></i>
+              <input id="loginPassword" type="password" autocomplete="current-password" />
+              <button id="loginTogglePassword" class="icon-button" type="button" aria-label="Mostrar contraseña">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+          </div>
+          <button id="loginBtn" class="primary-button" type="submit">
+            <span class="btn-label">Entrar al panel</span>
+          </button>
+          <div id="loginStatus" class="status-message warn" role="status" aria-live="polite">Sesión requerida.</div>
+        </form>
+      </section>
+    </main>
+
+    <div id="appShell" class="app-shell is-hidden">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+          <div class="brand-mark small">S11</div>
+          <div>
+            <strong>Control académico</strong>
+            <span>Simulador Saber 11</span>
+          </div>
+        </div>
+        <nav class="side-nav" id="sideNav" aria-label="Navegación principal">
+          <button class="nav-item active" data-view="dashboard"><i class="bi bi-grid"></i><span>Inicio</span></button>
+          <button class="nav-item" data-view="schools"><i class="bi bi-buildings"></i><span>Colegios</span></button>
+          <button class="nav-item" data-view="groups"><i class="bi bi-door-open"></i><span>Salones</span></button>
+          <button class="nav-item" data-view="students"><i class="bi bi-people"></i><span>Estudiantes</span></button>
+          <button class="nav-item" data-view="exams"><i class="bi bi-journal-check"></i><span>Pruebas</span></button>
+          <button class="nav-item" data-view="simulator"><i class="bi bi-pencil-square"></i><span>Simulador</span></button>
+          <button class="nav-item" data-view="results"><i class="bi bi-table"></i><span>Resultados</span></button>
+          <button class="nav-item" data-view="analysis"><i class="bi bi-graph-up-arrow"></i><span>Análisis</span></button>
+          <button class="nav-item" data-view="reports"><i class="bi bi-file-earmark-bar-graph"></i><span>Reportes</span></button>
+          <button class="nav-item" data-view="settings"><i class="bi bi-gear"></i><span>Configuración</span></button>
+        </nav>
+        <div class="sidebar-footer">
+          <div id="sessionText" class="session-text">Sin sesión</div>
+          <button id="logoutBtn" class="ghost-button" type="button"><i class="bi bi-box-arrow-left"></i> Salir</button>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <button id="menuToggle" class="icon-button menu-toggle" type="button" aria-label="Abrir menú"><i class="bi bi-list"></i></button>
+          <div>
+            <h1 id="viewTitle">Inicio</h1>
+            <p id="viewSubtitle">Resumen operativo y desempeño académico.</p>
+          </div>
+          <div class="topbar-actions">
+            <a id="simLink" class="ghost-button" href="/simulador" target="_blank" rel="noreferrer"><i class="bi bi-display"></i> Vista estudiante</a>
+            <a id="docsLink" class="ghost-button" href="/api/docs" target="_blank" rel="noreferrer"><i class="bi bi-braces"></i> API Docs</a>
+          </div>
+        </header>
+
+        <section class="view active" id="view-dashboard">
+          <div class="panel compact">
+            <div class="filter-row">
+              <label>Colegio<select id="dashSchoolSelect"></select></label>
+              <label>Salón<select id="dashGroupSelect"></select></label>
+              <label>Grado<input id="dashGrado" placeholder="11" /></label>
+              <label>Desde<input id="dashFrom" type="date" /></label>
+              <label>Hasta<input id="dashTo" type="date" /></label>
+              <button id="dashLoadBtn" class="primary-button" type="button"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
+            </div>
+          </div>
+
+          <div id="dashKpis" class="stats-grid"></div>
+
+          <div class="dashboard-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div><h2>Rendimiento por materia</h2><p>Porcentaje de acierto consolidado.</p></div>
+              </div>
+              <div class="chart-box"><canvas id="subjectChart"></canvas></div>
+              <div id="dashAreaBars" class="bar-list"></div>
+            </article>
+            <article class="panel">
+              <div class="panel-head">
+                <div><h2>Distribución académica</h2><p>Lectura rápida de desempeño reciente.</p></div>
+              </div>
+              <div class="chart-box"><canvas id="summaryChart"></canvas></div>
+              <div id="dashRecommendations" class="recommendation-list"></div>
+            </article>
+          </div>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div><h2>Últimos resultados</h2><p>Intento más reciente por estudiante.</p></div>
+            </div>
+            <div class="table-shell">
               <table>
-                <thead><tr><th>Estudiante</th><th>Documento</th><th>Prueba</th><th>%</th><th>Nivel</th></tr></thead>
+                <thead><tr><th>Estudiante</th><th>Documento</th><th>Prueba</th><th>Porcentaje</th><th>Nivel</th></tr></thead>
                 <tbody id="dashRows"></tbody>
               </table>
             </div>
           </article>
-        </div>
-      </section>
+        </section>
 
-      <section class="section" id="sec-students">
-        <div class="grid">
-          <article class="card">
-            <h2>Crear estudiante</h2>
-            <input id="stEditingId" type="hidden" />
-            <div class="row2">
-              <div><label>Nombres</label><input id="stNombres" /></div>
-              <div><label>Apellidos</label><input id="stApellidos" /></div>
-            </div>
-            <div class="row3" style="margin-top:7px">
-              <div><label>Tipo ID</label><select id="stTipo"><option>TI</option><option>CC</option><option>CE</option><option>PASAPORTE</option><option>OTRO</option></select></div>
-              <div><label>Documento</label><input id="stDocumento" /></div>
-              <div><label>Grado</label><input id="stGrado" value="11" /></div>
-            </div>
-            <div class="row2" style="margin-top:7px">
-              <div><label>Grupo</label><input id="stGrupo" /></div>
-              <div><label>Institucion</label><input id="stInstitucion" /></div>
-            </div>
-            <div class="inline" style="margin-top:9px">
-              <button id="stCreateBtn" class="btn">Crear estudiante</button>
-              <button id="stCancelEditBtn" class="btn alt">Cancelar edicion</button>
-            </div>
-            <div id="stCreateStatus" class="status">Sin cambios.</div>
-          </article>
-
-          <article class="card">
-            <h2>Carga masiva estudiantes (CSV)</h2>
-            <div class="mono">nombres,apellidos,tipo_identificacion,numero_identificacion,grado,...</div>
-            <input id="stFile" type="file" accept=".csv,text/csv" style="margin-top:8px" />
-            <div class="inline" style="margin-top:8px">
-              <button id="stTemplateBtn" class="btn alt">Plantilla</button>
-              <button id="stBulkBtn" class="btn warn">Subir CSV</button>
-            </div>
-            <div id="stBulkStatus" class="status">Esperando archivo.</div>
-            <pre id="stBulkOutput">{}</pre>
-          </article>
-
-          <article class="card">
-            <h2>Gestion de usuarios</h2>
-            <div class="row2">
-              <div><label>Nombre</label><input id="uNombre" /></div>
-              <div><label>Email</label><input id="uEmail" /></div>
-            </div>
-            <div class="row3" style="margin-top:7px">
-              <div><label>Password</label><input id="uPassword" placeholder="Docente#2026!" /></div>
-              <div><label>Rol</label><select id="uRol"><option>DOCENTE</option><option>ADMIN</option></select></div>
-              <div><label>Activo</label><select id="uActivo"><option value="true">true</option><option value="false">false</option></select></div>
-            </div>
-            <div class="inline" style="margin-top:8px">
-              <button id="uCreateBtn" class="btn">Crear usuario</button>
-              <button id="uListBtn" class="btn alt">Listar usuarios</button>
-            </div>
-            <div id="uStatus" class="status">Sin cambios.</div>
-            <pre id="uOutput">[]</pre>
-          </article>
-
-          <article class="card">
-            <h2>CRUD estudiantes</h2>
-            <div class="row2">
-              <div><label>Filtro grado</label><input id="stFilterGrado" value="11" /></div>
-              <div><label>Filtro documento</label><input id="stFilterDoc" placeholder="opcional" /></div>
-            </div>
-            <div class="inline" style="margin-top:8px">
-              <button id="stListBtn" class="btn alt">Cargar estudiantes</button>
-            </div>
-            <div id="stListStatus" class="status">Sin consulta.</div>
-            <div class="table-wrap" style="margin-top:8px">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Documento</th>
-                    <th>Nombre</th>
-                    <th>Grado</th>
-                    <th>Grupo</th>
-                    <th>Institucion</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="stListRows"></tbody>
-              </table>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="section" id="sec-simulator">
-        <div class="grid">
-          <article class="card">
-            <h2>Iniciar simulador (admin/docente)</h2>
-            <div class="row3">
-              <div><label>Filtro tipo</label><input id="simTipoFiltro" placeholder="SIMULACRO" /></div>
-              <div><label>Filtro grado</label><input id="simGradoFiltro" value="11" /></div>
-              <div><label>Prueba</label><select id="simExamSelect"></select></div>
-            </div>
-            <div class="inline" style="margin-top:8px">
-              <button id="simLoadExamsBtn" class="btn alt">Cargar pruebas</button>
-              <button id="simStartBtn" class="btn">Iniciar intento</button>
-              <a href="/simulador" target="_blank" rel="noreferrer">Ir a vista estudiante</a>
-            </div>
-            <div class="row3" style="margin-top:8px">
-              <div><label>Nombres</label><input id="simNombres" /></div>
-              <div><label>Apellidos</label><input id="simApellidos" /></div>
-              <div><label>Documento</label><input id="simDocumento" /></div>
-            </div>
-            <div class="row3" style="margin-top:8px">
-              <div><label>Tipo ID</label><select id="simTipo"><option>TI</option><option>CC</option><option>CE</option><option>PASAPORTE</option><option>OTRO</option></select></div>
-              <div><label>Grado</label><input id="simGrado" value="11" /></div>
-              <div><label>Grupo</label><input id="simGrupo" /></div>
-            </div>
-            <div id="simStatus" class="status">Sin intento activo.</div>
-            <h3 style="margin-top:10px">Control jornadas (modo estricto)</h3>
-            <div class="row2">
-              <div><label>Documento estudiante</label><input id="simStrictStudentDoc" placeholder="TI/CC numero" /></div>
-              <div><label>Buscar intento</label><button id="simFindStrictAttemptBtn" class="btn alt">Buscar intento pendiente</button></div>
-            </div>
-            <div class="row2" style="margin-top:8px">
-              <div><label>Attempt ID</label><input id="simStrictAttemptId" placeholder="UUID intento" /></div>
-              <div>
-                <label>Acciones</label>
-                <div class="inline">
-                  <button id="simEnableSession2Btn" class="btn warn">Habilitar J2</button>
-                  <button id="simStopAttemptBtn" class="btn alt">Detener intento</button>
-                  <button id="simRestartAttemptBtn" class="btn">Reiniciar intento</button>
-                </div>
+        <section class="view" id="view-schools">
+          <div class="content-grid two">
+            <article class="panel">
+              <div class="panel-head"><div><h2>Colegio</h2><p>Crear o editar institución.</p></div></div>
+              <form id="schoolForm" class="stack-form">
+                <input id="schoolEditingId" type="hidden" />
+                <label>Código<input id="schoolCode" placeholder="COLEGIO_DEMO" /></label>
+                <label>Nombre<input id="schoolName" required /></label>
+                <label>Descripción<textarea id="schoolDescription" rows="3"></textarea></label>
+                <label>Estado<select id="schoolActive"><option value="true">Activo</option><option value="false">Inactivo</option></select></label>
+                <div class="actions"><button class="primary-button" type="submit">Guardar colegio</button><button id="schoolCancelBtn" class="ghost-button" type="button">Cancelar</button></div>
+                <div id="schoolStatus" class="status-message">Sin cambios.</div>
+              </form>
+            </article>
+            <article class="panel">
+              <div class="panel-head">
+                <div><h2>Colegios registrados</h2><p>Selecciona para editar o consultar salones.</p></div>
+                <button id="schoolLoadBtn" class="ghost-button" type="button"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
               </div>
-            </div>
-            <div id="simStrictStatus" class="status">Sin accion.</div>
+              <div class="table-shell">
+                <table><thead><tr><th>Nombre</th><th>Código</th><th>Estado</th><th></th></tr></thead><tbody id="schoolRows"></tbody></table>
+              </div>
+            </article>
+          </div>
+        </section>
 
-            <h3 style="margin-top:10px">Pendientes jornada 2 (en vivo)</h3>
-            <div class="row3">
-              <div><label>Filtro grado</label><input id="simPendingGrade" value="11" /></div>
-              <div><label>Filtro grupo</label><input id="simPendingGroup" placeholder="opcional" /></div>
-              <div><label>Limite</label><input id="simPendingLimit" value="200" /></div>
+        <section class="view" id="view-groups">
+          <div class="content-grid two">
+            <article class="panel">
+              <div class="panel-head"><div><h2>Salón</h2><p>Crear grupo dentro de un colegio.</p></div></div>
+              <form id="groupForm" class="stack-form">
+                <label>Colegio<select id="groupSchoolSelect"></select></label>
+                <label>Código<input id="groupCode" placeholder="11A" /></label>
+                <label>Nombre<input id="groupName" placeholder="11-A" required /></label>
+                <label>Grado<input id="groupGrade" value="11" /></label>
+                <label>Año académico<input id="groupYear" type="number" min="2000" max="2100" /></label>
+                <div class="actions"><button class="primary-button" type="submit">Guardar salón</button></div>
+                <div id="groupStatus" class="status-message">Sin cambios.</div>
+              </form>
+            </article>
+            <article class="panel">
+              <div class="panel-head">
+                <div><h2>Salones</h2><p>Listado por colegio seleccionado.</p></div>
+                <button id="groupLoadBtn" class="ghost-button" type="button"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
+              </div>
+              <div class="table-shell">
+                <table><thead><tr><th>Salón</th><th>Grado</th><th>Año</th><th>Estado</th></tr></thead><tbody id="groupRows"></tbody></table>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="view" id="view-students">
+          <div class="content-grid two">
+            <article class="panel">
+              <div class="panel-head"><div><h2>Estudiante</h2><p>Registro individual con colegio y salón.</p></div></div>
+              <form id="studentForm" class="stack-form">
+                <input id="stEditingId" type="hidden" />
+                <div class="form-grid">
+                  <label>Nombres<input id="stNombres" required /></label>
+                  <label>Apellidos<input id="stApellidos" required /></label>
+                  <label>Tipo ID<select id="stTipo"><option>TI</option><option>CC</option><option>CE</option><option>PASAPORTE</option><option>OTRO</option></select></label>
+                  <label>Documento<input id="stDocumento" required /></label>
+                  <label>Grado<input id="stGrado" value="11" /></label>
+                  <label>Grupo<input id="stGrupo" /></label>
+                  <label>Colegio<select id="stSchoolSelect"></select></label>
+                  <label>Salón<select id="stGroupSelect"></select></label>
+                  <label>Institución<input id="stInstitucion" /></label>
+                  <label>Email<input id="stEmail" type="email" /></label>
+                </div>
+                <div class="actions"><button id="stCreateBtn" class="primary-button" type="submit">Guardar estudiante</button><button id="stCancelEditBtn" class="ghost-button" type="button">Cancelar</button></div>
+                <div id="stCreateStatus" class="status-message">Sin cambios.</div>
+              </form>
+            </article>
+            <article class="panel">
+              <div class="panel-head"><div><h2>Carga masiva</h2><p>Importa estudiantes desde CSV.</p></div></div>
+              <input id="stFile" type="file" accept=".csv,text/csv" />
+              <div class="actions"><button id="stTemplateBtn" class="ghost-button" type="button">Plantilla</button><button id="stBulkBtn" class="primary-button" type="button">Subir CSV</button></div>
+              <div id="stBulkStatus" class="status-message">Esperando archivo.</div>
+              <pre id="stBulkOutput" class="code-box">{}</pre>
+            </article>
+          </div>
+          <article class="panel">
+            <div class="panel-head">
+              <div><h2>Listado de estudiantes</h2><p>Búsqueda rápida y acciones básicas.</p></div>
+              <button id="stListBtn" class="ghost-button" type="button"><i class="bi bi-search"></i> Buscar</button>
             </div>
-            <div class="inline" style="margin-top:8px">
-              <button id="simPendingRefreshBtn" class="btn alt">Actualizar pendientes</button>
-              <button id="simPendingAutoBtn" class="btn alt">Auto-refresh: ON</button>
+            <div class="filter-row">
+              <label>Grado<input id="stFilterGrado" value="11" /></label>
+              <label>Documento<input id="stFilterDoc" /></label>
+              <label>Grupo<input id="stFilterGrupo" /></label>
+              <label>Institución<input id="stFilterInstitucion" /></label>
             </div>
-            <div id="simPendingStatus" class="status">Sin consulta.</div>
-            <div class="table-wrap" style="margin-top:8px">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Attempt ID</th>
-                    <th>Estudiante</th>
-                    <th>Documento</th>
-                    <th>Prueba</th>
-                    <th>Espera (min)</th>
-                    <th>Accion</th>
-                  </tr>
-                </thead>
-                <tbody id="simPendingRows"></tbody>
-              </table>
+            <div id="stListStatus" class="status-message">Sin consulta.</div>
+            <div class="table-shell">
+              <table><thead><tr><th>Documento</th><th>Nombre</th><th>Grado</th><th>Grupo</th><th>Institución</th><th>Acciones</th></tr></thead><tbody id="stListRows"></tbody></table>
             </div>
           </article>
+        </section>
 
-          <article class="card">
+        <section class="view" id="view-exams">
+          <div class="content-grid two">
+            <article class="panel">
+              <div class="panel-head"><div><h2>Crear prueba</h2><p>Configura simulacros, diagnósticos o Saber 11.</p></div></div>
+              <form id="examForm" class="stack-form">
+                <div class="form-grid">
+                  <label>Nombre<input id="examName" required /></label>
+                  <label>Tipo<select id="examType"><option>SABER_11</option><option>SIMULACRO</option><option>DIAGNOSTICO</option><option>EVALUACION</option><option>PRACTICA</option></select></label>
+                  <label>Grado<input id="examGrade" value="11" /></label>
+                  <label>Estado<select id="examStatus"><option>DRAFT</option><option>PUBLICADO</option><option>ARCHIVADO</option></select></label>
+                  <label>Tiempo min<input id="examTime" type="number" value="120" min="1" /></label>
+                  <label>Puntaje máximo<input id="examMaxScore" type="number" value="100" min="1" /></label>
+                  <label>Total preguntas<input id="examTotalQuestions" type="number" value="0" min="0" /></label>
+                </div>
+                <label>Descripción<textarea id="examDescription" rows="3"></textarea></label>
+                <div class="actions"><button class="primary-button" type="submit">Guardar prueba</button></div>
+                <div id="examStatusBox" class="status-message">Sin cambios.</div>
+              </form>
+            </article>
+            <article class="panel">
+              <div class="panel-head">
+                <div><h2>Pruebas configuradas</h2><p>Publica, revisa y usa en el simulador.</p></div>
+                <button id="examLoadBtn" class="ghost-button" type="button">Actualizar</button>
+              </div>
+              <div class="filter-row">
+                <label>Tipo<input id="examFilterType" placeholder="SABER_11" /></label>
+                <label>Grado<input id="examFilterGrade" value="11" /></label>
+              </div>
+              <div class="table-shell">
+                <table><thead><tr><th>Prueba</th><th>Tipo</th><th>Grado</th><th>Preguntas</th><th>Estado</th><th></th></tr></thead><tbody id="examRows"></tbody></table>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="view" id="view-simulator">
+          <div class="content-grid two">
+            <article class="panel">
+              <div class="panel-head"><div><h2>Iniciar intento</h2><p>Prueba rápida desde administración.</p></div></div>
+              <div class="stack-form">
+                <label>Prueba<select id="simExamSelect"></select></label>
+                <div class="form-grid">
+                  <label>Nombres<input id="simNombres" /></label>
+                  <label>Apellidos<input id="simApellidos" /></label>
+                  <label>Documento<input id="simDocumento" /></label>
+                  <label>Tipo ID<select id="simTipo"><option>TI</option><option>CC</option><option>CE</option><option>PASAPORTE</option><option>OTRO</option></select></label>
+                  <label>Grado<input id="simGrado" value="11" /></label>
+                  <label>Grupo<input id="simGrupo" /></label>
+                </div>
+                <div class="actions"><button id="simLoadExamsBtn" class="ghost-button" type="button">Cargar pruebas</button><button id="simStartBtn" class="primary-button" type="button">Iniciar intento</button></div>
+                <div id="simStatus" class="status-message">Sin intento activo.</div>
+              </div>
+            </article>
+            <article class="panel">
+              <div class="panel-head"><div><h2>Control de jornada</h2><p>Habilita segunda jornada o administra intentos.</p></div></div>
+              <div class="stack-form">
+                <label>Documento estudiante<input id="simStrictStudentDoc" /></label>
+                <label>Attempt ID<input id="simStrictAttemptId" /></label>
+                <div class="actions">
+                  <button id="simFindStrictAttemptBtn" class="ghost-button" type="button">Buscar</button>
+                  <button id="simEnableSession2Btn" class="primary-button" type="button">Habilitar J2</button>
+                  <button id="simStopAttemptBtn" class="ghost-button" type="button">Detener</button>
+                  <button id="simRestartAttemptBtn" class="ghost-button" type="button">Reiniciar</button>
+                </div>
+                <div id="simStrictStatus" class="status-message">Sin acción.</div>
+              </div>
+            </article>
+          </div>
+          <article class="panel">
             <div class="sim-layout">
               <div>
-                <h3>Navegacion</h3>
+                <h2>Navegación</h2>
                 <div id="simNav" class="qnav"></div>
-                <div class="inline" style="margin-top:8px">
-                  <button id="simPrevBtn" class="btn alt">Anterior</button>
-                  <button id="simNextBtn" class="btn alt">Siguiente</button>
-                </div>
-                <div class="inline" style="margin-top:8px">
-                  <button id="simSaveBtn" class="btn warn">Guardar respuesta</button>
-                  <button id="simSubmitBtn" class="btn">Enviar y calificar</button>
-                </div>
+                <div class="actions"><button id="simPrevBtn" class="ghost-button" type="button">Anterior</button><button id="simNextBtn" class="ghost-button" type="button">Siguiente</button></div>
+                <div class="actions"><button id="simSaveBtn" class="primary-button" type="button">Guardar</button><button id="simSubmitBtn" class="primary-button" type="button">Enviar y calificar</button></div>
               </div>
               <div>
-                <h3 id="simQuestionTitle">Pregunta</h3>
-                <div id="simQuestionBody" class="status">Sin pregunta activa.</div>
-                <div id="simOptions" class="option-list" style="margin-top:8px"></div>
+                <h2 id="simQuestionTitle">Pregunta</h2>
+                <div id="simQuestionBody" class="question-box">Sin pregunta activa.</div>
+                <div id="simOptions" class="option-list"></div>
               </div>
             </div>
           </article>
-
-          <article class="card">
-            <h2>Resultado simulador</h2>
-            <div id="simKpis" class="kpis"></div>
-            <div id="simAreaBars" class="bar-list" style="margin-top:10px"></div>
-            <pre id="simResultOutput">{}</pre>
+          <article class="panel">
+            <div class="panel-head"><div><h2>Resultado</h2><p>Calificación del intento.</p></div></div>
+            <div id="simKpis" class="stats-grid"></div>
+            <div id="simAreaBars" class="bar-list"></div>
+            <pre id="simResultOutput" class="code-box">{}</pre>
           </article>
+        </section>
 
-          <article class="card">
-            <h2>Bitacora cliente admin</h2>
-            <pre id="adminClientLog">Sin eventos.</pre>
+        <section class="view" id="view-results">
+          <article class="panel">
+            <div class="panel-head">
+              <div><h2>Resultados por salón</h2><p>Consulta ranking, promedios y desempeño.</p></div>
+              <div class="actions"><button id="repClassCsvBtn" class="ghost-button" type="button">CSV</button><button id="repClassPdfBtn" class="ghost-button" type="button">PDF</button></div>
+            </div>
+            <div class="filter-row">
+              <label>Grado<input id="repClassGrado" value="11" /></label>
+              <label>Grupo<input id="repClassGrupo" /></label>
+              <label>Institución<input id="repClassInstitucion" /></label>
+              <label>Desde<input id="repClassFrom" type="date" /></label>
+              <label>Hasta<input id="repClassTo" type="date" /></label>
+              <button id="repClassBtn" class="primary-button" type="button">Consultar</button>
+            </div>
+            <div id="repClassStatus" class="status-message">Sin consulta.</div>
+            <div class="content-grid two">
+              <div class="chart-box"><canvas id="classroomChart"></canvas></div>
+              <div id="classroomSummaryCards" class="recommendation-list"></div>
+            </div>
+            <div class="table-shell">
+              <table><thead><tr><th>Estudiante</th><th>Documento</th><th>Grado</th><th>Grupo</th><th>Intentos</th><th>Promedio</th><th>Nivel</th></tr></thead><tbody id="classroomRows"></tbody></table>
+            </div>
+            <pre id="repClassOutput" class="code-box is-collapsed">{}</pre>
           </article>
-        </div>
-      </section>
+        </section>
 
-      <section class="section" id="sec-reports">
-        <div class="grid">
-          <article class="card">
-            <h2>Reporte estudiante</h2>
-            <div class="row2">
-              <div><label>Documento</label><input id="repStudentDoc" /></div>
-              <div><label>Grado (opcional)</label><input id="repStudentGrado" /></div>
-            </div>
-            <div class="inline" style="margin-top:8px">
-              <button id="repStudentBtn" class="btn">Consultar</button>
-              <button id="repStudentCsvBtn" class="btn alt">CSV</button>
-              <button id="repStudentPdfBtn" class="btn alt">PDF</button>
-            </div>
-            <div id="repStudentStatus" class="status">Sin consulta.</div>
-            <pre id="repStudentOutput">{}</pre>
-          </article>
+        <section class="view" id="view-analysis">
+          <div class="content-grid two">
+            <article class="panel">
+              <div class="panel-head"><div><h2>Análisis de estudiante</h2><p>Fortalezas, debilidades y evolución.</p></div></div>
+              <div class="filter-row">
+                <label>Documento<input id="repStudentDoc" /></label>
+                <label>Grado<input id="repStudentGrado" /></label>
+                <button id="repStudentBtn" class="primary-button" type="button">Analizar</button>
+              </div>
+              <div class="actions"><button id="repStudentCsvBtn" class="ghost-button" type="button">CSV</button><button id="repStudentPdfBtn" class="ghost-button" type="button">PDF</button></div>
+              <div id="repStudentStatus" class="status-message">Sin consulta.</div>
+              <div id="studentAnalysisCards" class="recommendation-list"></div>
+              <pre id="repStudentOutput" class="code-box is-collapsed">{}</pre>
+            </article>
+            <article class="panel">
+              <div class="panel-head"><div><h2>Recomendaciones académicas</h2><p>Sugerencias automáticas basadas en resultados.</p></div></div>
+              <div id="globalRecommendations" class="recommendation-list"></div>
+            </article>
+          </div>
+        </section>
 
-          <article class="card">
-            <h2>Reporte salon</h2>
-            <div class="row3">
-              <div><label>Grado</label><input id="repClassGrado" value="11" /></div>
-              <div><label>Grupo</label><input id="repClassGrupo" /></div>
-              <div><label>Institucion</label><input id="repClassInstitucion" /></div>
-            </div>
-            <div class="inline" style="margin-top:8px">
-              <button id="repClassBtn" class="btn">Consultar</button>
-              <button id="repClassCsvBtn" class="btn alt">CSV</button>
-              <button id="repClassPdfBtn" class="btn alt">PDF</button>
-            </div>
-            <div id="repClassStatus" class="status">Sin consulta.</div>
-            <pre id="repClassOutput">{}</pre>
-          </article>
-        </div>
-      </section>
+        <section class="view" id="view-reports">
+          <div class="content-grid two">
+            <article class="panel">
+              <div class="panel-head"><div><h2>Cobertura de preguntas</h2><p>Preparación del banco para pruebas reales.</p></div></div>
+              <div class="filter-row"><label>Grado<input id="covGrade" value="11" /></label><label>Meta por área<input id="covTarget" value="120" type="number" /></label><button id="covLoadBtn" class="primary-button" type="button">Consultar</button></div>
+              <div id="covStatus" class="status-message">Sin consulta.</div>
+              <div class="table-shell"><table><thead><tr><th>Área</th><th>Total</th><th>Meta</th><th>Déficit</th><th>%</th></tr></thead><tbody id="covRows"></tbody></table></div>
+            </article>
+            <article class="panel">
+              <div class="panel-head"><div><h2>Material local</h2><p>Estado de fuentes y documentos base.</p></div></div>
+              <div class="actions"><button id="materialLoadBtn" class="primary-button" type="button">Consultar</button><button id="filesCsvBtn" class="ghost-button" type="button">Exportar CSV</button></div>
+              <div id="materialStatus" class="status-message">Sin consulta.</div>
+              <pre id="materialOutput" class="code-box">{}</pre>
+            </article>
+          </div>
+        </section>
 
-      <section class="section" id="sec-coverage">
-        <div class="grid">
-          <article class="card">
-            <h2>Cobertura banco de preguntas</h2>
-            <div class="row2">
-              <div><label>Grado</label><input id="covGrade" value="11" /></div>
-              <div><label>Meta por area</label><input id="covTarget" value="120" /></div>
-            </div>
-            <button id="covLoadBtn" class="btn" style="margin-top:8px">Consultar</button>
-            <div id="covStatus" class="status">Sin consulta.</div>
-            <div class="table-wrap" style="margin-top:8px">
-              <table>
-                <thead><tr><th>Area</th><th>Total</th><th>Meta</th><th>Deficit</th><th>%</th></tr></thead>
-                <tbody id="covRows"></tbody>
-              </table>
-            </div>
-          </article>
-
-          <article class="card">
-            <h2>Cobertura material local</h2>
-            <div class="inline">
-              <button id="materialLoadBtn" class="btn">Consultar</button>
-              <button id="filesCsvBtn" class="btn alt">Export files CSV</button>
-            </div>
-            <div id="materialStatus" class="status">Sin consulta.</div>
-            <pre id="materialOutput">{}</pre>
-          </article>
-        </div>
-      </section>
+        <section class="view" id="view-settings">
+          <div class="content-grid two">
+            <article class="panel">
+              <div class="panel-head"><div><h2>Usuarios</h2><p>Administradores y docentes.</p></div></div>
+              <form id="userForm" class="stack-form">
+                <div class="form-grid">
+                  <label>Nombre<input id="uNombre" /></label>
+                  <label>Email<input id="uEmail" type="email" autocomplete="email" /></label>
+                  <label>Password<input id="uPassword" type="password" autocomplete="new-password" placeholder="Docente#2026!" /></label>
+                  <label>Rol<select id="uRol"><option>DOCENTE</option><option>ADMIN</option></select></label>
+                  <label>Estado<select id="uActivo"><option value="true">Activo</option><option value="false">Inactivo</option></select></label>
+                </div>
+                <div class="actions"><button id="uCreateBtn" class="primary-button" type="submit">Crear usuario</button><button id="uListBtn" class="ghost-button" type="button">Actualizar</button></div>
+              </form>
+              <div class="bulk-box">
+                <input id="uBulkFile" type="file" accept=".csv,text/csv" />
+                <div class="actions"><button id="uTemplateBtn" class="ghost-button" type="button">Plantilla usuarios</button><button id="uBulkBtn" class="primary-button" type="button">Subir CSV</button></div>
+              </div>
+              <div id="uStatus" class="status-message">Sin cambios.</div>
+              <div id="uSummary" class="summary-line">Usuarios: 0 | Admin: 0 | Docente: 0</div>
+              <div class="table-shell"><table><thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th></tr></thead><tbody id="uTableRows"></tbody></table></div>
+              <pre id="uOutput" class="code-box is-collapsed">[]</pre>
+            </article>
+            <article class="panel">
+              <div class="panel-head"><div><h2>Conexión</h2><p>URLs de API, LAN y diagnóstico rápido.</p></div></div>
+              <div id="apiText" class="summary-line"></div>
+              <div id="lanText" class="summary-line"></div>
+              <div id="adminText" class="summary-line"></div>
+              <pre id="connectionOut" class="code-box">{}</pre>
+            </article>
+          </div>
+        </section>
+      </main>
     </div>
 
-    <script src="/admin/app.js"></script>
+    <div id="toast" class="toast-lite" role="status" aria-live="polite"></div>
+
+    <script src="/admin/vendor/chart.umd.min.js" defer></script>
+    <script src="/admin/app.js" defer></script>
   </body>
 </html>
