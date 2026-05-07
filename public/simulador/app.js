@@ -1,259 +1,127 @@
 "use strict";
 
 (() => {
+  const TOKEN_KEY = "s11_student_token";
+
   const state = {
     apiBase: `${window.location.origin}/api`,
-    clientLogs: [],
+    token: localStorage.getItem(TOKEN_KEY) || "",
+    student: null,
+    exams: [],
     attemptId: null,
     questionDeck: [],
     currentIndex: 0,
     answersByQuestionId: {},
-    result: null,
     sessionPlan: null,
     sessionControl: null,
     waitingForAdmin: false,
-    waitPollIntervalId: null,
+    resultsHistory: [],
     timer: {
       intervalId: null,
-      currentSessionIndex: -1,
+      sessionIndex: -1,
       remainingSeconds: 0
-    }
+    },
+    pollIntervalId: null
   };
 
   const $ = (id) => document.getElementById(id);
-  const pretty = (value) => JSON.stringify(value ?? {}, null, 2);
 
-  const escapeHtml = (value) =>
-    String(value ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-
-  const cleanObject = (input) => {
-    const output = {};
-    Object.entries(input).forEach(([key, value]) => {
-      if (value === undefined || value === null) return;
-      if (typeof value === "string" && value.trim().length === 0) return;
-      output[key] = value;
-    });
-    return output;
+  const setStatus = (id, message, tone = "warn") => {
+    const node = $(id);
+    if (!node) return;
+    node.textContent = message;
+    node.className = `status ${tone}`;
   };
 
-  const toQueryString = (params) => {
-    const query = new URLSearchParams();
-    Object.entries(params || {}).forEach(([key, value]) => {
-      if (value === undefined || value === null) return;
-      if (typeof value === "string" && value.trim().length === 0) return;
-      query.set(key, String(value));
-    });
-    const text = query.toString();
-    return text ? `?${text}` : "";
-  };
-
-  const setStatus = (elementId, message, tone = "") => {
-    const element = $(elementId);
-    if (!element) return;
-    element.textContent = message;
-    element.className = "status";
-    if (tone === "ok") element.classList.add("ok");
-    if (tone === "warn") element.classList.add("warn");
-    if (tone === "bad") element.classList.add("bad");
-  };
-
-  const setText = (elementId, text) => {
-    const element = $(elementId);
-    if (element) element.textContent = text ?? "";
-  };
-
-  const appendClientLog = (level, message, details) => {
-    const timestamp = new Date().toISOString();
-    const suffix = details ? ` | ${typeof details === "string" ? details : JSON.stringify(details)}` : "";
-    const line = `[${timestamp}] [${level}] ${message}${suffix}`;
-    state.clientLogs.unshift(line);
-    if (state.clientLogs.length > 200) {
-      state.clientLogs.length = 200;
-    }
-    const logBox = $("clientLogOut");
-    if (logBox) {
-      logBox.textContent = state.clientLogs.join("\n");
-    }
-
-    if (level === "ERROR" || level === "WARN") {
-      console.warn(line);
-    } else {
-      console.info(line);
+  const setText = (id, value) => {
+    const node = $(id);
+    if (node) {
+      node.textContent = value || "";
     }
   };
 
-  const parseErrorResponse = async (response) => {
-    const text = await response.text();
-    let message = text || `Error HTTP ${response.status}`;
-    let code = "HTTP_ERROR";
-    let requestId = null;
+  const setButtonLoading = (id, loading, loadingText = "Procesando...") => {
+    const button = $(id);
+    if (!button) return;
+    if (!button.dataset.defaultText) {
+      button.dataset.defaultText = button.textContent || "";
+    }
+    button.disabled = loading;
+    button.textContent = loading ? loadingText : button.dataset.defaultText;
+  };
 
-    try {
-      const payload = JSON.parse(text);
-      message = payload?.error?.message || payload?.message || message;
-      code = payload?.error?.code || code;
-      requestId = payload?.error?.requestId || payload?.meta?.requestId || null;
-    } catch {}
+  const saveToken = (token) => {
+    state.token = token;
+    localStorage.setItem(TOKEN_KEY, token);
+  };
 
-    const error = new Error(message);
-    error.code = code;
-    error.requestId = requestId;
-    throw error;
+  const clearToken = () => {
+    state.token = "";
+    localStorage.removeItem(TOKEN_KEY);
+  };
+
+  const toDuration = (seconds) => {
+    const safe = Math.max(0, Math.floor(seconds));
+    const minutes = Math.floor(safe / 60);
+    const remain = safe % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(remain).padStart(2, "0")}`;
   };
 
   const apiRequest = async (path, options = {}) => {
-    const { method = "GET", body } = options;
+    const { method = "GET", body, auth = true } = options;
     const headers = new Headers();
-    let payloadBody = body;
-    const startedAt = Date.now();
-
-    if (body && !(body instanceof FormData)) {
-      headers.set("Content-Type", "application/json");
-      payloadBody = JSON.stringify(body);
+    if (auth && state.token) {
+      headers.set("Authorization", `Bearer ${state.token}`);
     }
 
-    let response;
-    try {
-      response = await fetch(`${state.apiBase}${path}`, {
-        method,
-        headers,
-        body: payloadBody
-      });
-    } catch (error) {
-      appendClientLog("ERROR", `${method} ${path} network_error`, {
-        message: error?.message || "fetch_failed",
-        apiBase: state.apiBase
-      });
-      throw new Error(
-        `No se pudo conectar con la API (${state.apiBase}). Verifica IP del servidor, red local y firewall.`
-      );
+    let payload = body;
+    if (body && !(body instanceof FormData)) {
+      headers.set("Content-Type", "application/json");
+      payload = JSON.stringify(body);
+    }
+
+    const response = await fetch(`${state.apiBase}${path}`, {
+      method,
+      headers,
+      body: payload
+    });
+
+    if (response.status === 401 && auth) {
+      logout(false);
+      throw new Error("Sesion expirada. Inicia sesion nuevamente.");
     }
 
     if (!response.ok) {
+      let message = `Error HTTP ${response.status}`;
+      let code = "HTTP_ERROR";
+      let details = null;
       try {
-        await parseErrorResponse(response);
-      } catch (error) {
-        appendClientLog("ERROR", `${method} ${path} -> ${response.status}`, {
-          message: error.message,
-          code: error.code || "HTTP_ERROR",
-          requestId: error.requestId || null,
-          durationMs: Date.now() - startedAt
-        });
-        throw error;
+        const errorPayload = await response.json();
+        message = errorPayload?.error?.message || errorPayload?.message || message;
+        code = errorPayload?.error?.code || code;
+        details = errorPayload?.error?.details ?? null;
+      } catch {
+        // no-op
       }
+
+      if (code === "AUTH_RATE_LIMITED" || code === "AUTH_TEMPORARILY_BLOCKED" || response.status === 429) {
+        const retryAfter = Number(details?.retryAfterSeconds ?? 0);
+        if (retryAfter > 0) {
+          message = `Demasiados intentos. Reintenta en ${retryAfter}s.`;
+        } else {
+          message = "Demasiados intentos. Espera un momento e intenta de nuevo.";
+        }
+      }
+
+      throw new Error(message);
     }
 
-    appendClientLog("INFO", `${method} ${path} -> ${response.status}`, { durationMs: Date.now() - startedAt });
-
-    const payload = await response.json();
-    if (payload?.meta?.requestId) {
-      appendClientLog("INFO", `${method} ${path} requestId`, payload.meta.requestId);
-    }
-    return payload;
+    return response.json();
   };
 
-  const renderKpis = (containerId, items) => {
-    const container = $(containerId);
-    if (!container) return;
-    container.innerHTML = items
-      .map(
-        (item) =>
-          `<div class="kpi"><div class="label">${escapeHtml(item.label)}</div><div class="value">${escapeHtml(
-            item.value
-          )}</div></div>`
-      )
-      .join("");
-  };
-
-  const renderBars = (containerId, rows) => {
-    const container = $(containerId);
-    if (!container) return;
-    container.innerHTML = rows
-      .map((row) => {
-        const value = Number(row.percent || 0);
-        const width = Math.max(0, Math.min(100, value));
-        return `<div class="bar-row"><div>${escapeHtml(row.label)}</div><div class="bar-track"><div class="bar-fill" style="width:${width}%"></div></div><div>${width.toFixed(
-          1
-        )}%</div></div>`;
-      })
-      .join("");
-  };
-
-  const formatDuration = (seconds) => {
-    const safeSeconds = Math.max(0, Math.floor(seconds));
-    const minutes = Math.floor(safeSeconds / 60);
-    const remainder = safeSeconds % 60;
-    return `${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`;
-  };
-
-  const getSessionPlan = () => state.sessionPlan;
-
-  const getCurrentSession = () => {
-    const plan = getSessionPlan();
-    if (!plan || !Array.isArray(plan.sessions) || plan.sessions.length === 0) {
-      return null;
-    }
-
-    const index = state.timer.currentSessionIndex;
-    if (index < 0 || index >= plan.sessions.length) {
-      return null;
-    }
-
-    return plan.sessions[index];
-  };
-
-  const getCurrentSessionBounds = () => {
-    const session = getCurrentSession();
-    if (!session) {
-      return {
-        minIndex: 0,
-        maxIndex: Math.max(0, state.questionDeck.length - 1)
-      };
-    }
-
-    return {
-      minIndex: Math.max(0, session.questionStart - 1),
-      maxIndex: Math.max(0, Math.min(state.questionDeck.length - 1, session.questionEnd - 1))
-    };
-  };
-
-  const clampIndexToCurrentSession = () => {
-    const bounds = getCurrentSessionBounds();
-    if (state.currentIndex < bounds.minIndex) state.currentIndex = bounds.minIndex;
-    if (state.currentIndex > bounds.maxIndex) state.currentIndex = bounds.maxIndex;
-  };
-
-  const renderTimerPanel = () => {
-    const session = getCurrentSession();
-    if (!session) {
-      setText("sessionLabel", "Jornada: Sin jornada activa");
-      setText("sessionRange", "Preguntas: -");
-      setText("sessionTime", "Tiempo de jornada: -");
-      setText("timerMain", "--:--");
-      setText("timerHint", "El cronometro se activa al iniciar.");
-      return;
-    }
-
-    setText("sessionLabel", `Jornada activa: ${session.label}`);
-    setText("sessionRange", `Preguntas ${session.questionStart} a ${session.questionEnd} (total ${session.questionCount})`);
-    setText("sessionTime", `Tiempo jornada: ${session.durationMinutes} minutos`);
-    setText("timerMain", state.waitingForAdmin ? "--:--" : formatDuration(state.timer.remainingSeconds));
-
-    if (state.waitingForAdmin) {
-      setText("timerHint", "Jornada 1 finalizada. Esperando habilitacion de jornada 2 por administrador.");
-      return;
-    }
-
-    if (state.timer.remainingSeconds <= 300) {
-      setText("timerHint", "Quedan menos de 5 minutos en esta jornada.");
-    } else {
-      setText("timerHint", session.description || "");
-    }
+  const showView = ({ login, portal }) => {
+    $("loginView")?.classList.toggle("hidden", !login);
+    $("portalView")?.classList.toggle("hidden", !portal);
   };
 
   const stopTimer = () => {
@@ -263,148 +131,173 @@
     }
   };
 
-  const stopAdminWaitPolling = () => {
-    if (state.waitPollIntervalId) {
-      window.clearInterval(state.waitPollIntervalId);
-      state.waitPollIntervalId = null;
+  const stopPolling = () => {
+    if (state.pollIntervalId) {
+      window.clearInterval(state.pollIntervalId);
+      state.pollIntervalId = null;
     }
   };
 
-  const isStrictMode = () => state.sessionControl?.strictMode === true && state.sessionPlan?.mode === "SABER11_DOS_JORNADAS";
-
-  const markWaitingForAdmin = () => {
-    state.waitingForAdmin = true;
+  const resetAttempt = () => {
     stopTimer();
-    state.timer.remainingSeconds = 0;
-    state.timer.currentSessionIndex = Math.max(1, state.timer.currentSessionIndex);
-    renderTimerPanel();
-    renderQuestionNav();
-    setStatus(
-      "startStatus",
-      "Jornada 1 finalizada. Debes esperar que el administrador habilite la jornada 2.",
-      "warn"
-    );
-  };
-
-  const unlockSessionTwoFromServerState = () => {
-    if (!state.sessionControl?.session2Enabled) return false;
-    if (!state.waitingForAdmin) return false;
-
+    stopPolling();
+    state.attemptId = null;
+    state.questionDeck = [];
+    state.currentIndex = 0;
+    state.answersByQuestionId = {};
+    state.sessionPlan = null;
+    state.sessionControl = null;
     state.waitingForAdmin = false;
-    stopAdminWaitPolling();
-    const nextSessionIndex =
-      typeof state.sessionControl.currentSessionIndex === "number"
-        ? state.sessionControl.currentSessionIndex
-        : 1;
-
-    setStatus("startStatus", "Jornada 2 habilitada por el administrador. Puedes continuar.", "ok");
-    startSessionTimer(Math.max(nextSessionIndex, 1));
-    return true;
+    state.timer.sessionIndex = -1;
+    state.timer.remainingSeconds = 0;
+    $("attemptView")?.classList.add("hidden");
+    setText("timerText", "Tiempo: --:--");
+    setText("progressText", "Progreso: 0/0");
+    setText("sessionText", "Sesion: -");
   };
 
-  const refreshAttemptState = async ({ silent = false } = {}) => {
-    if (!state.attemptId) {
-      if (!silent) {
-        setStatus("startStatus", "No hay intento activo para actualizar", "warn");
-      }
-      return null;
-    }
+  const renderExamOptions = (items) => {
+    const select = $("examSelect");
+    if (!select) return;
 
-    const response = await apiRequest(`/attempts/public/${state.attemptId}`);
-    const data = response.data || {};
-    if (data.sessionPlan) {
-      state.sessionPlan = data.sessionPlan;
-    }
-    if (data.sessionControl) {
-      state.sessionControl = data.sessionControl;
-    }
-    return data;
-  };
-
-  const startAdminWaitPolling = () => {
-    stopAdminWaitPolling();
-
-    state.waitPollIntervalId = window.setInterval(async () => {
-      try {
-        await refreshAttemptState({ silent: true });
-        unlockSessionTwoFromServerState();
-      } catch (error) {
-        setStatus("startStatus", `Esperando habilitacion de jornada 2: ${error.message}`, "warn");
-      }
-    }, 10000);
-  };
-
-  const completeSessionOneAndWaitAdmin = async () => {
-    if (!state.attemptId) return;
-
-    try {
-      const response = await apiRequest(`/attempts/public/${state.attemptId}/session1/complete`, {
-        method: "POST"
-      });
-      const data = response.data || {};
-      if (data.sessionControl) {
-        state.sessionControl = data.sessionControl;
-      }
-      if (data.sessionPlan) {
-        state.sessionPlan = data.sessionPlan;
-      }
-      markWaitingForAdmin();
-      startAdminWaitPolling();
-    } catch (error) {
-      setStatus("startStatus", error.message, "bad");
-    }
-  };
-
-  const startSessionTimer = (sessionIndex) => {
-    const plan = getSessionPlan();
-    if (!plan || !plan.sessions?.[sessionIndex]) {
+    select.innerHTML = "";
+    if (!Array.isArray(items) || items.length === 0) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = "Sin simulacros disponibles";
+      select.appendChild(option);
+      setText("examInfo", "No hay simulacros activos para tu perfil.");
       return;
     }
 
-    state.waitingForAdmin = false;
-    stopAdminWaitPolling();
-    stopTimer();
-    state.timer.currentSessionIndex = sessionIndex;
-    state.timer.remainingSeconds = Math.max(1, Number(plan.sessions[sessionIndex].durationMinutes || 1) * 60);
-    clampIndexToCurrentSession();
-    renderTimerPanel();
-    renderQuestionNav();
-    renderCurrentQuestion();
+    items.forEach((exam) => {
+      const option = document.createElement("option");
+      option.value = exam.id;
+      option.textContent = `${exam.nombre} | ${exam.tipoPrueba}`;
+      option.dataset.info = `${exam.totalPreguntas} preguntas | ${exam.tiempoLimiteMinutos} min | Grado ${exam.gradoObjetivo}`;
+      select.appendChild(option);
+    });
 
-    state.timer.intervalId = window.setInterval(async () => {
-      state.timer.remainingSeconds -= 1;
-      if (state.timer.remainingSeconds <= 0) {
-        state.timer.remainingSeconds = 0;
-        renderTimerPanel();
-        stopTimer();
+    setText("examInfo", select.options[0]?.dataset.info || "");
+  };
 
-        const nextSessionIndex = sessionIndex + 1;
-        if (nextSessionIndex < plan.sessions.length) {
-          if (isStrictMode() && sessionIndex === 0 && !state.sessionControl?.session2Enabled) {
-            await completeSessionOneAndWaitAdmin();
-            return;
-          }
+  const getCurrentSession = () => {
+    const sessions = state.sessionPlan?.sessions;
+    if (!Array.isArray(sessions) || sessions.length === 0) return null;
+    if (state.timer.sessionIndex < 0 || state.timer.sessionIndex >= sessions.length) return null;
+    return sessions[state.timer.sessionIndex];
+  };
 
-          setStatus(
-            "startStatus",
-            `${plan.sessions[sessionIndex].label} finalizada. Inicia ${plan.sessions[nextSessionIndex].label}.`,
-            "warn"
-          );
-          startSessionTimer(nextSessionIndex);
-          return;
-        }
+  const getSessionBounds = () => {
+    const session = getCurrentSession();
+    if (!session) {
+      return { min: 0, max: Math.max(0, state.questionDeck.length - 1) };
+    }
 
-        setStatus("startStatus", "Tiempo total finalizado. Enviando intento automaticamente...", "warn");
-        await submitAttempt(true);
-        return;
+    return {
+      min: Math.max(0, session.questionStart - 1),
+      max: Math.max(0, Math.min(state.questionDeck.length - 1, session.questionEnd - 1))
+    };
+  };
+
+  const clampCurrentIndex = () => {
+    const bounds = getSessionBounds();
+    if (state.currentIndex < bounds.min) state.currentIndex = bounds.min;
+    if (state.currentIndex > bounds.max) state.currentIndex = bounds.max;
+  };
+
+  const renderQuestionNav = () => {
+    const nav = $("questionNav");
+    if (!nav) return;
+
+    nav.innerHTML = "";
+    const bounds = getSessionBounds();
+
+    state.questionDeck.forEach((question, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = String(index + 1);
+      const outOfSession = index < bounds.min || index > bounds.max;
+      if (index === state.currentIndex) {
+        button.classList.add("current");
       }
+      if (state.answersByQuestionId[question.questionId]) {
+        button.style.borderColor = "#93c5fd";
+      }
+      if (outOfSession || state.waitingForAdmin) {
+        button.disabled = true;
+      }
+      button.addEventListener("click", () => {
+        if (outOfSession || state.waitingForAdmin) return;
+        state.currentIndex = index;
+        renderCurrentQuestion();
+      });
+      nav.appendChild(button);
+    });
+  };
 
-      renderTimerPanel();
-    }, 1000);
+  const renderCurrentQuestion = () => {
+    if (!state.questionDeck.length) {
+      setText("questionTitle", "Pregunta");
+      setText("questionContext", "");
+      const body = $("questionBody");
+      if (body) body.textContent = "No hay intento activo.";
+      const options = $("questionOptions");
+      if (options) options.innerHTML = "";
+      return;
+    }
+
+    clampCurrentIndex();
+    const question = state.questionDeck[state.currentIndex];
+    const selectedId = state.answersByQuestionId[question.questionId] || question.selectedOptionId || null;
+    const responded = Object.keys(state.answersByQuestionId).length;
+
+    setText("questionTitle", `Pregunta ${state.currentIndex + 1} de ${state.questionDeck.length}`);
+    setText(
+      "questionContext",
+      question.contextoTextoBase
+        ? `Contexto: ${question.contextoTextoBase}`
+        : `Area: ${question.area} | Dificultad: ${question.nivelDificultad}`
+    );
+
+    const body = $("questionBody");
+    if (body) {
+      body.textContent = question.enunciado || "";
+    }
+
+    setText("progressText", `Progreso: ${responded}/${state.questionDeck.length}`);
+
+    const optionsHtml = (question.options || [])
+      .map((option) => {
+        const selected = selectedId === option.id ? " selected" : "";
+        return `<label class="option${selected}" data-id="${option.id}">
+          <input type="radio" name="question_option" value="${option.id}" ${selectedId === option.id ? "checked" : ""} ${
+          state.waitingForAdmin ? "disabled" : ""
+        } />
+          <div><strong>${option.ordenPresentacion}.</strong> ${option.textoOpcion}</div>
+        </label>`;
+      })
+      .join("");
+
+    const optionsContainer = $("questionOptions");
+    if (optionsContainer) {
+      optionsContainer.innerHTML = optionsHtml;
+      optionsContainer.querySelectorAll(".option").forEach((node) => {
+        node.addEventListener("click", () => {
+          if (state.waitingForAdmin) return;
+          const id = node.getAttribute("data-id");
+          if (!id) return;
+          state.answersByQuestionId[question.questionId] = id;
+          renderCurrentQuestion();
+        });
+      });
+    }
+
+    renderQuestionNav();
   };
 
   const applySessionPlan = (incomingPlan, fallbackExam) => {
-    if (incomingPlan && Array.isArray(incomingPlan.sessions) && incomingPlan.sessions.length > 0) {
+    if (incomingPlan?.sessions?.length) {
       state.sessionPlan = incomingPlan;
       return;
     }
@@ -422,228 +315,128 @@
           questionStart: 1,
           questionEnd: totalQuestions,
           questionCount: totalQuestions,
-          durationMinutes: totalMinutes,
-          suggestedStart: null,
-          suggestedEnd: null,
-          description: "Simulacion en sesion unica."
+          durationMinutes: totalMinutes
         }
       ]
     };
   };
 
-  const showRegisterPanel = (show) => {
-    const panel = $("registerPanel");
-    if (!panel) return;
-    if (show) panel.classList.remove("hidden");
-    else panel.classList.add("hidden");
-  };
-
-  const collectRegisteredLookupPayload = () =>
-    cleanObject({
-      tipo_identificacion: $("stTipo").value,
-      numero_identificacion: $("stDocumento").value.trim()
-    });
-
-  const collectRegistrationPayload = () =>
-    cleanObject({
-      ...collectRegisteredLookupPayload(),
-      nombres: $("stNombres").value.trim(),
-      apellidos: $("stApellidos").value.trim(),
-      grado: $("stGrado").value.trim(),
-      grupo: $("stGrupo").value.trim(),
-      institucion: $("stInstitucion").value.trim()
-    });
-
-  const loadConnectionInfo = async () => {
-    try {
-      const response = await fetch("/connection-info");
-      if (!response.ok) throw new Error(`No se pudo leer /connection-info (${response.status})`);
-      const payload = await response.json();
-      const data = payload?.data || {};
-
-      setText("apiText", state.apiBase);
-      const lanUrls = data.sharedLanUrls?.length ? data.sharedLanUrls : data.lanUrls || [];
-      setText("lanText", lanUrls.length ? lanUrls.join(" | ") : "sin URLs LAN detectadas");
-      appendClientLog("INFO", "connection-info loaded", {
-        apiBase: state.apiBase,
-        lanUrls: lanUrls.length
-      });
-    } catch (error) {
-      setText("apiText", state.apiBase);
-      setText("lanText", `sin datos (${error.message})`);
-      appendClientLog("WARN", "connection-info unavailable", error.message);
-    }
-  };
-
-  const renderExamOptions = (items) => {
-    const select = $("examSelect");
-    select.innerHTML = "";
-    if (!Array.isArray(items) || items.length === 0) {
-      const option = document.createElement("option");
-      option.value = "";
-      option.textContent = "Sin pruebas disponibles";
-      select.appendChild(option);
-      $("examInfo").value = "No hay pruebas configuradas";
+  const renderTimerPanel = () => {
+    if (!state.sessionPlan) {
+      setText("timerText", "Tiempo: --:--");
+      setText("sessionText", "Sesion: -");
       return;
     }
 
-    items.forEach((item) => {
-      const option = document.createElement("option");
-      option.value = item.id;
-      option.textContent = `${item.nombre} | ${item.tipoPrueba} | ${item.gradoObjetivo}`;
-      option.dataset.examInfo = `${item.tipoPrueba} | Grado ${item.gradoObjetivo} | ${item.totalPreguntas} preguntas`;
-      select.appendChild(option);
-    });
-
-    const firstOption = select.options[0];
-    $("examInfo").value = firstOption?.dataset.examInfo || "Prueba seleccionada";
-  };
-
-  const loadExams = async () => {
-    try {
-      const preferredQuery = toQueryString({
-        tipo_prueba: "SABER_11",
-        grado_objetivo: "11",
-        limit: 200
-      });
-      let response = await apiRequest(`/exams/public${preferredQuery}`);
-      let items = response.data?.items || [];
-
-      if (!items.length) {
-        response = await apiRequest("/exams/public?limit=200");
-        items = response.data?.items || [];
-      }
-
-      renderExamOptions(items);
-      setStatus("startStatus", `Pruebas cargadas: ${items.length}`, items.length ? "ok" : "warn");
-    } catch (error) {
-      setStatus("startStatus", error.message, "bad");
-      renderExamOptions([]);
-    }
-  };
-
-  const renderQuestionNav = () => {
-    const nav = $("qNav");
-    nav.innerHTML = "";
-    const bounds = getCurrentSessionBounds();
-
-    state.questionDeck.forEach((question, index) => {
-      const button = document.createElement("button");
-      button.textContent = String(index + 1);
-      if (index === state.currentIndex) button.classList.add("current");
-
-      const waitingBlocked = state.waitingForAdmin;
-      const outOfSession = index < bounds.minIndex || index > bounds.maxIndex;
-      if (outOfSession || waitingBlocked) {
-        button.disabled = true;
-        button.style.opacity = "0.45";
-      }
-
-      if (state.answersByQuestionId[question.questionId]) {
-        button.style.borderColor = "#63b58f";
-      }
-
-      button.addEventListener("click", () => {
-        if (outOfSession) return;
-        state.currentIndex = index;
-        renderCurrentQuestion();
-      });
-
-      nav.appendChild(button);
-    });
-  };
-
-  const renderCurrentQuestion = () => {
-    if (!state.questionDeck.length) {
-      setText("questionTitle", "Pregunta");
-      setText("questionBody", "Sin intento activo.");
-      $("options").innerHTML = "";
-      $("qNav").innerHTML = "";
+    const currentSession = getCurrentSession();
+    if (!currentSession) {
+      setText("sessionText", "Sesion: -");
+      setText("timerText", "Tiempo: --:--");
       return;
     }
 
-    clampIndexToCurrentSession();
-
-    const question = state.questionDeck[state.currentIndex];
-    const total = state.questionDeck.length;
-    setText("questionTitle", `Pregunta ${state.currentIndex + 1} de ${total}`);
-
-    const context = question.contextoTextoBase
-      ? `<div><strong>Contexto:</strong> ${escapeHtml(question.contextoTextoBase)}</div>`
-      : "";
-
-    const meta = `<div style="margin-top:6px;font-size:12px;color:#567265">Area: ${escapeHtml(
-      question.area
-    )} | Dificultad: ${escapeHtml(question.nivelDificultad)} | Competencia: ${escapeHtml(question.competencia)}</div>`;
-
-    $("questionBody").innerHTML = `${context}<div style="margin-top:8px">${escapeHtml(
-      question.enunciado
-    )}</div>${meta}`;
-
-    const selectedOption = state.answersByQuestionId[question.questionId] || question.selectedOptionId || null;
-    const disableOptions = state.waitingForAdmin;
-    $("options").innerHTML = (question.options || [])
-      .map((option) => {
-        const selectedClass = option.id === selectedOption ? " selected" : "";
-        return `<label class="option-item${selectedClass}" data-opt-id="${option.id}"><input type="radio" name="option" value="${option.id}" ${
-          disableOptions ? "disabled" : ""
-        } ${
-          option.id === selectedOption ? "checked" : ""
-        } /><div><strong>${escapeHtml(option.ordenPresentacion)}.</strong> ${escapeHtml(
-          option.textoOpcion
-        )}</div></label>`;
-      })
-      .join("");
-
-    if (state.waitingForAdmin) {
-      $("questionBody").innerHTML +=
-        '<div class="status warn" style="margin-top:8px">Jornada bloqueada hasta habilitacion del administrador.</div>';
-    }
-
-    $("options").querySelectorAll(".option-item").forEach((item) => {
-      item.addEventListener("click", () => {
-        if (state.waitingForAdmin) return;
-        const optionId = item.getAttribute("data-opt-id");
-        if (!optionId) return;
-        state.answersByQuestionId[question.questionId] = optionId;
-        renderCurrentQuestion();
-      });
-    });
-
-    renderQuestionNav();
+    setText("sessionText", `Sesion: ${currentSession.label}`);
+    setText("timerText", state.waitingForAdmin ? "Tiempo: --:--" : `Tiempo: ${toDuration(state.timer.remainingSeconds)}`);
   };
 
-  const resetAttemptUi = () => {
-    stopTimer();
-    stopAdminWaitPolling();
-    state.attemptId = null;
-    state.questionDeck = [];
-    state.currentIndex = 0;
-    state.answersByQuestionId = {};
-    state.result = null;
-    state.sessionPlan = null;
-    state.sessionControl = null;
-    state.waitingForAdmin = false;
-    state.timer.currentSessionIndex = -1;
-    state.timer.remainingSeconds = 0;
+  const refreshAttempt = async ({ silent = false } = {}) => {
+    if (!state.attemptId) return null;
+    const payload = await apiRequest(`/student/attempts/${state.attemptId}`);
+    const data = payload.data || {};
+    state.sessionControl = data.sessionControl || state.sessionControl;
+    state.sessionPlan = data.sessionPlan || state.sessionPlan;
 
-    renderKpis("resultKpis", []);
-    renderBars("resultBars", []);
-    $("resultOut").textContent = "{}";
-    renderCurrentQuestion();
+    if (Array.isArray(data.questionDeck)) {
+      state.questionDeck = data.questionDeck.slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+      state.questionDeck.forEach((question) => {
+        if (question.selectedOptionId) {
+          state.answersByQuestionId[question.questionId] = question.selectedOptionId;
+        }
+      });
+    }
+
+    if (!silent) {
+      renderCurrentQuestion();
+    }
+
+    return data;
+  };
+
+  const startPollingForSessionTwo = () => {
+    stopPolling();
+    state.pollIntervalId = window.setInterval(async () => {
+      try {
+        await refreshAttempt({ silent: true });
+        if (state.sessionControl?.session2Enabled) {
+          state.waitingForAdmin = false;
+          stopPolling();
+          setStatus("examStatus", "Sesion 2 habilitada. Puedes continuar.", "ok");
+          startSessionTimer(Math.max(state.sessionControl.currentSessionIndex || 1, 1));
+        }
+      } catch (error) {
+        setStatus("examStatus", error.message, "warn");
+      }
+    }, 10000);
+  };
+
+  const completeSessionOne = async () => {
+    if (!state.attemptId) return;
+    await apiRequest(`/student/attempts/${state.attemptId}/session1/complete`, { method: "POST" });
+    state.waitingForAdmin = true;
+    setStatus("examStatus", "Sesion 1 finalizada. Espera habilitacion de sesion 2.", "warn");
     renderTimerPanel();
-    setText("policyText", "Sin intento activo");
+    renderQuestionNav();
+    startPollingForSessionTwo();
+  };
+
+  const startSessionTimer = (sessionIndex) => {
+    const sessions = state.sessionPlan?.sessions;
+    if (!Array.isArray(sessions) || !sessions[sessionIndex]) return;
+
+    state.timer.sessionIndex = sessionIndex;
+    state.timer.remainingSeconds = Math.max(1, Number(sessions[sessionIndex].durationMinutes || 1) * 60);
+    state.waitingForAdmin = false;
+
+    stopTimer();
+    renderTimerPanel();
+    clampCurrentIndex();
+    renderCurrentQuestion();
+
+    state.timer.intervalId = window.setInterval(async () => {
+      state.timer.remainingSeconds -= 1;
+      renderTimerPanel();
+
+      if (state.timer.remainingSeconds > 0) {
+        return;
+      }
+
+      stopTimer();
+      const nextSessionIndex = sessionIndex + 1;
+
+      if (nextSessionIndex < sessions.length) {
+        const strictMode = state.sessionPlan?.mode === "SABER11_DOS_JORNADAS";
+        if (strictMode && sessionIndex === 0 && !state.sessionControl?.session2Enabled) {
+          await completeSessionOne();
+          return;
+        }
+
+        setStatus("examStatus", `${sessions[sessionIndex].label} finalizada. Inicia ${sessions[nextSessionIndex].label}.`, "warn");
+        startSessionTimer(nextSessionIndex);
+        return;
+      }
+
+      setStatus("examStatus", "Tiempo finalizado. Enviando intento automaticamente...", "warn");
+      await submitAttempt(true);
+    }, 1000);
   };
 
   const applyAttemptData = (data) => {
     state.attemptId = data.attempt?.id || null;
     state.questionDeck = Array.isArray(data.questionDeck)
-      ? data.questionDeck.slice().sort((left, right) => (left.order ?? 0) - (right.order ?? 0))
+      ? data.questionDeck.slice().sort((a, b) => (a.order || 0) - (b.order || 0))
       : [];
     state.currentIndex = 0;
     state.answersByQuestionId = {};
-    state.result = null;
-
     state.questionDeck.forEach((question) => {
       if (question.selectedOptionId) {
         state.answersByQuestionId[question.questionId] = question.selectedOptionId;
@@ -651,100 +444,247 @@
     });
 
     applySessionPlan(data.sessionPlan, data.attempt?.prueba);
-    state.sessionControl = data.sessionControl || null;
-    state.waitingForAdmin = false;
-    stopAdminWaitPolling();
-    setText("policyText", "Preguntas aleatorias, opciones aleatorias y no repeticion por estudiante");
+    state.sessionControl = data.sessionControl || {};
 
-    renderKpis("resultKpis", []);
-    renderBars("resultBars", []);
-    $("resultOut").textContent = "{}";
+    $("attemptView")?.classList.remove("hidden");
+    setText("attemptTitle", data.attempt?.prueba?.nombre || "Simulacro activo");
+    setText(
+      "attemptSummary",
+      `${data.attempt?.prueba?.totalPreguntas || state.questionDeck.length} preguntas | ${data.attempt?.prueba?.tiempoLimiteMinutos || "-"} minutos`
+    );
+
+    renderCurrentQuestion();
   };
 
-  const startAttemptWithPayload = async (examId, bodyPayload) => {
-    const response = await apiRequest("/attempts/public/start", {
-      method: "POST",
-      body: {
-        prueba_id: examId,
-        ...bodyPayload
-      }
-    });
+  const renderResults = (result) => {
+    const areaRows = (result.areaResults || []).map((item) => ({
+      area: item.area,
+      porcentaje: Number(item.porcentaje ?? item.porcentajeArea ?? 0),
+      correctas: Number(item.correctas ?? 0),
+      incorrectas: Number(item.incorrectas ?? 0),
+      total: Number(item.total ?? item.totalPreguntasArea ?? 0)
+    }));
 
-    const data = response.data || {};
-    applyAttemptData(data);
+    const correctas = Number(result.correctas ?? areaRows.reduce((acc, item) => acc + item.correctas, 0));
+    const incorrectas = Number(result.incorrectas ?? areaRows.reduce((acc, item) => acc + item.incorrectas, 0));
+    const total = Number(result.totalPreguntas ?? Math.max(correctas + incorrectas + Number(result.sinResponder ?? 0), 0));
+    const sinResponder = Number(result.sinResponder ?? Math.max(0, total - correctas - incorrectas));
 
-    const planMode = state.sessionPlan?.mode === "SABER11_DOS_JORNADAS" ? "2 jornadas tipo Saber 11" : "sesion unica";
-    setStatus("startStatus", `Intento iniciado (${planMode}).`, "ok");
+    const kpis = [
+      { label: "Correctas", value: correctas },
+      { label: "Incorrectas", value: incorrectas },
+      { label: "Sin responder", value: sinResponder },
+      { label: "Puntaje", value: result.puntajeTotal ?? result.puntajeTotalObtenido ?? 0 },
+      { label: "Porcentaje", value: result.porcentajeTotal ?? 0 },
+      { label: "Nivel", value: result.nivelDesempeno || result.nivelDesempenoGlobal || "-" }
+    ];
 
-    const startSessionIndex =
-      typeof state.sessionControl?.currentSessionIndex === "number" ? state.sessionControl.currentSessionIndex : 0;
+    $("resultKpis").innerHTML = kpis
+      .map((item) => `<div class="kpi"><small>${item.label}</small><strong>${item.value}</strong></div>`)
+      .join("");
 
-    if (isStrictMode() && startSessionIndex > 0 && !state.sessionControl?.session2Enabled) {
-      markWaitingForAdmin();
-      startAdminWaitPolling();
+    $("resultBars").innerHTML = areaRows
+      .map((item) => {
+        const pct = Math.max(0, Math.min(100, Number(item.porcentaje || 0)));
+        return `<div class="bar-row">
+          <div>${item.area}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+          <div>${pct.toFixed(1)}%</div>
+        </div>`;
+      })
+      .join("");
+
+    const recomendaciones = Array.isArray(result.recomendaciones) ? result.recomendaciones : [];
+    $("resultRecommendations").innerHTML = recomendaciones.length
+      ? recomendaciones.map((item) => `<div class="pill">${item}</div>`).join("")
+      : `<div class="pill">Completa mas simulacros para obtener recomendaciones por materia.</div>`;
+
+    $("resultsView")?.classList.remove("hidden");
+  };
+
+  const renderResultsHistory = () => {
+    const rows = $("resultHistoryRows");
+    if (!rows) return;
+
+    if (!state.resultsHistory.length) {
+      rows.innerHTML = `<tr><td colspan="6" class="muted">Aun no tienes resultados calificados.</td></tr>`;
       return;
     }
 
-    startSessionTimer(Math.max(0, startSessionIndex));
+    rows.innerHTML = state.resultsHistory
+      .map((item) => {
+        const date = item.fechaFin || item.fechaInicio;
+        const parsed = date ? new Date(date) : null;
+        return `<tr>
+          <td>${item.exam?.nombre || "-"}</td>
+          <td>${item.exam?.tipoPrueba || "-"}</td>
+          <td>${parsed && !Number.isNaN(parsed.getTime()) ? parsed.toLocaleString() : "-"}</td>
+          <td>${Number(item.porcentajeTotal ?? 0).toFixed(2)}%</td>
+          <td>${item.nivelDesempeno || "-"}</td>
+          <td><button class="btn-soft history-view-btn" data-attempt-id="${item.attemptId}" type="button">Ver</button></td>
+        </tr>`;
+      })
+      .join("");
+
+    rows.querySelectorAll(".history-view-btn").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const attemptId = button.getAttribute("data-attempt-id");
+        if (!attemptId) return;
+        try {
+          const payload = await apiRequest(`/student/results/${attemptId}`);
+          renderResults(payload.data || {});
+          setStatus("portalStatus", "Resultado cargado.", "ok");
+        } catch (error) {
+          setStatus("portalStatus", error.message, "bad");
+        }
+      });
+    });
+  };
+
+  const loadResultsHistory = async ({ silent = false } = {}) => {
+    const payload = await apiRequest("/student/results");
+    state.resultsHistory = Array.isArray(payload.data?.items) ? payload.data.items : [];
+    renderResultsHistory();
+    if (!silent) {
+      setStatus("portalStatus", `Resultados disponibles: ${state.resultsHistory.length}.`, "ok");
+    }
+  };
+
+  const syncHomeData = async () => {
+    const payload = await apiRequest("/student/home");
+    const data = payload.data || {};
+
+    state.student = data.student || null;
+    state.exams = Array.isArray(data.availableExams) ? data.availableExams : [];
+
+    const student = data.student;
+    setText(
+      "studentMeta",
+      `${student?.nombres || ""} ${student?.apellidos || ""} | Documento ${student?.numeroIdentificacion || "-"} | Grado ${student?.grado || "-"}`
+    );
+
+    renderExamOptions(state.exams);
+    await loadResultsHistory({ silent: true });
+
+    return data;
+  };
+
+  const loadPortal = async () => {
+    const data = await syncHomeData();
+    resetAttempt();
+
+    if (data.activeAttempt?.id) {
+      const attemptPayload = await apiRequest(`/student/attempts/${data.activeAttempt.id}`);
+      applyAttemptData(attemptPayload.data || {});
+
+      const startSessionIndex =
+        typeof state.sessionControl?.currentSessionIndex === "number" ? state.sessionControl.currentSessionIndex : 0;
+
+      if (state.sessionControl?.strictMode && startSessionIndex > 0 && !state.sessionControl?.session2Enabled) {
+        state.waitingForAdmin = true;
+        renderTimerPanel();
+        renderQuestionNav();
+        startPollingForSessionTwo();
+      } else {
+        startSessionTimer(Math.max(0, startSessionIndex));
+      }
+
+      setStatus("portalStatus", "Se recupero un intento activo.", "ok");
+    } else {
+      setStatus("portalStatus", "Selecciona una prueba y presiona iniciar.", "warn");
+    }
+  };
+
+  const login = async () => {
+    try {
+      setButtonLoading("loginBtn", true, "Validando...");
+      const tipo = $("tipoIdentificacion").value;
+      const numero = $("numeroIdentificacion").value.trim();
+      if (!numero) {
+        throw new Error("Ingresa tu numero de identificacion.");
+      }
+
+      const payload = await apiRequest("/student-auth/login", {
+        method: "POST",
+        auth: false,
+        body: {
+          tipo_identificacion: tipo,
+          numero_identificacion: numero
+        }
+      });
+
+      const token = payload.data?.token;
+      if (!token) {
+        throw new Error("No se recibio token de sesion.");
+      }
+
+      saveToken(token);
+      showView({ login: false, portal: true });
+      await loadPortal();
+      setStatus("loginStatus", "Sesion iniciada correctamente.", "ok");
+    } catch (error) {
+      setStatus("loginStatus", error.message, "bad");
+    } finally {
+      setButtonLoading("loginBtn", false);
+    }
+  };
+
+  const logout = (showMessage = true) => {
+    clearToken();
+    resetAttempt();
+    state.resultsHistory = [];
+    renderResultsHistory();
+    showView({ login: true, portal: false });
+    if (showMessage) {
+      setStatus("loginStatus", "Sesion cerrada.", "warn");
+    }
   };
 
   const startAttempt = async () => {
     try {
       const examId = $("examSelect").value;
-      if (!examId) throw new Error("Selecciona una prueba");
-
-      const lookupPayload = collectRegisteredLookupPayload();
-      if (!lookupPayload.numero_identificacion) throw new Error("Ingresa tu numero de identificacion");
-
-      const registerPanelVisible = !$("registerPanel").classList.contains("hidden");
-      if (registerPanelVisible) {
-        const fullRegistration = collectRegistrationPayload();
-        if (!fullRegistration.nombres || !fullRegistration.apellidos || !fullRegistration.grado) {
-          throw new Error("Completa nombres, apellidos y grado para registrarte");
-        }
-
-        await startAttemptWithPayload(examId, {
-          estudiante: fullRegistration
-        });
-        showRegisterPanel(false);
-        return;
+      if (!examId) {
+        throw new Error("Selecciona un simulacro.");
       }
 
-      try {
-        await startAttemptWithPayload(examId, {
-          estudiante_registrado: lookupPayload
-        });
-      } catch (error) {
-        if (error.code === "STUDENT_NOT_REGISTERED") {
-          showRegisterPanel(true);
-          setStatus(
-            "startStatus",
-            "No estas registrado. Completa el formulario de registro y vuelve a presionar Iniciar simulacion.",
-            "warn"
-          );
-          return;
+      const confirmed = window.confirm(
+        "Confirma que leiste las instrucciones. El tiempo iniciara al comenzar y al enviar no podras modificar respuestas."
+      );
+      if (!confirmed) return;
+
+      setButtonLoading("startExamBtn", true, "Iniciando...");
+      const payload = await apiRequest("/student/attempts/start", {
+        method: "POST",
+        body: {
+          prueba_id: examId
         }
-        throw error;
-      }
+      });
+
+      applyAttemptData(payload.data || {});
+      const sessionIndex =
+        typeof state.sessionControl?.currentSessionIndex === "number" ? state.sessionControl.currentSessionIndex : 0;
+      startSessionTimer(Math.max(0, sessionIndex));
+
+      setStatus("portalStatus", "Simulacro iniciado.", "ok");
+      setStatus("examStatus", "Selecciona una opcion y guarda tu respuesta.", "warn");
     } catch (error) {
-      setStatus("startStatus", error.message, "bad");
+      setStatus("portalStatus", error.message, "bad");
+    } finally {
+      setButtonLoading("startExamBtn", false);
     }
   };
 
   const saveAnswer = async () => {
     try {
-      if (!state.attemptId) throw new Error("No hay intento activo");
-      if (state.waitingForAdmin) {
-        throw new Error("Jornada 2 bloqueada. Espera habilitacion del administrador.");
-      }
-
+      if (!state.attemptId) throw new Error("No hay intento activo.");
+      if (state.waitingForAdmin) throw new Error("Debes esperar habilitacion de sesion 2.");
       const question = state.questionDeck[state.currentIndex];
-      if (!question) throw new Error("No hay pregunta activa");
+      if (!question) throw new Error("No hay pregunta activa.");
 
       const optionId = state.answersByQuestionId[question.questionId];
-      if (!optionId) throw new Error("Selecciona una opcion antes de guardar");
+      if (!optionId) throw new Error("Selecciona una opcion antes de guardar.");
 
-      await apiRequest(`/attempts/public/${state.attemptId}/answer`, {
+      await apiRequest(`/student/attempts/${state.attemptId}/answer`, {
         method: "POST",
         body: {
           pregunta_id: question.questionId,
@@ -752,183 +692,118 @@
         }
       });
 
-      setStatus("startStatus", `Respuesta guardada en pregunta ${state.currentIndex + 1}`, "ok");
+      setStatus("examStatus", `Respuesta guardada en pregunta ${state.currentIndex + 1}.`, "ok");
       renderQuestionNav();
     } catch (error) {
-      setStatus("startStatus", error.message, "bad");
+      setStatus("examStatus", error.message, "bad");
     }
   };
 
   const submitAttempt = async (automatic = false) => {
     try {
-      if (!state.attemptId) throw new Error("No hay intento activo");
-      if (state.waitingForAdmin) {
-        throw new Error("No puedes enviar aun: jornada 2 sigue bloqueada por administrador.");
-      }
+      if (!state.attemptId) throw new Error("No hay intento activo.");
+      if (state.waitingForAdmin) throw new Error("La sesion 2 aun no esta habilitada.");
 
+      const unanswered = state.questionDeck.length - Object.keys(state.answersByQuestionId).length;
       if (!automatic) {
-        const confirmed = window.confirm("Enviar intento y calcular resultado?");
+        const confirmed = window.confirm(
+          `Seguro que deseas enviar el simulacro? Tienes ${Math.max(unanswered, 0)} preguntas sin responder.`
+        );
         if (!confirmed) return;
       }
 
       stopTimer();
+      const payload = await apiRequest(`/student/attempts/${state.attemptId}/submit`, { method: "POST" });
+      const attemptId = payload.data?.attemptId || state.attemptId;
+      const resultPayload = attemptId ? await apiRequest(`/student/results/${attemptId}`) : payload;
 
-      const response = await apiRequest(`/attempts/public/${state.attemptId}/submit`, {
-        method: "POST"
-      });
-
-      const data = response.data || {};
-      state.result = data;
-
-      renderKpis("resultKpis", [
-        { label: "Correctas", value: data.correctas ?? 0 },
-        { label: "Incorrectas", value: data.incorrectas ?? 0 },
-        { label: "Puntaje", value: data.puntajeTotalObtenido ?? 0 },
-        { label: "Porcentaje", value: data.porcentajeTotal ?? 0 },
-        { label: "Nivel", value: data.nivelDesempenoGlobal ?? "-" }
-      ]);
-
-      renderBars(
-        "resultBars",
-        (data.areaResults || []).map((row) => ({
-          label: row.area,
-          percent: row.porcentajeArea
-        }))
-      );
-
-      $("resultOut").textContent = pretty(data);
-      setText("policyText", "Intento finalizado");
-      setStatus("startStatus", automatic ? "Tiempo finalizado. Intento enviado automaticamente." : "Intento enviado y calificado.", "ok");
-
-      state.attemptId = null;
-      state.sessionControl = null;
-      state.waitingForAdmin = false;
-      stopAdminWaitPolling();
-      state.timer.currentSessionIndex = -1;
-      state.timer.remainingSeconds = 0;
-      renderTimerPanel();
-    } catch (error) {
-      setStatus("startStatus", error.message, "bad");
-    }
-  };
-
-  const stopAttempt = async () => {
-    try {
-      if (!state.attemptId) throw new Error("No hay intento activo");
-
-      const confirmed = window.confirm("Detener la prueba actual? Esta accion anula el intento en curso.");
-      if (!confirmed) return;
-
-      const reason = window.prompt("Motivo de detencion (opcional):", "") || "";
-      const response = await apiRequest(`/attempts/public/${state.attemptId}/stop`, {
-        method: "POST",
-        body: cleanObject({ motivo: reason })
-      });
-      const data = response.data || {};
-      appendClientLog("WARN", "Intento detenido por usuario", data);
-      setStatus("startStatus", "Prueba detenida correctamente.", "warn");
-      $("resultOut").textContent = pretty({
-        stopped: data
-      });
-      resetAttemptUi();
-      showRegisterPanel(false);
-    } catch (error) {
-      setStatus("startStatus", error.message, "bad");
-    }
-  };
-
-  const restartAttempt = async () => {
-    try {
-      if (!state.attemptId) throw new Error("No hay intento activo para reiniciar");
-
-      const confirmed = window.confirm(
-        "Reiniciar la prueba? Se anula el intento actual y se crea un intento nuevo."
-      );
-      if (!confirmed) return;
-
-      const reason = window.prompt("Motivo de reinicio (opcional):", "") || "";
-      const response = await apiRequest(`/attempts/public/${state.attemptId}/restart`, {
-        method: "POST",
-        body: cleanObject({ motivo: reason })
-      });
-      const data = response.data || {};
-      applyAttemptData(data);
-
-      const planMode = state.sessionPlan?.mode === "SABER11_DOS_JORNADAS" ? "2 jornadas tipo Saber 11" : "sesion unica";
-      setStatus("startStatus", `Prueba reiniciada (${planMode}).`, "ok");
-
-      const startSessionIndex =
-        typeof state.sessionControl?.currentSessionIndex === "number" ? state.sessionControl.currentSessionIndex : 0;
-      if (isStrictMode() && startSessionIndex > 0 && !state.sessionControl?.session2Enabled) {
-        markWaitingForAdmin();
-        startAdminWaitPolling();
-        return;
+      resetAttempt();
+      renderResults(resultPayload.data || payload.data || {});
+      await loadResultsHistory({ silent: true });
+      const homeData = await syncHomeData();
+      if (homeData?.activeAttempt?.id) {
+        // Si por cualquier razon quedo un intento activo, mantenerlo recuperable.
+        setStatus("portalStatus", "Resultado generado. Hay un intento activo pendiente de recuperacion.", "warn");
+      } else {
+        setStatus("portalStatus", "Resultado disponible en esta vista.", "ok");
       }
-
-      startSessionTimer(Math.max(0, startSessionIndex));
+      setStatus(
+        "examStatus",
+        automatic ? "Tiempo finalizado. Intento enviado automaticamente." : "Simulacro calificado.",
+        "ok"
+      );
     } catch (error) {
-      setStatus("startStatus", error.message, "bad");
+      setStatus("examStatus", error.message, "bad");
     }
   };
 
   const prevQuestion = () => {
-    if (!state.questionDeck.length) return;
-    if (state.waitingForAdmin) return;
-    const bounds = getCurrentSessionBounds();
-    state.currentIndex = Math.max(bounds.minIndex, state.currentIndex - 1);
+    if (!state.questionDeck.length || state.waitingForAdmin) return;
+    const bounds = getSessionBounds();
+    state.currentIndex = Math.max(bounds.min, state.currentIndex - 1);
     renderCurrentQuestion();
   };
 
   const nextQuestion = () => {
-    if (!state.questionDeck.length) return;
-    if (state.waitingForAdmin) return;
-    const bounds = getCurrentSessionBounds();
-    state.currentIndex = Math.min(bounds.maxIndex, state.currentIndex + 1);
+    if (!state.questionDeck.length || state.waitingForAdmin) return;
+    const bounds = getSessionBounds();
+    state.currentIndex = Math.min(bounds.max, state.currentIndex + 1);
     renderCurrentQuestion();
   };
 
   const bindEvents = () => {
-    $("loadExamsBtn").addEventListener("click", loadExams);
-    $("refreshAttemptBtn").addEventListener("click", async () => {
+    $("loginForm")?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      void login();
+    });
+
+    $("logoutBtn")?.addEventListener("click", () => logout(true));
+
+    $("refreshPortalBtn")?.addEventListener("click", async () => {
       try {
-        const data = await refreshAttemptState();
-        if (!data) return;
-        renderTimerPanel();
-        renderQuestionNav();
-        if (!unlockSessionTwoFromServerState()) {
-          setStatus(
-            "startStatus",
-            state.waitingForAdmin
-              ? "Sigue bloqueada la jornada 2. Espera habilitacion del administrador."
-              : "Estado del intento actualizado.",
-            state.waitingForAdmin ? "warn" : "ok"
-          );
-        }
+        await loadPortal();
+        setStatus("portalStatus", "Portal actualizado.", "ok");
       } catch (error) {
-        setStatus("startStatus", error.message, "bad");
+        setStatus("portalStatus", error.message, "bad");
       }
     });
-    $("startBtn").addEventListener("click", startAttempt);
-    $("saveBtn").addEventListener("click", saveAnswer);
-    $("submitBtn").addEventListener("click", () => submitAttempt(false));
-    $("stopBtn").addEventListener("click", stopAttempt);
-    $("restartBtn").addEventListener("click", restartAttempt);
-    $("prevBtn").addEventListener("click", prevQuestion);
-    $("nextBtn").addEventListener("click", nextQuestion);
-    $("examSelect").addEventListener("change", () => {
-      const selected = $("examSelect").selectedOptions?.[0];
-      $("examInfo").value = selected?.dataset?.examInfo || "Prueba seleccionada";
+
+    $("startExamBtn")?.addEventListener("click", () => void startAttempt());
+    $("saveAnswerBtn")?.addEventListener("click", () => void saveAnswer());
+    $("submitExamBtn")?.addEventListener("click", () => void submitAttempt(false));
+    $("prevBtn")?.addEventListener("click", prevQuestion);
+    $("nextBtn")?.addEventListener("click", nextQuestion);
+
+    $("viewResultsBtn")?.addEventListener("click", async () => {
+      try {
+        await loadResultsHistory();
+        $("resultsView")?.classList.remove("hidden");
+      } catch (error) {
+        setStatus("portalStatus", error.message, "bad");
+      }
+    });
+
+    $("examSelect")?.addEventListener("change", () => {
+      const selected = $("examSelect")?.selectedOptions?.[0];
+      setText("examInfo", selected?.dataset?.info || "");
     });
   };
 
   const bootstrap = async () => {
-    appendClientLog("INFO", "Simulador UI iniciada");
-    showRegisterPanel(false);
     bindEvents();
-    resetAttemptUi();
-    await loadConnectionInfo();
-    await loadExams();
+    if (!state.token) {
+      showView({ login: true, portal: false });
+      return;
+    }
+
+    try {
+      await apiRequest("/student-auth/me");
+      showView({ login: false, portal: true });
+      await loadPortal();
+    } catch {
+      logout(false);
+    }
   };
 
-  bootstrap();
+  void bootstrap();
 })();

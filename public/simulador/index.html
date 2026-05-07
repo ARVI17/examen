@@ -3,265 +3,496 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Saber11 Simulador Estudiante</title>
+    <title>Simulador Saber 11</title>
     <style>
       :root {
-        --bg: #f5f9f7;
+        --bg: #f4f7fb;
         --card: #ffffff;
-        --line: #cfe1d7;
-        --ink: #112118;
-        --muted: #547063;
-        --brand: #156c4d;
-        --brand-2: #1f8a63;
-        --warn: #8d5a12;
-        --bad: #8b2330;
+        --line: #dbe4ef;
+        --text: #0f172a;
+        --muted: #475569;
+        --primary: #1d4ed8;
+        --primary-soft: #dbeafe;
+        --success: #166534;
+        --success-bg: #f0fdf4;
+        --warning: #92400e;
+        --warning-bg: #fffbeb;
+        --danger: #991b1b;
+        --danger-bg: #fef2f2;
+        --radius: 14px;
       }
-      * { box-sizing: border-box; }
+
+      * {
+        box-sizing: border-box;
+      }
+
       body {
         margin: 0;
         font-family: "Segoe UI", Tahoma, sans-serif;
-        color: var(--ink);
-        background:
-          radial-gradient(circle at 12% -8%, #d8eee2 0, transparent 30%),
-          radial-gradient(circle at 88% -10%, #f3e8d6 0, transparent 30%),
-          var(--bg);
+        background: radial-gradient(circle at 95% -5%, #dbeafe 0%, transparent 28%), var(--bg);
+        color: var(--text);
       }
-      .wrap { width: min(1180px, calc(100vw - 24px)); margin: 12px auto 24px; }
-      .hero {
-        background: linear-gradient(140deg, #103327 0%, #185e44 60%, #21835b 100%);
-        color: #eafff2;
-        border: 1px solid #2e7c5f;
-        border-radius: 16px;
-        padding: 16px;
+
+      .container {
+        width: min(1160px, calc(100vw - 28px));
+        margin: 18px auto 30px;
       }
-      .hero h1 { margin: 0; font-size: clamp(1.3rem, 2.3vw, 1.9rem); }
-      .hero p { margin: 7px 0 0; color: #d6f7e7; }
-      .hero-grid {
-        margin-top: 12px;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 10px;
+
+      .hidden {
+        display: none !important;
       }
-      .hero-box {
-        border: 1px solid #91d7b543;
-        border-radius: 12px;
-        background: #0f3a2b66;
-        padding: 10px;
-      }
-      .mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
-      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin-top: 12px; }
+
       .card {
         background: var(--card);
         border: 1px solid var(--line);
-        border-radius: 14px;
-        padding: 12px;
-        box-shadow: 0 8px 20px rgba(19, 52, 37, 0.08);
+        border-radius: var(--radius);
+        box-shadow: 0 12px 34px rgba(15, 23, 42, 0.08);
       }
-      .card h2, .card h3 { margin: 0 0 8px; font-size: 1.05rem; }
-      .row2, .row3 { display: grid; gap: 8px; }
-      .row2 { grid-template-columns: 1fr 1fr; }
-      .row3 { grid-template-columns: repeat(3, 1fr); }
-      label { display: block; margin-bottom: 3px; font-size: 12px; color: var(--muted); }
-      input, select, button { width: 100%; font: inherit; }
-      input, select {
+
+      .login-wrap {
+        min-height: calc(100vh - 40px);
+        display: grid;
+        place-items: center;
+      }
+
+      .login-card {
+        width: min(460px, calc(100vw - 28px));
+        padding: 28px;
+      }
+
+      .brand {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-weight: 800;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+      }
+
+      .title {
+        margin-top: 14px;
+        font-size: 2rem;
+        letter-spacing: -0.02em;
+      }
+
+      .subtitle {
+        margin-top: 8px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      .field {
+        margin-top: 14px;
+      }
+
+      label {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 6px;
+        font-weight: 600;
+      }
+
+      input,
+      select,
+      button {
+        width: 100%;
+        border-radius: 10px;
+        font: inherit;
+      }
+
+      input,
+      select {
         border: 1px solid var(--line);
-        border-radius: 9px;
-        background: #f8fcfa;
-        color: var(--ink);
-        padding: 8px 9px;
+        padding: 11px 12px;
+        color: var(--text);
+        background: #fff;
       }
+
+      input:focus,
+      select:focus,
+      button:focus {
+        outline: 2px solid rgba(29, 78, 216, 0.2);
+        outline-offset: 1px;
+      }
+
       button {
         border: 0;
-        border-radius: 9px;
-        padding: 9px 10px;
+        padding: 11px 14px;
         font-weight: 700;
         cursor: pointer;
       }
-      .btn { background: linear-gradient(120deg, var(--brand), var(--brand-2)); color: #fff; }
-      .btn.alt { background: #e8f3ee; color: #0d563b; }
-      .btn.warn { background: #f7edd9; color: #7e530d; }
-      .inline { display: flex; gap: 8px; flex-wrap: wrap; }
-      .inline button { width: auto; }
+
+      button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+
+      .btn-primary {
+        background: linear-gradient(120deg, #2563eb, #1d4ed8);
+        color: #fff;
+      }
+
+      .btn-soft {
+        background: #e2e8f0;
+        color: #0f172a;
+      }
+
+      .btn-danger {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
       .status {
-        margin-top: 8px;
+        margin-top: 12px;
         border: 1px solid var(--line);
-        border-radius: 9px;
-        background: #f4faf7;
-        padding: 7px 9px;
+        border-radius: 10px;
+        padding: 9px 11px;
+        font-size: 14px;
+      }
+
+      .ok {
+        border-color: #86efac;
+        color: var(--success);
+        background: var(--success-bg);
+      }
+
+      .warn {
+        border-color: #fcd34d;
+        color: var(--warning);
+        background: var(--warning-bg);
+      }
+
+      .bad {
+        border-color: #fca5a5;
+        color: var(--danger);
+        background: var(--danger-bg);
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 18px;
+      }
+
+      .header p {
+        margin: 4px 0 0;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        gap: 12px;
+        margin-top: 12px;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+
+      .section {
+        padding: 16px;
+      }
+
+      .meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .pill {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #f8fafc;
+        padding: 8px;
         font-size: 13px;
       }
-      .ok { border-color: #b7deca; color: #0f6a39; }
-      .warn { border-color: #ebd199; color: var(--warn); }
-      .bad { border-color: #f0bfc6; color: var(--bad); }
-      .hidden { display: none; }
-      .sim-layout { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 10px; }
-      .qnav { display: flex; gap: 6px; flex-wrap: wrap; }
-      .qnav button {
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .exam-shell {
+        margin-top: 12px;
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr);
+        gap: 12px;
+      }
+
+      .nav-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+      }
+
+      .nav-grid button {
         width: 36px;
-        padding: 6px 0;
+        min-width: 36px;
+        padding: 7px 0;
         border: 1px solid var(--line);
         border-radius: 8px;
-        background: #f7fbf9;
-        color: var(--ink);
+        background: #f8fafc;
       }
-      .qnav button.current { border-color: transparent; background: var(--brand); color: #fff; }
-      .option-list { display: grid; gap: 8px; }
-      .option-item {
+
+      .nav-grid button.current {
+        background: var(--primary);
+        color: #fff;
+        border-color: transparent;
+      }
+
+      .option {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        margin-top: 8px;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        background: #f8fafc;
+        cursor: pointer;
+      }
+
+      .option.selected {
+        border-color: #93c5fd;
+        background: #eff6ff;
+      }
+
+      .actions {
+        display: grid;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .row {
         display: flex;
         gap: 8px;
-        align-items: flex-start;
+      }
+
+      .row button {
+        flex: 1;
+      }
+
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .kpi {
         border: 1px solid var(--line);
         border-radius: 10px;
-        background: #f8fcfa;
-        padding: 8px;
+        padding: 10px;
+        background: #f8fafc;
       }
-      .option-item.selected { border-color: #71ba96; background: #e9f7ef; }
-      .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 8px; }
-      .kpi { border: 1px solid var(--line); border-radius: 10px; background: #f8fcfa; padding: 8px; }
-      .kpi .label { color: var(--muted); font-size: 12px; }
-      .kpi .value { font-size: 1.15rem; font-weight: 700; margin-top: 2px; }
-      .bar-list { display: grid; gap: 6px; }
-      .bar-row { display: grid; grid-template-columns: 180px 1fr 52px; gap: 8px; align-items: center; font-size: 12px; }
-      .bar-track { height: 10px; border-radius: 999px; overflow: hidden; background: #e4efe9; }
-      .bar-fill { height: 100%; background: linear-gradient(120deg, #1b8d62, #62c2a0); }
-      .timer-box {
-        border: 1px dashed #7db99a;
-        border-radius: 10px;
-        background: #eef9f2;
-        padding: 8px;
+
+      .kpi small {
+        color: var(--muted);
+        display: block;
       }
-      .timer-main { font-size: 1.5rem; font-weight: 800; letter-spacing: 0.02em; }
-      pre {
-        margin: 0;
-        white-space: pre-wrap;
-        word-break: break-word;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        background: #f8fcfa;
-        max-height: 280px;
-        overflow: auto;
-        padding: 8px;
-        font-size: 12px;
+
+      .kpi strong {
+        display: block;
+        font-size: 1.2rem;
+        margin-top: 4px;
       }
-      @media (max-width: 980px) { .sim-layout { grid-template-columns: 1fr; } }
-      @media (max-width: 720px) {
-        .row2, .row3 { grid-template-columns: 1fr; }
-        .wrap { width: calc(100vw - 14px); }
+
+      .bars {
+        margin-top: 10px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .bar-row {
+        display: grid;
+        grid-template-columns: 170px 1fr 50px;
+        gap: 8px;
+        align-items: center;
+        font-size: 13px;
+      }
+
+      .bar-track {
+        height: 10px;
+        border-radius: 999px;
+        background: #e2e8f0;
+        overflow: hidden;
+      }
+
+      .bar-fill {
+        height: 100%;
+        background: linear-gradient(120deg, #2563eb, #60a5fa);
+      }
+
+      .table-wrap {
+        margin-top: 10px;
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 9px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      th {
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      @media (max-width: 980px) {
+        .exam-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .row {
+          flex-direction: column;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <header class="hero">
-        <h1>Simulador Saber11</h1>
-        <p>Ingresa con tu tipo y numero de identificacion. Si no estas registrado, te pediremos el registro una sola vez.</p>
-        <div class="hero-grid">
-          <div class="hero-box">
-            <div><strong>API</strong></div>
-            <div id="apiText" class="mono"></div>
-          </div>
-          <div class="hero-box">
-            <div><strong>LAN</strong></div>
-            <div id="lanText" class="mono"></div>
-          </div>
-          <div class="hero-box">
-            <div><strong>Estado</strong></div>
-            <div id="policyText">Sin intento activo</div>
-          </div>
-        </div>
-      </header>
-
-      <div class="grid">
-        <article class="card">
-          <h2>1) Identificacion</h2>
-          <div class="row2">
-            <div>
-              <label>Tipo de identificacion</label>
-              <select id="stTipo"><option>TI</option><option>CC</option><option>CE</option><option>PASAPORTE</option><option>OTRO</option></select>
+    <div class="container">
+      <section id="loginView" class="login-wrap">
+        <article class="login-card card">
+          <div class="brand">S11</div>
+          <h1 class="title">Iniciar sesion</h1>
+          <p class="subtitle">Accede al simulador con tu tipo y numero de identificacion.</p>
+          <form id="loginForm" novalidate>
+            <div class="field">
+              <label for="tipoIdentificacion">Tipo de identificacion</label>
+              <select id="tipoIdentificacion">
+                <option value="TI">TI</option>
+                <option value="CC">CC</option>
+                <option value="CE">CE</option>
+                <option value="PASAPORTE">Pasaporte</option>
+                <option value="OTRO">Otro</option>
+              </select>
             </div>
-            <div>
-              <label>Numero de identificacion</label>
-              <input id="stDocumento" />
+            <div class="field">
+              <label for="numeroIdentificacion">Numero de identificacion</label>
+              <input id="numeroIdentificacion" autocomplete="off" required />
             </div>
-          </div>
-
-          <div id="registerPanel" class="hidden" style="margin-top:10px">
-            <div class="status warn">No estas registrado. Completa estos datos para registrarte y continuar.</div>
-            <div class="row2" style="margin-top:8px">
-              <div><label>Nombres</label><input id="stNombres" /></div>
-              <div><label>Apellidos</label><input id="stApellidos" /></div>
+            <div class="field">
+              <button id="loginBtn" class="btn-primary" type="submit">Entrar al simulador</button>
             </div>
-            <div class="row3" style="margin-top:8px">
-              <div><label>Grado</label><input id="stGrado" value="11" /></div>
-              <div><label>Grupo</label><input id="stGrupo" /></div>
-              <div><label>Institucion</label><input id="stInstitucion" /></div>
-            </div>
-          </div>
+            <div id="loginStatus" class="status warn">Ingresa tus datos para continuar.</div>
+          </form>
         </article>
+      </section>
 
-        <article class="card">
-          <h2>2) Prueba</h2>
-          <div class="row2">
-            <div><label>Prueba disponible</label><select id="examSelect"></select></div>
-            <div><label>Detalle</label><input id="examInfo" readonly value="Cargando..." /></div>
-          </div>
-          <div class="inline" style="margin-top:8px">
-            <button id="loadExamsBtn" class="btn alt">Cargar pruebas</button>
-            <button id="startBtn" class="btn">Iniciar simulacion</button>
-            <button id="refreshAttemptBtn" class="btn alt">Actualizar estado intento</button>
-          </div>
-          <div id="startStatus" class="status warn">Carga pruebas para iniciar.</div>
-        </article>
-
-        <article class="card">
-          <h2>3) Cronometro y jornada</h2>
-          <div class="timer-box">
-            <div id="sessionLabel"><strong>Jornada:</strong> Sin jornada activa</div>
-            <div id="sessionRange" style="margin-top:4px">Preguntas: -</div>
-            <div id="sessionTime" style="margin-top:4px">Tiempo de jornada: -</div>
-            <div id="timerMain" class="timer-main" style="margin-top:6px">--:--</div>
-            <div id="timerHint" class="mono" style="margin-top:4px">El cronometro se activa al iniciar.</div>
-          </div>
-        </article>
-      </div>
-
-      <article class="card" style="margin-top:12px">
-        <div class="sim-layout">
+      <section id="portalView" class="hidden">
+        <header class="card header">
           <div>
-            <h3>Navegacion</h3>
-            <div id="qNav" class="qnav"></div>
-            <div class="inline" style="margin-top:8px">
-              <button id="prevBtn" class="btn alt">Anterior</button>
-              <button id="nextBtn" class="btn alt">Siguiente</button>
-            </div>
-            <div class="inline" style="margin-top:8px">
-              <button id="saveBtn" class="btn warn">Guardar respuesta</button>
-              <button id="submitBtn" class="btn">Enviar y calificar</button>
-            </div>
-            <div class="inline" style="margin-top:8px">
-              <button id="stopBtn" class="btn alt">Detener prueba</button>
-              <button id="restartBtn" class="btn">Reiniciar prueba</button>
-            </div>
+            <h2>Simulador Saber 11</h2>
+            <p id="studentMeta">Cargando estudiante...</p>
           </div>
-          <div>
-            <h3 id="questionTitle">Pregunta</h3>
-            <div id="questionBody" class="status">Sin intento activo.</div>
-            <div id="options" class="option-list" style="margin-top:8px"></div>
+          <div style="width: 190px">
+            <button id="logoutBtn" class="btn-danger" type="button">Cerrar sesion</button>
           </div>
+        </header>
+
+        <div class="grid grid-2">
+          <article class="card section">
+            <h3>Antes de comenzar</h3>
+            <p class="muted">Lee cada pregunta con atencion, elige una opcion y revisa antes de enviar.</p>
+            <div class="meta">
+              <div class="pill">El tiempo inicia al comenzar.</div>
+              <div class="pill">Una sola respuesta correcta por pregunta.</div>
+              <div class="pill">Puedes navegar entre preguntas.</div>
+              <div class="pill">Al enviar, no podras editar respuestas.</div>
+            </div>
+          </article>
+
+          <article class="card section">
+            <h3>Prueba disponible</h3>
+            <div class="field">
+              <label for="examSelect">Selecciona simulacro</label>
+              <select id="examSelect"></select>
+            </div>
+            <p id="examInfo" class="muted">Sin pruebas cargadas.</p>
+            <div class="row">
+              <button id="refreshPortalBtn" class="btn-soft" type="button">Actualizar</button>
+              <button id="startExamBtn" class="btn-primary" type="button">Iniciar simulacro</button>
+              <button id="viewResultsBtn" class="btn-soft" type="button">Ver mis resultados</button>
+            </div>
+            <div id="portalStatus" class="status warn">Selecciona una prueba para iniciar.</div>
+          </article>
         </div>
-      </article>
 
-      <article class="card" style="margin-top:12px">
-        <h2>Resultado</h2>
-        <div id="resultKpis" class="kpis"></div>
-        <div id="resultBars" class="bar-list" style="margin-top:10px"></div>
-        <pre id="resultOut">{}</pre>
-      </article>
+        <article id="attemptView" class="card section hidden" style="margin-top: 12px">
+          <h3 id="attemptTitle">Simulacro activo</h3>
+          <p id="attemptSummary" class="muted"></p>
 
-      <article class="card" style="margin-top:12px">
-        <h2>Bitacora cliente</h2>
-        <pre id="clientLogOut">Sin eventos.</pre>
-      </article>
+          <div class="exam-shell">
+            <aside class="card section">
+              <h3>Navegacion</h3>
+              <div id="timerText" class="pill" style="margin-top: 8px">Tiempo: --:--</div>
+              <div id="progressText" class="pill" style="margin-top: 8px">Progreso: 0/0</div>
+              <div id="sessionText" class="pill" style="margin-top: 8px">Sesion: -</div>
+              <div id="questionNav" class="nav-grid"></div>
+              <div class="actions">
+                <div class="row">
+                  <button id="prevBtn" class="btn-soft" type="button">Anterior</button>
+                  <button id="nextBtn" class="btn-soft" type="button">Siguiente</button>
+                </div>
+                <button id="saveAnswerBtn" class="btn-soft" type="button">Guardar respuesta</button>
+                <button id="submitExamBtn" class="btn-primary" type="button">Finalizar y calificar</button>
+              </div>
+            </aside>
+
+            <article class="card section">
+              <h3 id="questionTitle">Pregunta</h3>
+              <p id="questionContext" class="muted"></p>
+              <div id="questionBody"></div>
+              <div id="questionOptions"></div>
+              <div id="examStatus" class="status warn">Sin respuestas guardadas.</div>
+            </article>
+          </div>
+        </article>
+
+        <article id="resultsView" class="card section hidden" style="margin-top: 12px">
+          <h3>Resultados</h3>
+          <div id="resultKpis" class="kpis"></div>
+          <div id="resultBars" class="bars"></div>
+          <h3 style="margin-top: 16px">Recomendaciones</h3>
+          <div id="resultRecommendations" class="meta"></div>
+          <h3 style="margin-top: 16px">Historial propio</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Prueba</th>
+                  <th>Tipo</th>
+                  <th>Fecha</th>
+                  <th>Porcentaje</th>
+                  <th>Nivel</th>
+                  <th>Accion</th>
+                </tr>
+              </thead>
+              <tbody id="resultHistoryRows"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
     </div>
 
     <script src="/simulador/app.js"></script>
