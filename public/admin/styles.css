@@ -424,7 +424,7 @@ textarea {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 12px;
 }
 
@@ -474,9 +474,38 @@ textarea {
 
 .filter-row {
   display: grid;
-  grid-template-columns: repeat(5, minmax(120px, 1fr)) auto;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   align-items: end;
   gap: 10px;
+}
+
+.filter-row > button {
+  min-width: 132px;
+}
+
+.filter-row.filter-row-extended {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+
+#dashScopeHint,
+#dashRowsStatus {
+  margin-top: 10px;
+}
+
+#classroomKpis {
+  margin-top: 10px;
+}
+
+#classroomSummaryCards .recommendation-card i {
+  background: #ecf1ff;
+  color: var(--primary);
+}
+
+#classroomTopicCards .recommendation-card i {
+  background: #ecfaf7;
+  color: var(--info);
 }
 
 .chart-box {

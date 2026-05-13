@@ -92,6 +92,15 @@
               <label>Hasta<input id="dashTo" type="date" /></label>
               <button id="dashLoadBtn" class="primary-button" type="button"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
             </div>
+            <div class="filter-row filter-row-extended">
+              <label>Prueba<select id="dashExamSelect"></select></label>
+              <label>Nivel<select id="dashLevelSelect"><option value="">Todos</option><option value="BAJO">Bajo</option><option value="BASICO">Basico</option><option value="ALTO">Alto</option><option value="SUPERIOR">Superior</option></select></label>
+              <label>Estudiante<input id="dashStudentSearch" placeholder="Documento o nombre" /></label>
+              <label>Materia<select id="dashSubjectSelect"></select></label>
+              <button id="dashApplyFiltersBtn" class="ghost-button" type="button"><i class="bi bi-funnel"></i> Aplicar filtros</button>
+              <button id="dashClearFiltersBtn" class="ghost-button" type="button"><i class="bi bi-eraser"></i> Limpiar</button>
+            </div>
+            <div id="dashScopeHint" class="status-message">Sin consulta.</div>
           </div>
 
           <div id="dashKpis" class="stats-grid"></div>
@@ -117,9 +126,10 @@
             <div class="panel-head">
               <div><h2>Últimos resultados</h2><p>Intento más reciente por estudiante.</p></div>
             </div>
+            <div id="dashRowsStatus" class="status-message">Sin resultados para mostrar.</div>
             <div class="table-shell">
               <table>
-                <thead><tr><th>Estudiante</th><th>Documento</th><th>Prueba</th><th>Porcentaje</th><th>Nivel</th></tr></thead>
+                <thead><tr><th>#</th><th>Estudiante</th><th>Documento</th><th>Prueba</th><th>Porcentaje</th><th>Nivel</th><th>Fecha</th></tr></thead>
                 <tbody id="dashRows"></tbody>
               </table>
             </div>
@@ -324,6 +334,8 @@
               <div class="actions"><button id="repClassCsvBtn" class="ghost-button" type="button">CSV</button><button id="repClassPdfBtn" class="ghost-button" type="button">PDF</button></div>
             </div>
             <div class="filter-row">
+              <label>Colegio<select id="repClassSchoolSelect"></select></label>
+              <label>Salón<select id="repClassGroupSelect"></select></label>
               <label>Grado<input id="repClassGrado" value="11" /></label>
               <label>Grupo<input id="repClassGrupo" /></label>
               <label>Institución<input id="repClassInstitucion" /></label>
@@ -331,13 +343,25 @@
               <label>Hasta<input id="repClassTo" type="date" /></label>
               <button id="repClassBtn" class="primary-button" type="button">Consultar</button>
             </div>
+            <div class="filter-row filter-row-extended">
+              <label>Nivel<select id="repClassLevelSelect"><option value="">Todos</option><option value="BAJO">Bajo</option><option value="BASICO">Basico</option><option value="ALTO">Alto</option><option value="SUPERIOR">Superior</option></select></label>
+              <label>Estudiante<input id="repClassStudentSearch" placeholder="Documento o nombre" /></label>
+              <label>Materia<select id="repClassSubjectSelect"></select></label>
+              <button id="repClassApplyFiltersBtn" class="ghost-button" type="button"><i class="bi bi-funnel"></i> Aplicar filtros</button>
+              <button id="repClassClearFiltersBtn" class="ghost-button" type="button"><i class="bi bi-eraser"></i> Limpiar</button>
+            </div>
             <div id="repClassStatus" class="status-message">Sin consulta.</div>
+            <div id="classroomKpis" class="stats-grid"></div>
             <div class="content-grid two">
               <div class="chart-box"><canvas id="classroomChart"></canvas></div>
+              <div class="chart-box"><canvas id="classroomLevelChart"></canvas></div>
+            </div>
+            <div class="content-grid two">
               <div id="classroomSummaryCards" class="recommendation-list"></div>
+              <div id="classroomTopicCards" class="recommendation-list"></div>
             </div>
             <div class="table-shell">
-              <table><thead><tr><th>Estudiante</th><th>Documento</th><th>Grado</th><th>Grupo</th><th>Intentos</th><th>Promedio</th><th>Nivel</th></tr></thead><tbody id="classroomRows"></tbody></table>
+              <table><thead><tr><th>#</th><th>Estudiante</th><th>Documento</th><th>Grado</th><th>Grupo</th><th>Intentos</th><th>Promedio</th><th>Nivel</th><th>Riesgo</th></tr></thead><tbody id="classroomRows"></tbody></table>
             </div>
             <pre id="repClassOutput" class="code-box is-collapsed">{}</pre>
           </article>

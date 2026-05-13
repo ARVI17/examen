@@ -26,6 +26,8 @@
     users: [],
     exams: [],
     charts: {},
+    dashboardData: null,
+    classroomData: null,
     editingStudentId: null,
     editingSchoolId: null,
     simulator: {
@@ -152,9 +154,9 @@
 
   const performanceClass = (value) => {
     const numeric = Number(value || 0);
-    if (numeric >= 80) return "high";
-    if (numeric >= 60) return "medium";
-    if (numeric >= 40) return "low";
+    if (numeric >= 90) return "high";
+    if (numeric >= 80) return "medium";
+    if (numeric >= 60) return "low";
     return "critical";
   };
 
@@ -162,6 +164,36 @@
     const cls = performanceClass(value);
     return `<span class="badge-soft ${cls}">${escapeHtml(label ?? value ?? "-")}</span>`;
   };
+
+  const getAcademicLevel = (value) => {
+    const numeric = Number(value || 0);
+    if (!Number.isFinite(numeric)) return { key: "SIN_NIVEL", label: "Sin nivel", score: 0 };
+    if (numeric >= 90) return { key: "SUPERIOR", label: "Superior", score: numeric };
+    if (numeric >= 80) return { key: "ALTO", label: "Alto", score: numeric };
+    if (numeric >= 60) return { key: "BASICO", label: "Basico", score: numeric };
+    return { key: "BAJO", label: "Bajo", score: numeric };
+  };
+
+  const mapRiskMessage = (levelKey) => {
+    if (levelKey === "SUPERIOR") return "Desempeno sobresaliente";
+    if (levelKey === "ALTO") return "Buen desempeno";
+    if (levelKey === "BASICO") return "Requiere seguimiento";
+    return "Requiere refuerzo";
+  };
+
+  const formatShortDate = (value) => {
+    if (!value) return "-";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "-";
+    return date.toLocaleDateString("es-CO", { year: "numeric", month: "2-digit", day: "2-digit" });
+  };
+
+  const normalizeSearch = (value) =>
+    String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
 
   const chartColors = ["#2563eb", "#0f766e", "#7c3aed", "#d97706", "#dc2626", "#475569"];
 
@@ -192,6 +224,15 @@
       "sessionText",
       authenticated && state.user ? `${state.user.name || state.user.email} · ${state.user.role || ""}` : "Sin sesión"
     );
+  };
+
+  const applyRoleUi = () => {
+    const isAdmin = state.user?.role === "ADMIN";
+    const settingsButton = document.querySelector('[data-view="settings"]');
+    if (settingsButton) settingsButton.classList.toggle("is-hidden", !isAdmin);
+    if (!isAdmin && state.activeView === "settings") {
+      setView("dashboard");
+    }
   };
 
   const setupPasswordToggle = (inputId, buttonId) => {
@@ -260,6 +301,7 @@
       localStorage.setItem(TOKEN_KEY, state.token);
       setStatus("loginStatus", "Sesión iniciada correctamente.", "ok");
       setAuthenticatedUi(true);
+      applyRoleUi();
       await bootstrapData();
       showToast("Panel actualizado.");
     } catch (error) {
@@ -296,6 +338,7 @@
       const response = await apiRequest("/auth/me");
       state.user = response.data?.user || response.data || null;
       setAuthenticatedUi(true);
+      applyRoleUi();
       return true;
     } catch {
       logout();
@@ -303,8 +346,10 @@
     }
   };
 
-  const renderStatCards = (items) => {
-    $("dashKpis").innerHTML = items
+  const renderStatCards = (items, targetId = "dashKpis") => {
+    const target = $(targetId);
+    if (!target) return;
+    target.innerHTML = items
       .map(
         (item) => `<article class="stat-card">
           <div class="stat-head"><span>${escapeHtml(item.title)}</span><i class="bi ${item.icon}"></i></div>
@@ -357,6 +402,127 @@
       .join("");
   };
 
+  const syncDashboardFilterOptions = (data) => {
+    const selectedExam = $("dashExamSelect").value;
+    const selectedSubject = $("dashSubjectSelect").value;
+    fillSelect(
+      "dashExamSelect",
+      (state.exams || []).map((exam) => ({ id: exam.nombre, name: exam.nombre })),
+      { placeholder: "Todas las pruebas" }
+    );
+    fillSelect(
+      "dashSubjectSelect",
+      (data?.percentageByArea || []).map((row) => ({ id: row.area, name: row.area })),
+      { placeholder: "Todas las materias" }
+    );
+    if (selectedExam) $("dashExamSelect").value = selectedExam;
+    if (selectedSubject) $("dashSubjectSelect").value = selectedSubject;
+  };
+
+  const renderDashboard = () => {
+    const data = state.dashboardData || {};
+    const selectedExam = $("dashExamSelect").value;
+    const selectedLevel = $("dashLevelSelect").value;
+    const selectedSubject = $("dashSubjectSelect").value;
+    const studentSearch = normalizeSearch($("dashStudentSearch").value);
+
+    const rows = (data.studentsWithLatestResults || [])
+      .map((item) => {
+        const student = item.estudiante || {};
+        const result = item.ultimoResultado || {};
+        const percentage = Number(result.porcentajeTotal || 0);
+        const level = getAcademicLevel(percentage);
+        return {
+          studentName: `${student.nombres || ""} ${student.apellidos || ""}`.trim(),
+          document: student.numeroIdentificacion || "",
+          examName: result.prueba || "",
+          percentage,
+          level,
+          finishedAt: result.fechaFin || ""
+        };
+      })
+      .filter((row) => {
+        if (selectedExam && row.examName !== selectedExam) return false;
+        if (selectedLevel && row.level.key !== selectedLevel) return false;
+        if (studentSearch) {
+          const text = normalizeSearch(`${row.studentName} ${row.document}`);
+          if (!text.includes(studentSearch)) return false;
+        }
+        return true;
+      });
+
+    const byAreaBase = data.percentageByArea || [];
+    const byArea = selectedSubject ? byAreaBase.filter((row) => row.area === selectedSubject) : byAreaBase;
+    const sorted = [...byArea].sort((a, b) => Number(b.porcentajeAcierto || 0) - Number(a.porcentajeAcierto || 0));
+    const best = sorted[0];
+    const weak = sorted[sorted.length - 1];
+    const riskCount = rows.filter((row) => row.percentage < 60).length;
+
+    renderStatCards([
+      { title: "Colegios", value: state.schools.length, hint: "Disponibles en tu alcance", icon: "bi-buildings" },
+      { title: "Salones", value: state.groups.length, hint: "Segun colegio seleccionado", icon: "bi-door-open" },
+      { title: "Estudiantes", value: data.totalStudents ?? 0, hint: "Registros activos", icon: "bi-people" },
+      { title: "Pruebas", value: data.totalExams ?? 0, hint: "Simulacros y examenes", icon: "bi-journal-check" },
+      { title: "Intentos", value: data.totalAttempts ?? 0, hint: "Presentaciones registradas", icon: "bi-pencil-square" },
+      { title: "Promedio", value: `${Number(data.averageGlobalPercentage ?? 0).toFixed(1)}%`, hint: "Resultado general", icon: "bi-speedometer2" },
+      { title: "Materia fuerte", value: best?.area || "-", hint: `${Number(best?.porcentajeAcierto ?? 0).toFixed(1)}%`, icon: "bi-arrow-up-circle" },
+      { title: "Materia debil", value: weak?.area || "-", hint: `${Number(weak?.porcentajeAcierto ?? 0).toFixed(1)}%`, icon: "bi-arrow-down-circle" },
+      { title: "En riesgo", value: riskCount, hint: "Bajo 60% (vista filtrada)", icon: "bi-exclamation-circle" },
+      { title: "Filtrados", value: rows.length, hint: "Resultados visibles", icon: "bi-funnel" }
+    ]);
+
+    renderBars(
+      "dashAreaBars",
+      byArea.map((row) => ({ label: row.area, percent: row.porcentajeAcierto }))
+    );
+    renderRecommendations("dashRecommendations", makeRecommendations(byArea, data.averageGlobalPercentage));
+    renderRecommendations("globalRecommendations", makeRecommendations(byAreaBase, data.averageGlobalPercentage));
+
+    if (!rows.length) {
+      $("dashRows").innerHTML = "<tr><td colspan='7'>No hay resultados para los filtros seleccionados.</td></tr>";
+      setStatus("dashRowsStatus", "No hay resultados para los filtros seleccionados.", "warn");
+    } else {
+      $("dashRows").innerHTML = rows
+        .map(
+          (row, index) =>
+            `<tr><td>${index + 1}</td><td>${escapeHtml(row.studentName)}</td><td>${escapeHtml(row.document)}</td><td>${escapeHtml(
+              row.examName
+            )}</td><td>${renderBadge(row.percentage, `${row.percentage.toFixed(1)}%`)}</td><td>${renderBadge(
+              row.percentage,
+              row.level.label
+            )}</td><td>${escapeHtml(formatShortDate(row.finishedAt))}</td></tr>`
+        )
+        .join("");
+      setStatus("dashRowsStatus", `Resultados visibles: ${rows.length}`, "ok");
+    }
+
+    renderChart("subjectChart", {
+      type: "bar",
+      data: {
+        labels: byArea.map((row) => row.area),
+        datasets: [{ label: "% acierto", data: byArea.map((row) => row.porcentajeAcierto), backgroundColor: chartColors }]
+      }
+    });
+    renderChart("summaryChart", {
+      type: "doughnut",
+      data: {
+        labels: ["Calificadas", "Pendientes"],
+        datasets: [
+          {
+            data: [data.totalGradedAttempts || 0, Math.max(0, (data.totalAttempts || 0) - (data.totalGradedAttempts || 0))],
+            backgroundColor: ["#2563eb", "#cbd5e1"]
+          }
+        ]
+      }
+    });
+
+    const roleMessage =
+      state.user?.role === "DOCENTE"
+        ? "Vista docente: solo datos del alcance asignado."
+        : "Vista admin: comparacion global por filtros.";
+    setStatus("dashScopeHint", roleMessage, "ok");
+  };
+
   const loadDashboard = async () => {
     try {
       setButtonLoading("dashLoadBtn", true, "Actualizando...");
@@ -366,68 +532,13 @@
         grado: $("dashGrado").value.trim(),
         from: $("dashFrom").value ? `${$("dashFrom").value}T00:00:00.000Z` : "",
         to: $("dashTo").value ? `${$("dashTo").value}T23:59:59.999Z` : "",
-        limit: 80
+        limit: 100
       });
       const response = await apiRequest(`/reports/dashboard/overview${query}`);
       const data = response.data || {};
-      const byArea = data.percentageByArea || [];
-      const sorted = [...byArea].sort((a, b) => b.porcentajeAcierto - a.porcentajeAcierto);
-      const weak = sorted[sorted.length - 1];
-      const best = sorted[0];
-      const riskCount = (data.studentsWithLatestResults || []).filter(
-        (item) => Number(item.ultimoResultado?.porcentajeTotal || 0) < 60
-      ).length;
-
-      renderStatCards([
-        { title: "Estudiantes", value: data.totalStudents ?? 0, hint: "Registros activos", icon: "bi-people" },
-        { title: "Pruebas", value: data.totalExams ?? 0, hint: "Simulacros y exámenes", icon: "bi-journal-check" },
-        { title: "Intentos", value: data.totalAttempts ?? 0, hint: "Presentaciones registradas", icon: "bi-pencil-square" },
-        { title: "Promedio", value: `${data.averageGlobalPercentage ?? 0}%`, hint: "Resultado general", icon: "bi-speedometer2" },
-        { title: "Mejor materia", value: best?.area || "-", hint: `${best?.porcentajeAcierto ?? 0}% de acierto`, icon: "bi-arrow-up-circle" },
-        { title: "Menor materia", value: weak?.area || "-", hint: `${weak?.porcentajeAcierto ?? 0}% de acierto`, icon: "bi-arrow-down-circle" },
-        { title: "En riesgo", value: riskCount, hint: "Estudiantes bajo 60%", icon: "bi-exclamation-circle" },
-        { title: "Calificadas", value: data.totalGradedAttempts ?? 0, hint: "Intentos cerrados", icon: "bi-check-circle" }
-      ]);
-
-      renderBars(
-        "dashAreaBars",
-        byArea.map((row) => ({ label: row.area, percent: row.porcentajeAcierto }))
-      );
-      renderRecommendations("dashRecommendations", makeRecommendations(byArea, data.averageGlobalPercentage));
-      renderRecommendations("globalRecommendations", makeRecommendations(byArea, data.averageGlobalPercentage));
-
-      $("dashRows").innerHTML = (data.studentsWithLatestResults || [])
-        .map((item) => {
-          const student = item.estudiante || {};
-          const result = item.ultimoResultado || {};
-          return `<tr><td>${escapeHtml(`${student.nombres || ""} ${student.apellidos || ""}`.trim())}</td><td>${escapeHtml(
-            student.numeroIdentificacion || ""
-          )}</td><td>${escapeHtml(result.prueba || "")}</td><td>${renderBadge(
-            result.porcentajeTotal,
-            `${moneyDash(result.porcentajeTotal)}%`
-          )}</td><td>${escapeHtml(result.nivelDesempenoGlobal || "-")}</td></tr>`;
-        })
-        .join("");
-
-      renderChart("subjectChart", {
-        type: "bar",
-        data: {
-          labels: byArea.map((row) => row.area),
-          datasets: [{ label: "% acierto", data: byArea.map((row) => row.porcentajeAcierto), backgroundColor: chartColors }]
-        }
-      });
-      renderChart("summaryChart", {
-        type: "doughnut",
-        data: {
-          labels: ["Calificadas", "Pendientes"],
-          datasets: [
-            {
-              data: [data.totalGradedAttempts || 0, Math.max(0, (data.totalAttempts || 0) - (data.totalGradedAttempts || 0))],
-              backgroundColor: ["#2563eb", "#cbd5e1"]
-            }
-          ]
-        }
-      });
+      state.dashboardData = data;
+      syncDashboardFilterOptions(data);
+      renderDashboard();
     } catch (error) {
       showToast(error.message);
     } finally {
@@ -439,8 +550,15 @@
     const response = await apiRequest("/schools?limit=200");
     state.schools = response.data?.items || [];
     fillSelect("dashSchoolSelect", state.schools, { placeholder: "Todos los colegios" });
+    fillSelect("repClassSchoolSelect", state.schools, { placeholder: "Todos los colegios" });
     fillSelect("groupSchoolSelect", state.schools, { placeholder: "Selecciona colegio" });
     fillSelect("stSchoolSelect", state.schools, { placeholder: "Sin asignar" });
+    if (state.user?.role === "DOCENTE" && state.schools.length === 1) {
+      const schoolId = state.schools[0].id;
+      $("dashSchoolSelect").value = schoolId;
+      $("repClassSchoolSelect").value = schoolId;
+      $("groupSchoolSelect").value = schoolId;
+    }
     $("schoolRows").innerHTML = state.schools
       .map(
         (school) => `<tr><td>${escapeHtml(school.name)}</td><td>${escapeHtml(school.code || "-")}</td><td>${renderBadge(
@@ -479,14 +597,17 @@
     if (!schoolId) {
       state.groups = [];
       fillSelect("dashGroupSelect", [], { placeholder: "Todos los salones" });
+      fillSelect("repClassGroupSelect", [], { placeholder: "Todos los salones" });
       fillSelect("stGroupSelect", [], { placeholder: "Sin asignar" });
       $("groupRows").innerHTML = "<tr><td colspan='4'>Selecciona un colegio.</td></tr>";
       return;
     }
     const response = await apiRequest(`/schools/${schoolId}/groups?limit=200`);
     state.groups = response.data?.items || [];
-    fillSelect("dashGroupSelect", state.groups, { placeholder: "Todos los salones", label: (item) => `${item.name} · ${item.grade || "-"}` });
-    fillSelect("stGroupSelect", state.groups, { placeholder: "Sin asignar", label: (item) => `${item.name} · ${item.grade || "-"}` });
+    const groupLabel = (item) => `${item.name} - ${item.grade || "-"}`;
+    fillSelect("dashGroupSelect", state.groups, { placeholder: "Todos los salones", label: groupLabel });
+    fillSelect("repClassGroupSelect", state.groups, { placeholder: "Todos los salones", label: groupLabel });
+    fillSelect("stGroupSelect", state.groups, { placeholder: "Sin asignar", label: groupLabel });
     $("groupRows").innerHTML = state.groups
       .map(
         (group) => `<tr><td>${escapeHtml(group.name)}</td><td>${escapeHtml(group.grade || "-")}</td><td>${escapeHtml(
@@ -706,6 +827,7 @@
         placeholder: "Selecciona prueba",
         label: (item) => `${item.nombre} · ${item.tipoPrueba} · ${item.gradoObjetivo}`
       });
+      syncDashboardFilterOptions(state.dashboardData || {});
       $("examRows").innerHTML = state.exams
         .map(
           (exam) => `<tr><td>${escapeHtml(exam.nombre)}</td><td>${escapeHtml(exam.tipoPrueba)}</td><td>${escapeHtml(
@@ -832,6 +954,8 @@
 
   const buildClassroomReportQuery = () =>
     toQueryString({
+      school_id: $("repClassSchoolSelect").value,
+      group_id: $("repClassGroupSelect").value,
       grado: $("repClassGrado").value.trim(),
       grupo: $("repClassGrupo").value.trim(),
       institucion: $("repClassInstitucion").value.trim(),
@@ -842,37 +966,149 @@
 
   const buildStudentReportQuery = () => toQueryString({ grado: $("repStudentGrado").value.trim() });
 
+  const renderClassroomTopicCards = (rows = []) => {
+    const cards = [...rows]
+      .sort((a, b) => Number(a.porcentajeAcierto || 0) - Number(b.porcentajeAcierto || 0))
+      .slice(0, 4)
+      .map((row) => [
+        "Tema critico",
+        `${row.topic || row.tema || "Sin tema"}: ${Number(row.porcentajeAcierto || 0).toFixed(1)}% de acierto`,
+        "bi-lightbulb"
+      ]);
+    renderRecommendations(
+      "classroomTopicCards",
+      cards.length ? cards : [["Sin temas criticos", "No hay datos por tema para los filtros seleccionados.", "bi-info-circle"]]
+    );
+  };
+
+  const renderClassroomReport = () => {
+    const data = state.classroomData || {};
+    const selectedLevel = $("repClassLevelSelect").value;
+    const selectedSubject = $("repClassSubjectSelect").value;
+    const studentSearch = normalizeSearch($("repClassStudentSearch").value);
+
+    const bySubjectBase = data.bySubject || [];
+    const bySubject = selectedSubject ? bySubjectBase.filter((row) => (row.subject || row.area) === selectedSubject) : bySubjectBase;
+
+    const rows = (data.ranking || [])
+      .map((row) => {
+        const percentage = Number(row.averagePercentage || 0);
+        const level = getAcademicLevel(percentage);
+        return { ...row, percentage, level };
+      })
+      .filter((row) => {
+        if (selectedLevel && row.level.key !== selectedLevel) return false;
+        if (studentSearch) {
+          const textValue = normalizeSearch(`${row.nombres || ""} ${row.apellidos || ""} ${row.numeroIdentificacion || ""}`);
+          if (!textValue.includes(studentSearch)) return false;
+        }
+        return true;
+      });
+
+    const sortedBySubject = [...bySubjectBase].sort(
+      (a, b) => Number(b.percentage ?? b.porcentajeAcierto ?? 0) - Number(a.percentage ?? a.porcentajeAcierto ?? 0)
+    );
+    const bestSubject = sortedBySubject[0];
+    const weakSubject = sortedBySubject[sortedBySubject.length - 1];
+    const totals = data.totals || {};
+    const riskCount = rows.filter((row) => row.percentage < 60).length;
+
+    renderStatCards(
+      [
+        { title: "Estudiantes", value: totals.studentsWithAttempts ?? 0, hint: "Con intentos", icon: "bi-people" },
+        { title: "Intentos", value: totals.totalAttempts ?? 0, hint: "Registros visibles", icon: "bi-pencil-square" },
+        { title: "Calificados", value: totals.gradedAttempts ?? 0, hint: "Intentos cerrados", icon: "bi-check-circle" },
+        { title: "Promedio", value: `${Number(totals.averagePercentage ?? 0).toFixed(1)}%`, hint: "Resultado general", icon: "bi-speedometer2" },
+        {
+          title: "Materia fuerte",
+          value: bestSubject?.subject || bestSubject?.area || "-",
+          hint: `${Number(bestSubject?.percentage ?? bestSubject?.porcentajeAcierto ?? 0).toFixed(1)}%`,
+          icon: "bi-arrow-up-circle"
+        },
+        {
+          title: "Materia debil",
+          value: weakSubject?.subject || weakSubject?.area || "-",
+          hint: `${Number(weakSubject?.percentage ?? weakSubject?.porcentajeAcierto ?? 0).toFixed(1)}%`,
+          icon: "bi-arrow-down-circle"
+        },
+        { title: "En riesgo", value: riskCount, hint: "Promedio bajo 60%", icon: "bi-exclamation-circle" },
+        { title: "Filtrados", value: rows.length, hint: "Resultados visibles", icon: "bi-funnel" }
+      ],
+      "classroomKpis"
+    );
+
+    if (!rows.length) {
+      $("classroomRows").innerHTML = "<tr><td colspan='9'>No hay resultados para los filtros seleccionados.</td></tr>";
+      setStatus("repClassStatus", "No hay resultados para los filtros seleccionados.", "warn");
+    } else {
+      $("classroomRows").innerHTML = rows
+        .map(
+          (row, index) =>
+            `<tr><td>${index + 1}</td><td>${escapeHtml(`${row.nombres || ""} ${row.apellidos || ""}`.trim())}</td><td>${escapeHtml(
+              row.numeroIdentificacion || "-"
+            )}</td><td>${escapeHtml(row.grado || "-")}</td><td>${escapeHtml(row.grupo || "-")}</td><td>${row.attempts ?? 0}</td><td>${renderBadge(
+              row.percentage,
+              `${row.percentage.toFixed(1)}%`
+            )}</td><td>${renderBadge(row.percentage, row.level.label)}</td><td>${escapeHtml(mapRiskMessage(row.level.key))}</td></tr>`
+        )
+        .join("");
+      setStatus("repClassStatus", `Resultados visibles: ${rows.length}`, "ok");
+    }
+
+    renderRecommendations("classroomSummaryCards", makeRecommendations(bySubject, totals.averagePercentage ?? 0));
+    renderClassroomTopicCards(data.byTopic || []);
+
+    renderChart("classroomChart", {
+      type: "bar",
+      data: {
+        labels: bySubject.map((row) => row.subject || row.area),
+        datasets: [
+          {
+            label: "% acierto",
+            data: bySubject.map((row) => Number(row.percentage ?? row.porcentajeAcierto ?? 0)),
+            backgroundColor: chartColors
+          }
+        ]
+      }
+    });
+
+    const levels = rows.reduce(
+      (acc, row) => {
+        acc[row.level.key] = (acc[row.level.key] || 0) + 1;
+        return acc;
+      },
+      { BAJO: 0, BASICO: 0, ALTO: 0, SUPERIOR: 0 }
+    );
+
+    renderChart("classroomLevelChart", {
+      type: "doughnut",
+      data: {
+        labels: ["Bajo", "Basico", "Alto", "Superior"],
+        datasets: [
+          {
+            data: [levels.BAJO, levels.BASICO, levels.ALTO, levels.SUPERIOR],
+            backgroundColor: ["#dc2626", "#d97706", "#0f766e", "#2563eb"]
+          }
+        ]
+      }
+    });
+  };
+
   const loadClassroomReport = async () => {
     try {
       const query = buildClassroomReportQuery();
       const response = await apiRequest(`/reports/classroom/summary${query}`);
       const data = response.data || {};
+      state.classroomData = data;
+      const selectedSubject = $("repClassSubjectSelect").value;
+      fillSelect(
+        "repClassSubjectSelect",
+        (data.bySubject || []).map((row) => ({ id: row.subject || row.area, name: row.subject || row.area })),
+        { placeholder: "Todas las materias" }
+      );
+      if (selectedSubject) $("repClassSubjectSelect").value = selectedSubject;
       $("repClassOutput").textContent = pretty(data);
-      setStatus("repClassStatus", `Estudiantes con intentos: ${data.totals?.studentsWithAttempts ?? 0}`, "ok");
-      $("classroomRows").innerHTML = (data.ranking || [])
-        .map(
-          (row) => `<tr><td>${escapeHtml(`${row.nombres} ${row.apellidos}`)}</td><td>${escapeHtml(row.numeroIdentificacion)}</td><td>${escapeHtml(
-            row.grado || "-"
-          )}</td><td>${escapeHtml(row.grupo || "-")}</td><td>${row.attempts}</td><td>${renderBadge(
-            row.averagePercentage,
-            `${row.averagePercentage}%`
-          )}</td><td>${renderBadge(row.averagePercentage, performanceClass(row.averagePercentage).toUpperCase())}</td></tr>`
-        )
-        .join("");
-      renderRecommendations("classroomSummaryCards", makeRecommendations(data.bySubject || [], data.totals?.averagePercentage).map((item) => item));
-      renderChart("classroomChart", {
-        type: "bar",
-        data: {
-          labels: (data.bySubject || []).map((row) => row.subject || row.area),
-          datasets: [
-            {
-              label: "% acierto",
-              data: (data.bySubject || []).map((row) => Number(row.percentage ?? row.porcentajeAcierto ?? 0)),
-              backgroundColor: chartColors
-            }
-          ]
-        }
-      });
+      renderClassroomReport();
     } catch (error) {
       setStatus("repClassStatus", error.message, "bad");
     }
@@ -968,7 +1204,22 @@
     setupPasswordToggle("loginPassword", "loginTogglePassword");
 
     $("dashLoadBtn").addEventListener("click", loadDashboard);
-    $("dashSchoolSelect").addEventListener("change", () => listGroups($("dashSchoolSelect").value));
+    $("dashApplyFiltersBtn").addEventListener("click", () => state.dashboardData && renderDashboard());
+    $("dashClearFiltersBtn").addEventListener("click", () => {
+      $("dashExamSelect").value = "";
+      $("dashLevelSelect").value = "";
+      $("dashStudentSearch").value = "";
+      $("dashSubjectSelect").value = "";
+      state.dashboardData && renderDashboard();
+    });
+    $("dashExamSelect").addEventListener("change", () => state.dashboardData && renderDashboard());
+    $("dashLevelSelect").addEventListener("change", () => state.dashboardData && renderDashboard());
+    $("dashSubjectSelect").addEventListener("change", () => state.dashboardData && renderDashboard());
+    $("dashStudentSearch").addEventListener("input", () => state.dashboardData && renderDashboard());
+    $("dashSchoolSelect").addEventListener("change", async () => {
+      await listGroups($("dashSchoolSelect").value);
+      $("repClassSchoolSelect").value = $("dashSchoolSelect").value || "";
+    });
     $("groupSchoolSelect").addEventListener("change", () => listGroups($("groupSchoolSelect").value));
     $("stSchoolSelect").addEventListener("change", () => listGroups($("stSchoolSelect").value));
 
@@ -1063,6 +1314,28 @@
     $("simRestartAttemptBtn").addEventListener("click", () => attemptAction("restart"));
 
     $("repClassBtn").addEventListener("click", loadClassroomReport);
+    $("repClassSchoolSelect").addEventListener("change", () => {
+      const schoolId = $("repClassSchoolSelect").value;
+      if (!schoolId) {
+        fillSelect("repClassGroupSelect", [], { placeholder: "Todos los salones" });
+        return;
+      }
+      void listGroups(schoolId);
+    });
+    $("repClassGroupSelect").addEventListener("change", () => {
+      const selected = state.groups.find((group) => group.id === $("repClassGroupSelect").value);
+      $("repClassGrupo").value = selected?.name || "";
+    });
+    $("repClassApplyFiltersBtn").addEventListener("click", () => state.classroomData && renderClassroomReport());
+    $("repClassClearFiltersBtn").addEventListener("click", () => {
+      $("repClassLevelSelect").value = "";
+      $("repClassStudentSearch").value = "";
+      $("repClassSubjectSelect").value = "";
+      state.classroomData && renderClassroomReport();
+    });
+    $("repClassLevelSelect").addEventListener("change", () => state.classroomData && renderClassroomReport());
+    $("repClassSubjectSelect").addEventListener("change", () => state.classroomData && renderClassroomReport());
+    $("repClassStudentSearch").addEventListener("input", () => state.classroomData && renderClassroomReport());
     $("repClassCsvBtn").addEventListener("click", () =>
       downloadWithAuth(`/reports/classroom/summary/export.csv${buildClassroomReportQuery()}`, "classroom_summary.csv")
     );
