@@ -120,7 +120,7 @@ const tools = [
         context: { type: "object" },
         raw_output: { type: "object" },
         validation: { type: "object" },
-        status: { type: "string" },
+        status: { type: "string", description: "BORRADOR|GENERADA_IA|EN_REVISION|REVISADA|APROBADA|PUBLICADA|RECHAZADA|ARCHIVADA" },
         source_id: { type: "string" }
       },
       required: ["prompt"]
@@ -143,6 +143,7 @@ const tools = [
         nivel_cognitivo: { type: "string" },
         grado_objetivo: { type: "string" },
         explicacion_respuesta: { type: "string" },
+        publish: { type: "boolean" },
         opciones: {
           type: "array",
           items: {
@@ -188,9 +189,13 @@ const toGenerationStatus = (value: unknown) => {
     return QuestionGenerationStatus.BORRADOR;
   }
   const normalized = value.trim().toUpperCase();
+  if (normalized === "GENERADA_IA") return QuestionGenerationStatus.GENERADA_IA;
+  if (normalized === "EN_REVISION") return QuestionGenerationStatus.EN_REVISION;
   if (normalized === "REVISADA") return QuestionGenerationStatus.REVISADA;
   if (normalized === "APROBADA") return QuestionGenerationStatus.APROBADA;
+  if (normalized === "PUBLICADA") return QuestionGenerationStatus.PUBLICADA;
   if (normalized === "RECHAZADA") return QuestionGenerationStatus.RECHAZADA;
+  if (normalized === "ARCHIVADA") return QuestionGenerationStatus.ARCHIVADA;
   return QuestionGenerationStatus.BORRADOR;
 };
 
@@ -447,6 +452,7 @@ const runTool = async (name: string, args: Record<string, unknown>) => {
       }
 
       const generationId = typeof args.generation_id === "string" ? args.generation_id : undefined;
+      const publish = Boolean(args.publish);
       const codeCandidate = typeof args.codigo_interno === "string" ? args.codigo_interno.trim() : "";
       const fallbackCode = `IA_${Date.now()}`;
       const codigoInterno = codeCandidate || fallbackCode;
@@ -464,7 +470,7 @@ const runTool = async (name: string, args: Record<string, unknown>) => {
           enunciado: String(args.enunciado ?? ""),
           tipoPregunta: QuestionType.SELECCION_UNICA,
           gradoObjetivo: String(args.grado_objetivo ?? "11"),
-          estado: true,
+          estado: publish,
           explicacionRespuesta: typeof args.explicacion_respuesta === "string" ? args.explicacion_respuesta : undefined,
           subject: typeof args.subject_code === "string" ? { connect: { code: args.subject_code } } : undefined,
           options: {
@@ -482,6 +488,15 @@ const runTool = async (name: string, args: Record<string, unknown>) => {
           }
         }
       });
+
+      if (generationId) {
+        await prisma.questionGeneration.update({
+          where: { id: generationId },
+          data: {
+            status: publish ? QuestionGenerationStatus.PUBLICADA : QuestionGenerationStatus.GENERADA_IA
+          }
+        });
+      }
 
       return question;
     }

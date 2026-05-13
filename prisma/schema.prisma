@@ -78,9 +78,13 @@ enum QuestionSourceType {
 
 enum QuestionGenerationStatus {
   BORRADOR
+  GENERADA_IA
+  EN_REVISION
   REVISADA
   APROBADA
+  PUBLICADA
   RECHAZADA
+  ARCHIVADA
 }
 
 enum ReportScope {

@@ -1,44 +1,37 @@
 import fs from "fs";
 import path from "path";
-import { distance } from "fastest-levenshtein";
-import { PrismaClient, QuestionArea, QuestionDifficulty, QuestionType } from "@prisma/client";
-type OllamaClient = {
-  chat: (params: {
-    model: string;
-    messages: Array<{ role: "system" | "user"; content: string }>;
-    stream?: boolean;
-    format?: unknown;
-    options?: {
-      temperature?: number;
-    };
-    keep_alive?: string;
-  }) => Promise<{
-    message?: {
-      content?: string;
-    };
-  }>;
-  pull: (params: { model: string; stream?: boolean }) => Promise<unknown>;
-};
+import { PrismaClient, QuestionArea, QuestionDifficulty, QuestionGenerationStatus, QuestionType } from "@prisma/client";
 
-type OllamaModule = {
-  Ollama?: new (config?: { host?: string }) => OllamaClient;
-  default?: OllamaClient;
-  chat?: OllamaClient["chat"];
-  pull?: OllamaClient["pull"];
-};
-
-const createOllamaClient = (host: string): OllamaClient => {
-  const module = require("ollama") as OllamaModule;
-  if (module.Ollama) {
-    return new module.Ollama({ host });
+const distance = (left: string, right: string) => {
+  if (left === right) {
+    return 0;
+  }
+  if (!left.length) {
+    return right.length;
+  }
+  if (!right.length) {
+    return left.length;
   }
 
-  const fallback = (module.default ?? module) as OllamaClient;
-  if (typeof fallback.chat === "function" && typeof fallback.pull === "function") {
-    return fallback;
+  const previous = new Array<number>(right.length + 1);
+  const current = new Array<number>(right.length + 1);
+
+  for (let j = 0; j <= right.length; j += 1) {
+    previous[j] = j;
   }
 
-  throw new Error("No se pudo inicializar cliente Ollama.");
+  for (let i = 1; i <= left.length; i += 1) {
+    current[0] = i;
+    for (let j = 1; j <= right.length; j += 1) {
+      const substitutionCost = left[i - 1] === right[j - 1] ? 0 : 1;
+      current[j] = Math.min(previous[j] + 1, current[j - 1] + 1, previous[j - 1] + substitutionCost);
+    }
+    for (let j = 0; j <= right.length; j += 1) {
+      previous[j] = current[j];
+    }
+  }
+
+  return previous[right.length];
 };
 
 type CorpusChunk = {
@@ -591,23 +584,38 @@ const callOllamaNative = async (params: {
   schema: unknown;
   autoPull: boolean;
 }) => {
-  const client = createOllamaClient(params.host);
+  const host = params.host.replace(/\/+$/, "");
 
   const runChat = async () => {
-    const response = await client.chat({
-      model: params.model,
-      stream: false,
-      messages: [
-        { role: "system", content: params.systemPrompt },
-        { role: "user", content: params.userPrompt }
-      ],
-      format: params.schema,
-      options: {
-        temperature: params.temperature
+    const response = await fetch(`${host}/api/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
       }
+      body: JSON.stringify({
+        model: params.model,
+        stream: false,
+        messages: [
+          { role: "system", content: params.systemPrompt },
+          { role: "user", content: params.userPrompt }
+        ],
+        format: params.schema,
+        options: {
+          temperature: params.temperature
+        }
+      })
     });
 
-    const content = response.message?.content;
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      throw new Error(`Ollama /api/chat fallo (${response.status}) ${body}`.trim());
+    }
+
+    const payload = (await response.json()) as {
+      message?: { content?: string };
+    };
+
+    const content = payload.message?.content;
     if (!content || !content.trim()) {
       throw new Error("Ollama devolvio respuesta sin contenido");
     }
@@ -621,7 +629,20 @@ const callOllamaNative = async (params: {
       throw error;
     }
 
-    await client.pull({ model: params.model, stream: false });
+    const pullResponse = await fetch(`${host}/api/pull`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: params.model,
+        stream: false
+      })
+    });
+    if (!pullResponse.ok) {
+      const body = await pullResponse.text().catch(() => "");
+      throw new Error(`Ollama /api/pull fallo (${pullResponse.status}) ${body}`.trim());
+    }
     return runChat();
   }
 };
@@ -927,6 +948,7 @@ const main = async () => {
   const grade = getArgValue("grade", "11");
   const shouldApply = hasFlag("apply");
   const previewOnly = hasFlag("preview");
+  const publish = getArgValue("publish", "false").toLowerCase() === "true";
   const dbCheck = getArgValue("db-check", "true").toLowerCase() === "true";
   const includeInactiveCheck = getArgValue("include-inactive-check", "false").toLowerCase() === "true";
   const minQualityScore = Number(getArgValue("min-quality-score", "75"));
@@ -1059,7 +1081,8 @@ const main = async () => {
         minQualityScore,
         similarityThreshold,
         dbCheck,
-        includeInactiveCheck
+        includeInactiveCheck,
+        publish
       },
       selectedChunks: selectedChunks.map((chunk) => ({
         id: chunk.id,
@@ -1124,6 +1147,7 @@ const main = async () => {
 
   const prisma = shouldApply || dbCheck ? new PrismaClient() : null;
   const existingByArea = new Map<QuestionArea, string[]>();
+  let generationId: string | null = null;
 
   try {
     if (prisma && dbCheck) {
@@ -1168,7 +1192,8 @@ const main = async () => {
       quality: {
         minQualityScore,
         similarityThreshold,
-        dbCheck
+        dbCheck,
+        publish
       },
       validCount: valid.length,
       invalidCount: invalid.length,
@@ -1197,6 +1222,37 @@ const main = async () => {
     if (shouldApply) {
       if (!prisma) {
         throw new Error("Prisma no inicializado para modo apply.");
+      }
+
+      if (acceptedQuestions.length > 0) {
+        const generation = await prisma.questionGeneration.create({
+          data: {
+            provider,
+            model,
+            prompt: `${systemPrompt}\n\n${userPrompt}`,
+            context: {
+              selectedAreas,
+              grade,
+              selectedChunks: selectedChunks.map((chunk) => ({
+                id: chunk.id,
+                source_relative_path: chunk.source_relative_path,
+                area: chunk.area_proyecto ?? chunk.area_refinada
+              })),
+              quality: {
+                minQualityScore,
+                similarityThreshold
+              }
+            },
+            rawOutput: parsed as unknown as object,
+            validation: {
+              invalid,
+              rejected: qualityResult.rejected,
+              review: qualityResult.review
+            },
+            status: publish ? QuestionGenerationStatus.PUBLICADA : QuestionGenerationStatus.GENERADA_IA
+          }
+        });
+        generationId = generation.id;
       }
 
       const applyAreas = Array.from(new Set(acceptedQuestions.map((item) => item.area)));
@@ -1308,6 +1364,8 @@ const main = async () => {
         await prisma.question.create({
           data: {
             codigoInterno: code,
+            generationId: generationId ?? undefined,
+            isAiGenerated: true,
             area: question.area,
             competencia: question.competencia,
             componente: question.componente,
@@ -1317,11 +1375,13 @@ const main = async () => {
             contextoTextoBase: question.contexto_texto_base || null,
             tipoPregunta: QuestionType.SELECCION_UNICA,
             gradoObjetivo: questionGrade || "11",
-            estado: true,
+            estado: publish,
             explicacionRespuesta: question.explicacion_respuesta,
             observacionesDocente: [
               "Generada por IA",
               `Modelo=${model}`,
+              `GenerationId=${generationId ?? "NA"}`,
+              `Estado=${publish ? "PUBLICADA" : "GENERADA_IA"}`,
               `ScoreMin=${minQualityScore}`,
               `FuenteChunks=${question.fuente_chunk_ids.join(",")}`
             ].join(" | "),
@@ -1354,6 +1414,8 @@ const main = async () => {
           invalid: invalid.length,
           qualityAccepted: acceptedQuestions.length,
           qualityRejected: qualityResult.rejected.length,
+          generationId,
+          publish,
           applied: shouldApply,
           created,
           skippedDuplicates,

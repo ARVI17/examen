@@ -14,6 +14,7 @@
     "prisma:push": "prisma db push",
     "seed": "ts-node prisma/seed.ts",
     "bootstrap:admin": "ts-node scripts/bootstrap_admin.ts",
+    "db:reset:dev": "ts-node scripts/db_reset_dev.ts --confirm",
     "test:integration": "ts-node --files tests/integration/run.ts",
     "ingest:icfes:cuadernillos": "ts-node scripts/ingest_icfes_cuadernillos.ts",
     "download:icfes:pasados": "ts-node scripts/download_icfes_examenes_pasados.ts",
@@ -22,7 +23,9 @@
     "pipeline:icfes:questions": "npm run extract:icfes:questions && npm run ingest:icfes:questions -- --apply",
     "ingest:kb": "ts-node scripts/ingest_knowledge_base.ts",
     "ingest:kb:apply": "ts-node scripts/ingest_knowledge_base.ts --apply",
-    "mcp:server": "ts-node scripts/mcp_exam_server.ts"
+    "mcp:server": "ts-node scripts/mcp_exam_server.ts",
+    "seed:colegios:magdalena": "ts-node scripts/import_magdalena_schools.ts --apply",
+    "seed:colegios:magdalena:dry": "ts-node scripts/import_magdalena_schools.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

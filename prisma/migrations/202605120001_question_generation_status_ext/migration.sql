@@ -1,0 +1,8 @@
+DO $$
+BEGIN
+  ALTER TYPE "QuestionGenerationStatus" ADD VALUE IF NOT EXISTS 'GENERADA_IA';
+  ALTER TYPE "QuestionGenerationStatus" ADD VALUE IF NOT EXISTS 'EN_REVISION';
+  ALTER TYPE "QuestionGenerationStatus" ADD VALUE IF NOT EXISTS 'PUBLICADA';
+  ALTER TYPE "QuestionGenerationStatus" ADD VALUE IF NOT EXISTS 'ARCHIVADA';
+END
+$$;
