@@ -582,8 +582,10 @@ textarea {
 .table-shell {
   width: 100%;
   overflow: auto;
+  max-height: 440px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
+  background: #fff;
 }
 
 table {
@@ -611,6 +613,24 @@ th {
 
 tr:hover td {
   background: #fbfdff;
+}
+
+.table-tools {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.table-meta {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.table-more-btn {
+  min-width: 112px;
 }
 
 .badge-soft {
@@ -821,5 +841,76 @@ tr:hover td {
 
   .sim-layout {
     grid-template-columns: 1fr;
+  }
+
+  .table-shell.mobile-cards {
+    max-height: none;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .table-shell.mobile-cards table {
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+  }
+
+  .table-shell.mobile-cards thead {
+    display: none;
+  }
+
+  .table-shell.mobile-cards tbody,
+  .table-shell.mobile-cards tr,
+  .table-shell.mobile-cards td {
+    display: block;
+    width: 100%;
+  }
+
+  .table-shell.mobile-cards tr {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #fff;
+    box-shadow: var(--soft-shadow);
+    padding: 8px 10px;
+  }
+
+  .table-shell.mobile-cards td {
+    border: 0;
+    border-bottom: 1px dashed #e2e8f0;
+    padding: 8px 0;
+    display: grid;
+    grid-template-columns: 106px minmax(0, 1fr);
+    align-items: start;
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .table-shell.mobile-cards td:last-child {
+    border-bottom: 0;
+  }
+
+  .table-shell.mobile-cards td::before {
+    content: attr(data-label);
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .table-shell.mobile-cards td[data-label="Acciones"],
+  .table-shell.mobile-cards td[data-label="Accion"] {
+    grid-template-columns: 1fr;
+  }
+
+  .table-shell.mobile-cards td[data-label="Acciones"]::before,
+  .table-shell.mobile-cards td[data-label="Accion"]::before {
+    margin-bottom: 6px;
+  }
+
+  .table-shell.mobile-cards td .ghost-button,
+  .table-shell.mobile-cards td .primary-button {
+    width: auto;
   }
 }

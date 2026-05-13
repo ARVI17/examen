@@ -127,11 +127,15 @@
               <div><h2>Últimos resultados</h2><p>Intento más reciente por estudiante.</p></div>
             </div>
             <div id="dashRowsStatus" class="status-message">Sin resultados para mostrar.</div>
-            <div class="table-shell">
+            <div class="table-shell mobile-cards">
               <table>
                 <thead><tr><th>#</th><th>Estudiante</th><th>Documento</th><th>Prueba</th><th>Porcentaje</th><th>Nivel</th><th>Fecha</th></tr></thead>
                 <tbody id="dashRows"></tbody>
               </table>
+            </div>
+            <div class="table-tools">
+              <small id="dashRowsMeta" class="table-meta">Mostrando 0 de 0</small>
+              <button id="dashRowsMoreBtn" class="ghost-button table-more-btn" type="button">Ver mas</button>
             </div>
           </article>
         </section>
@@ -230,8 +234,12 @@
               <label>Institución<input id="stFilterInstitucion" /></label>
             </div>
             <div id="stListStatus" class="status-message">Sin consulta.</div>
-            <div class="table-shell">
+            <div class="table-shell mobile-cards">
               <table><thead><tr><th>Documento</th><th>Nombre</th><th>Grado</th><th>Grupo</th><th>Institución</th><th>Acciones</th></tr></thead><tbody id="stListRows"></tbody></table>
+            </div>
+            <div class="table-tools">
+              <small id="stListMeta" class="table-meta">Mostrando 0 de 0</small>
+              <button id="stListMoreBtn" class="ghost-button table-more-btn" type="button">Ver mas</button>
             </div>
           </article>
         </section>
@@ -264,8 +272,12 @@
                 <label>Tipo<input id="examFilterType" placeholder="SABER_11" /></label>
                 <label>Grado<input id="examFilterGrade" value="11" /></label>
               </div>
-              <div class="table-shell">
+              <div class="table-shell mobile-cards">
                 <table><thead><tr><th>Prueba</th><th>Tipo</th><th>Grado</th><th>Preguntas</th><th>Estado</th><th></th></tr></thead><tbody id="examRows"></tbody></table>
+              </div>
+              <div class="table-tools">
+                <small id="examRowsMeta" class="table-meta">Mostrando 0 de 0</small>
+                <button id="examRowsMoreBtn" class="ghost-button table-more-btn" type="button">Ver mas</button>
               </div>
             </article>
           </div>
@@ -360,8 +372,12 @@
               <div id="classroomSummaryCards" class="recommendation-list"></div>
               <div id="classroomTopicCards" class="recommendation-list"></div>
             </div>
-            <div class="table-shell">
+            <div class="table-shell mobile-cards">
               <table><thead><tr><th>#</th><th>Estudiante</th><th>Documento</th><th>Grado</th><th>Grupo</th><th>Intentos</th><th>Promedio</th><th>Nivel</th><th>Riesgo</th></tr></thead><tbody id="classroomRows"></tbody></table>
+            </div>
+            <div class="table-tools">
+              <small id="classroomRowsMeta" class="table-meta">Mostrando 0 de 0</small>
+              <button id="classroomRowsMoreBtn" class="ghost-button table-more-btn" type="button">Ver mas</button>
             </div>
             <pre id="repClassOutput" class="code-box is-collapsed">{}</pre>
           </article>
@@ -403,6 +419,43 @@
               <pre id="materialOutput" class="code-box">{}</pre>
             </article>
           </div>
+          <article class="panel">
+            <div class="panel-head">
+              <div><h2>Preguntas IA</h2><p>Revision de preguntas generadas por IA.</p></div>
+              <button id="aiQuestionsLoadBtn" class="ghost-button" type="button">Actualizar</button>
+            </div>
+            <div class="filter-row">
+              <label>Estado
+                <select id="aiStatusFilter">
+                  <option value="">Todos</option>
+                  <option value="BORRADOR">Borrador</option>
+                  <option value="GENERADA_IA">Generada IA</option>
+                  <option value="EN_REVISION">En revision</option>
+                  <option value="REVISADA">Revisada</option>
+                  <option value="APROBADA">Aprobada</option>
+                  <option value="PUBLICADA">Publicada</option>
+                  <option value="RECHAZADA">Rechazada</option>
+                  <option value="ARCHIVADA">Archivada</option>
+                </select>
+              </label>
+              <label>Buscar
+                <input id="aiSearch" placeholder="Codigo o enunciado" />
+              </label>
+              <button id="aiApplyFiltersBtn" class="ghost-button" type="button"><i class="bi bi-funnel"></i> Aplicar filtros</button>
+            </div>
+            <div id="aiQuestionsStatus" class="status-message">Sin consulta.</div>
+            <div class="table-shell mobile-cards">
+              <table>
+                <thead><tr><th>Fecha</th><th>Codigo</th><th>Materia</th><th>Dificultad</th><th>Estado IA</th><th>Pregunta</th><th>Accion</th></tr></thead>
+                <tbody id="aiQuestionRows"></tbody>
+              </table>
+            </div>
+            <div class="table-tools">
+              <small id="aiRowsMeta" class="table-meta">Mostrando 0 de 0</small>
+              <button id="aiRowsMoreBtn" class="ghost-button table-more-btn" type="button">Ver mas</button>
+            </div>
+            <pre id="aiQuestionDetail" class="code-box is-collapsed">{}</pre>
+          </article>
         </section>
 
         <section class="view" id="view-settings">

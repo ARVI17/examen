@@ -38,6 +38,11 @@
         margin: 18px auto 30px;
       }
 
+      .portal-shell {
+        display: grid;
+        gap: 12px;
+      }
+
       .hidden {
         display: none !important;
       }
@@ -255,7 +260,7 @@
       .option {
         border: 1px solid var(--line);
         border-radius: 10px;
-        padding: 10px;
+        padding: 12px;
         margin-top: 8px;
         display: flex;
         gap: 10px;
@@ -264,9 +269,18 @@
         cursor: pointer;
       }
 
+      .option input {
+        margin-top: 2px;
+      }
+
       .option.selected {
         border-color: #93c5fd;
         background: #eff6ff;
+      }
+
+      .option:focus-within {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.16);
       }
 
       .actions {
@@ -358,6 +372,41 @@
         font-weight: 700;
       }
 
+      #questionBody {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #ffffff;
+        padding: 14px;
+        line-height: 1.55;
+        font-size: 1.02rem;
+        min-height: 96px;
+      }
+
+      .portal-shell.focus-mode #portalIntro,
+      .portal-shell.focus-mode #resultsView {
+        display: none !important;
+      }
+
+      .portal-shell.focus-mode #attemptView {
+        margin-top: 0 !important;
+        border: 2px solid #bfdbfe;
+      }
+
+      .portal-shell.focus-mode #questionBody {
+        min-height: 170px;
+        font-size: 1.08rem;
+      }
+
+      .portal-shell.focus-mode .option {
+        min-height: 56px;
+        font-size: 0.98rem;
+      }
+
+      .portal-shell.focus-mode #attemptView .btn-primary,
+      .portal-shell.focus-mode #attemptView .btn-soft {
+        min-height: 44px;
+      }
+
       @media (max-width: 980px) {
         .exam-shell {
           grid-template-columns: 1fr;
@@ -365,6 +414,69 @@
 
         .row {
           flex-direction: column;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .container {
+          width: min(1160px, calc(100vw - 16px));
+          margin-top: 8px;
+        }
+
+        .header {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .header > div:last-child {
+          width: 100% !important;
+        }
+
+        .table-wrap.mobile-cards table {
+          min-width: 0;
+          border-collapse: separate;
+          border-spacing: 0 8px;
+        }
+
+        .table-wrap.mobile-cards thead {
+          display: none;
+        }
+
+        .table-wrap.mobile-cards tbody,
+        .table-wrap.mobile-cards tr,
+        .table-wrap.mobile-cards td {
+          display: block;
+          width: 100%;
+        }
+
+        .table-wrap.mobile-cards tr {
+          border: 1px solid var(--line);
+          border-radius: 10px;
+          background: #fff;
+          padding: 8px 10px;
+        }
+
+        .table-wrap.mobile-cards td {
+          border: 0;
+          border-bottom: 1px dashed #dbe4ef;
+          padding: 8px 0;
+          display: grid;
+          grid-template-columns: 98px minmax(0, 1fr);
+          gap: 8px;
+          font-size: 12px;
+        }
+
+        .table-wrap.mobile-cards td:last-child {
+          border-bottom: 0;
+        }
+
+        .table-wrap.mobile-cards td::before {
+          content: attr(data-label);
+          color: #64748b;
+          text-transform: uppercase;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.02em;
         }
       }
     </style>
@@ -399,7 +511,7 @@
         </article>
       </section>
 
-      <section id="portalView" class="hidden">
+      <section id="portalView" class="hidden portal-shell">
         <header class="card header">
           <div>
             <h2>Simulador Saber 11</h2>
@@ -410,7 +522,7 @@
           </div>
         </header>
 
-        <div class="grid grid-2">
+        <div class="grid grid-2" id="portalIntro">
           <article class="card section">
             <h3>Antes de comenzar</h3>
             <p class="muted">Lee cada pregunta con atencion, elige una opcion y revisa antes de enviar.</p>
@@ -476,7 +588,7 @@
           <h3 style="margin-top: 16px">Recomendaciones</h3>
           <div id="resultRecommendations" class="meta"></div>
           <h3 style="margin-top: 16px">Historial propio</h3>
-          <div class="table-wrap">
+          <div class="table-wrap mobile-cards">
             <table>
               <thead>
                 <tr>

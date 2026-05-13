@@ -40,6 +40,12 @@
     }
   };
 
+  const setFocusMode = (active) => {
+    $("portalView")?.classList.toggle("focus-mode", Boolean(active));
+  };
+
+  const td = (label, value) => `<td data-label="${String(label)}">${value}</td>`;
+
   const setButtonLoading = (id, loading, loadingText = "Procesando...") => {
     const button = $(id);
     if (!button) return;
@@ -150,6 +156,7 @@
     state.waitingForAdmin = false;
     state.timer.sessionIndex = -1;
     state.timer.remainingSeconds = 0;
+    setFocusMode(false);
     $("attemptView")?.classList.add("hidden");
     setText("timerText", "Tiempo: --:--");
     setText("progressText", "Progreso: 0/0");
@@ -217,6 +224,7 @@
       const button = document.createElement("button");
       button.type = "button";
       button.textContent = String(index + 1);
+      button.setAttribute("aria-label", `Ir a pregunta ${index + 1}`);
       const outOfSession = index < bounds.min || index > bounds.max;
       if (index === state.currentIndex) {
         button.classList.add("current");
@@ -445,6 +453,8 @@
 
     applySessionPlan(data.sessionPlan, data.attempt?.prueba);
     state.sessionControl = data.sessionControl || {};
+    setFocusMode(true);
+    $("resultsView")?.classList.add("hidden");
 
     $("attemptView")?.classList.remove("hidden");
     setText("attemptTitle", data.attempt?.prueba?.nombre || "Simulacro activo");
@@ -457,6 +467,7 @@
   };
 
   const renderResults = (result) => {
+    setFocusMode(false);
     const areaRows = (result.areaResults || []).map((item) => ({
       area: item.area,
       porcentaje: Number(item.porcentaje ?? item.porcentajeArea ?? 0),
@@ -515,14 +526,13 @@
       .map((item) => {
         const date = item.fechaFin || item.fechaInicio;
         const parsed = date ? new Date(date) : null;
-        return `<tr>
-          <td>${item.exam?.nombre || "-"}</td>
-          <td>${item.exam?.tipoPrueba || "-"}</td>
-          <td>${parsed && !Number.isNaN(parsed.getTime()) ? parsed.toLocaleString() : "-"}</td>
-          <td>${Number(item.porcentajeTotal ?? 0).toFixed(2)}%</td>
-          <td>${item.nivelDesempeno || "-"}</td>
-          <td><button class="btn-soft history-view-btn" data-attempt-id="${item.attemptId}" type="button">Ver</button></td>
-        </tr>`;
+        return `<tr>${td("Prueba", item.exam?.nombre || "-")}${td("Tipo", item.exam?.tipoPrueba || "-")}${td(
+          "Fecha",
+          parsed && !Number.isNaN(parsed.getTime()) ? parsed.toLocaleString() : "-"
+        )}${td("Porcentaje", `${Number(item.porcentajeTotal ?? 0).toFixed(2)}%`)}${td("Nivel", item.nivelDesempeno || "-")}${td(
+          "Accion",
+          `<button class="btn-soft history-view-btn" data-attempt-id="${item.attemptId}" type="button">Ver</button>`
+        )}</tr>`;
       })
       .join("");
 
@@ -777,6 +787,7 @@
     $("viewResultsBtn")?.addEventListener("click", async () => {
       try {
         await loadResultsHistory();
+        setFocusMode(false);
         $("resultsView")?.classList.remove("hidden");
       } catch (error) {
         setStatus("portalStatus", error.message, "bad");
@@ -791,6 +802,11 @@
 
   const bootstrap = async () => {
     bindEvents();
+    window.addEventListener("beforeunload", (event) => {
+      if (!state.attemptId) return;
+      event.preventDefault();
+      event.returnValue = "";
+    });
     if (!state.token) {
       showView({ login: true, portal: false });
       return;

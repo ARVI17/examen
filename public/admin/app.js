@@ -28,8 +28,17 @@
     charts: {},
     dashboardData: null,
     classroomData: null,
+    generatedQuestions: [],
+    generatedQuestionsTotal: 0,
     editingStudentId: null,
     editingSchoolId: null,
+    visibleRows: {
+      dashboard: 15,
+      students: 20,
+      exams: 20,
+      classroom: 20,
+      ai: 20
+    },
     simulator: {
       attemptId: null,
       questionDeck: [],
@@ -196,6 +205,37 @@
       .trim();
 
   const chartColors = ["#2563eb", "#0f766e", "#7c3aed", "#d97706", "#dc2626", "#475569"];
+  const TABLE_STEP = {
+    dashboard: 15,
+    students: 20,
+    exams: 20,
+    classroom: 20,
+    ai: 20
+  };
+
+  const td = (label, value, extraClass = "") =>
+    `<td data-label="${escapeHtml(label)}"${extraClass ? ` class="${extraClass}"` : ""}>${value}</td>`;
+
+  const formatText = (value) => escapeHtml(value === undefined || value === null || value === "" ? "-" : value);
+
+  const withVisibleRows = (key, rows) => {
+    const limit = state.visibleRows[key] || TABLE_STEP[key] || 20;
+    return rows.slice(0, limit);
+  };
+
+  const updateTableMeta = (metaId, buttonId, shown, total) => {
+    const meta = $(metaId);
+    const button = $(buttonId);
+    if (meta) meta.textContent = `Mostrando ${shown} de ${total}`;
+    if (button) {
+      button.classList.toggle("is-hidden", shown >= total);
+      button.disabled = shown >= total;
+    }
+  };
+
+  const resetVisibleRows = (key) => {
+    state.visibleRows[key] = TABLE_STEP[key] || 20;
+  };
 
   const renderChart = (id, config) => {
     if (!window.Chart) return;
@@ -478,22 +518,26 @@
     renderRecommendations("dashRecommendations", makeRecommendations(byArea, data.averageGlobalPercentage));
     renderRecommendations("globalRecommendations", makeRecommendations(byAreaBase, data.averageGlobalPercentage));
 
+    const visibleRows = withVisibleRows("dashboard", rows);
     if (!rows.length) {
       $("dashRows").innerHTML = "<tr><td colspan='7'>No hay resultados para los filtros seleccionados.</td></tr>";
       setStatus("dashRowsStatus", "No hay resultados para los filtros seleccionados.", "warn");
+      updateTableMeta("dashRowsMeta", "dashRowsMoreBtn", 0, 0);
     } else {
-      $("dashRows").innerHTML = rows
+      $("dashRows").innerHTML = visibleRows
         .map(
           (row, index) =>
-            `<tr><td>${index + 1}</td><td>${escapeHtml(row.studentName)}</td><td>${escapeHtml(row.document)}</td><td>${escapeHtml(
-              row.examName
-            )}</td><td>${renderBadge(row.percentage, `${row.percentage.toFixed(1)}%`)}</td><td>${renderBadge(
-              row.percentage,
-              row.level.label
-            )}</td><td>${escapeHtml(formatShortDate(row.finishedAt))}</td></tr>`
+            `<tr>${td("#", index + 1)}${td("Estudiante", formatText(row.studentName))}${td("Documento", formatText(row.document))}${td(
+              "Prueba",
+              formatText(row.examName)
+            )}${td("Porcentaje", renderBadge(row.percentage, `${row.percentage.toFixed(1)}%`))}${td(
+              "Nivel",
+              renderBadge(row.percentage, row.level.label)
+            )}${td("Fecha", formatText(formatShortDate(row.finishedAt)))}</tr>`
         )
         .join("");
       setStatus("dashRowsStatus", `Resultados visibles: ${rows.length}`, "ok");
+      updateTableMeta("dashRowsMeta", "dashRowsMoreBtn", visibleRows.length, rows.length);
     }
 
     renderChart("subjectChart", {
@@ -537,6 +581,7 @@
       const response = await apiRequest(`/reports/dashboard/overview${query}`);
       const data = response.data || {};
       state.dashboardData = data;
+      resetVisibleRows("dashboard");
       syncDashboardFilterOptions(data);
       renderDashboard();
     } catch (error) {
@@ -680,6 +725,32 @@
     }
   };
 
+  const renderStudentsTable = () => {
+    const visibleStudents = withVisibleRows("students", state.students);
+    if (!state.students.length) {
+      $("stListRows").innerHTML = "<tr><td colspan='6'>No hay estudiantes para los filtros actuales.</td></tr>";
+      updateTableMeta("stListMeta", "stListMoreBtn", 0, 0);
+      return;
+    }
+
+    $("stListRows").innerHTML = visibleStudents
+      .map(
+        (student) => `<tr>${td("Documento", formatText(student.numeroIdentificacion))}${td(
+          "Nombre",
+          formatText(`${student.nombres} ${student.apellidos}`)
+        )}${td("Grado", formatText(student.grado || "-"))}${td("Grupo", formatText(student.grupo || "-"))}${td(
+          "Institucion",
+          formatText(student.institucion || "-")
+        )}${td(
+          "Acciones",
+          `<div class="actions"><button class="ghost-button" data-st-edit="${student.id}">Editar</button><button class="ghost-button" data-st-delete="${student.id}">Eliminar</button></div>`
+        )}</tr>`
+      )
+      .join("");
+
+    updateTableMeta("stListMeta", "stListMoreBtn", visibleStudents.length, state.students.length);
+  };
+
   const listStudents = async () => {
     try {
       const query = toQueryString({
@@ -691,16 +762,9 @@
       });
       const response = await apiRequest(`/students${query}`);
       state.students = response.data?.items || [];
+      resetVisibleRows("students");
       setStatus("stListStatus", `Total: ${response.data?.total ?? state.students.length}`, "ok");
-      $("stListRows").innerHTML = state.students
-        .map(
-          (student) => `<tr><td>${escapeHtml(student.numeroIdentificacion)}</td><td>${escapeHtml(
-            `${student.nombres} ${student.apellidos}`
-          )}</td><td>${escapeHtml(student.grado || "-")}</td><td>${escapeHtml(student.grupo || "-")}</td><td>${escapeHtml(
-            student.institucion || "-"
-          )}</td><td><button class="ghost-button" data-st-edit="${student.id}">Editar</button><button class="ghost-button" data-st-delete="${student.id}">Eliminar</button></td></tr>`
-        )
-        .join("");
+      renderStudentsTable();
     } catch (error) {
       setStatus("stListStatus", error.message, "bad");
     }
@@ -814,6 +878,29 @@
     }
   };
 
+  const renderExamsTable = () => {
+    const visibleExams = withVisibleRows("exams", state.exams);
+    if (!state.exams.length) {
+      $("examRows").innerHTML = "<tr><td colspan='6'>No hay pruebas para los filtros actuales.</td></tr>";
+      updateTableMeta("examRowsMeta", "examRowsMoreBtn", 0, 0);
+      return;
+    }
+
+    $("examRows").innerHTML = visibleExams
+      .map(
+        (exam) => `<tr>${td("Prueba", formatText(exam.nombre))}${td("Tipo", formatText(exam.tipoPrueba))}${td(
+          "Grado",
+          formatText(exam.gradoObjetivo)
+        )}${td("Preguntas", formatText(exam.totalPreguntas ?? 0))}${td(
+          "Estado",
+          renderBadge(exam.estado === "PUBLICADO" ? 80 : 45, exam.estado)
+        )}${td("Accion", `<button class="ghost-button" data-exam-publish="${exam.id}">Publicar</button>`)}</tr>`
+      )
+      .join("");
+
+    updateTableMeta("examRowsMeta", "examRowsMoreBtn", visibleExams.length, state.exams.length);
+  };
+
   const listExams = async () => {
     try {
       const query = toQueryString({
@@ -823,21 +910,13 @@
       });
       const response = await apiRequest(`/exams${query}`);
       state.exams = response.data?.items || [];
+      resetVisibleRows("exams");
       fillSelect("simExamSelect", state.exams, {
         placeholder: "Selecciona prueba",
-        label: (item) => `${item.nombre} · ${item.tipoPrueba} · ${item.gradoObjetivo}`
+        label: (item) => `${item.nombre} | ${item.tipoPrueba} | ${item.gradoObjetivo}`
       });
       syncDashboardFilterOptions(state.dashboardData || {});
-      $("examRows").innerHTML = state.exams
-        .map(
-          (exam) => `<tr><td>${escapeHtml(exam.nombre)}</td><td>${escapeHtml(exam.tipoPrueba)}</td><td>${escapeHtml(
-            exam.gradoObjetivo
-          )}</td><td>${escapeHtml(exam.totalPreguntas ?? 0)}</td><td>${renderBadge(
-            exam.estado === "PUBLICADO" ? 80 : 45,
-            exam.estado
-          )}</td><td><button class="ghost-button" data-exam-publish="${exam.id}">Publicar</button></td></tr>`
-        )
-        .join("");
+      renderExamsTable();
     } catch (error) {
       setStatus("examStatusBox", error.message, "bad");
     }
@@ -1037,22 +1116,29 @@
       "classroomKpis"
     );
 
+    const visibleRows = withVisibleRows("classroom", rows);
     if (!rows.length) {
       $("classroomRows").innerHTML = "<tr><td colspan='9'>No hay resultados para los filtros seleccionados.</td></tr>";
       setStatus("repClassStatus", "No hay resultados para los filtros seleccionados.", "warn");
+      updateTableMeta("classroomRowsMeta", "classroomRowsMoreBtn", 0, 0);
     } else {
-      $("classroomRows").innerHTML = rows
+      $("classroomRows").innerHTML = visibleRows
         .map(
           (row, index) =>
-            `<tr><td>${index + 1}</td><td>${escapeHtml(`${row.nombres || ""} ${row.apellidos || ""}`.trim())}</td><td>${escapeHtml(
-              row.numeroIdentificacion || "-"
-            )}</td><td>${escapeHtml(row.grado || "-")}</td><td>${escapeHtml(row.grupo || "-")}</td><td>${row.attempts ?? 0}</td><td>${renderBadge(
-              row.percentage,
-              `${row.percentage.toFixed(1)}%`
-            )}</td><td>${renderBadge(row.percentage, row.level.label)}</td><td>${escapeHtml(mapRiskMessage(row.level.key))}</td></tr>`
+            `<tr>${td("#", index + 1)}${td("Estudiante", formatText(`${row.nombres || ""} ${row.apellidos || ""}`.trim()))}${td(
+              "Documento",
+              formatText(row.numeroIdentificacion || "-")
+            )}${td("Grado", formatText(row.grado || "-"))}${td("Grupo", formatText(row.grupo || "-"))}${td(
+              "Intentos",
+              formatText(row.attempts ?? 0)
+            )}${td("Promedio", renderBadge(row.percentage, `${row.percentage.toFixed(1)}%`))}${td(
+              "Nivel",
+              renderBadge(row.percentage, row.level.label)
+            )}${td("Riesgo", formatText(mapRiskMessage(row.level.key)))}</tr>`
         )
         .join("");
       setStatus("repClassStatus", `Resultados visibles: ${rows.length}`, "ok");
+      updateTableMeta("classroomRowsMeta", "classroomRowsMoreBtn", visibleRows.length, rows.length);
     }
 
     renderRecommendations("classroomSummaryCards", makeRecommendations(bySubject, totals.averagePercentage ?? 0));
@@ -1107,6 +1193,7 @@
         { placeholder: "Todas las materias" }
       );
       if (selectedSubject) $("repClassSubjectSelect").value = selectedSubject;
+      resetVisibleRows("classroom");
       $("repClassOutput").textContent = pretty(data);
       renderClassroomReport();
     } catch (error) {
@@ -1160,6 +1247,113 @@
     }
   };
 
+  const AI_STATUS_FLOW = [
+    "BORRADOR",
+    "GENERADA_IA",
+    "EN_REVISION",
+    "REVISADA",
+    "APROBADA",
+    "PUBLICADA",
+    "RECHAZADA",
+    "ARCHIVADA"
+  ];
+
+  const aiStatusWeight = (status) => {
+    if (status === "PUBLICADA" || status === "APROBADA") return 92;
+    if (status === "REVISADA") return 84;
+    if (status === "EN_REVISION") return 74;
+    if (status === "GENERADA_IA" || status === "BORRADOR") return 64;
+    if (status === "RECHAZADA" || status === "ARCHIVADA") return 32;
+    return 50;
+  };
+
+  const aiStatusOptions = (selected) =>
+    AI_STATUS_FLOW.map((status) => `<option value="${status}" ${status === selected ? "selected" : ""}>${status}</option>`).join("");
+
+  const renderAiQuestions = () => {
+    const rowsNode = $("aiQuestionRows");
+    if (!rowsNode) return;
+
+    const selectedStatus = $("aiStatusFilter")?.value || "";
+    const search = normalizeSearch($("aiSearch")?.value || "");
+    const filtered = (state.generatedQuestions || []).filter((item) => {
+      const generationStatus = item.generation?.status || "BORRADOR";
+      if (selectedStatus && generationStatus !== selectedStatus) return false;
+      if (!search) return true;
+      const text = normalizeSearch(`${item.codigoInterno || ""} ${item.enunciado || ""}`);
+      return text.includes(search);
+    });
+    const visible = withVisibleRows("ai", filtered);
+
+    if (!filtered.length) {
+      rowsNode.innerHTML = "<tr><td colspan='7'>No hay preguntas IA para los filtros seleccionados.</td></tr>";
+      updateTableMeta("aiRowsMeta", "aiRowsMoreBtn", 0, 0);
+      setStatus("aiQuestionsStatus", "No hay preguntas IA para mostrar.", "warn");
+      return;
+    }
+
+    rowsNode.innerHTML = visible
+      .map((item) => {
+        const generationStatus = item.generation?.status || "BORRADOR";
+        const source = item.source?.name || item.source?.filename || "-";
+        const questionPreview = String(item.enunciado || "").slice(0, 140);
+        const actionCell =
+          state.user?.role === "ADMIN"
+            ? `<div class="actions"><button class="ghost-button" type="button" data-ai-view="${item.id}">Ver</button><select data-ai-status-select="${
+                item.id
+              }">${aiStatusOptions(generationStatus)}</select><button class="primary-button" type="button" data-ai-save="${
+                item.id
+              }">Actualizar</button></div>`
+            : `<button class="ghost-button" type="button" data-ai-view="${item.id}">Ver</button>`;
+        return `<tr>${td("Fecha", formatText(formatShortDate(item.createdAt || item.generation?.createdAt)))}${td(
+          "Codigo",
+          formatText(item.codigoInterno || "-")
+        )}${td("Materia", formatText(item.area || "-"))}${td("Dificultad", formatText(item.nivelDificultad || "-"))}${td(
+          "Estado IA",
+          renderBadge(aiStatusWeight(generationStatus), generationStatus)
+        )}${td("Pregunta", `${formatText(questionPreview)}<br><small class="table-meta">Fuente: ${formatText(source)}</small>`)}${td(
+          "Accion",
+          actionCell
+        )}</tr>`;
+      })
+      .join("");
+
+    updateTableMeta("aiRowsMeta", "aiRowsMoreBtn", visible.length, filtered.length);
+    setStatus("aiQuestionsStatus", `Preguntas IA visibles: ${filtered.length}`, "ok");
+  };
+
+  const loadGeneratedQuestions = async () => {
+    try {
+      setButtonLoading("aiQuestionsLoadBtn", true, "Actualizando...");
+      const query = toQueryString({
+        status: $("aiStatusFilter")?.value || "",
+        limit: 120
+      });
+      const response = await apiRequest(`/questions/generated${query}`);
+      state.generatedQuestions = response.data?.items || [];
+      state.generatedQuestionsTotal = response.data?.total ?? state.generatedQuestions.length;
+      resetVisibleRows("ai");
+      renderAiQuestions();
+    } catch (error) {
+      setStatus("aiQuestionsStatus", error.message, "bad");
+    } finally {
+      setButtonLoading("aiQuestionsLoadBtn", false);
+    }
+  };
+
+  const updateAiQuestionStatus = async (questionId, status) => {
+    if (state.user?.role !== "ADMIN") {
+      setStatus("aiQuestionsStatus", "Solo ADMIN puede actualizar estado IA.", "warn");
+      return;
+    }
+    await apiRequest(`/questions/${questionId}/ai-status`, {
+      method: "PATCH",
+      body: { status }
+    });
+    setStatus("aiQuestionsStatus", `Estado actualizado a ${status}.`, "ok");
+    await loadGeneratedQuestions();
+  };
+
   const findPendingStrictAttemptByStudent = async () => {
     try {
       const doc = $("simStrictStudentDoc").value.trim();
@@ -1190,7 +1384,7 @@
   const bootstrapData = async () => {
     await loadConnectionInfo();
     await listSchools();
-    await Promise.allSettled([listGroups(), listStudents(), listUsers(), listExams(), loadDashboard()]);
+    await Promise.allSettled([listGroups(), listStudents(), listUsers(), listExams(), loadDashboard(), loadGeneratedQuestions()]);
   };
 
   const bindEvents = () => {
@@ -1210,12 +1404,29 @@
       $("dashLevelSelect").value = "";
       $("dashStudentSearch").value = "";
       $("dashSubjectSelect").value = "";
+      resetVisibleRows("dashboard");
       state.dashboardData && renderDashboard();
     });
-    $("dashExamSelect").addEventListener("change", () => state.dashboardData && renderDashboard());
-    $("dashLevelSelect").addEventListener("change", () => state.dashboardData && renderDashboard());
-    $("dashSubjectSelect").addEventListener("change", () => state.dashboardData && renderDashboard());
-    $("dashStudentSearch").addEventListener("input", () => state.dashboardData && renderDashboard());
+    $("dashRowsMoreBtn").addEventListener("click", () => {
+      state.visibleRows.dashboard += TABLE_STEP.dashboard;
+      state.dashboardData && renderDashboard();
+    });
+    $("dashExamSelect").addEventListener("change", () => {
+      resetVisibleRows("dashboard");
+      state.dashboardData && renderDashboard();
+    });
+    $("dashLevelSelect").addEventListener("change", () => {
+      resetVisibleRows("dashboard");
+      state.dashboardData && renderDashboard();
+    });
+    $("dashSubjectSelect").addEventListener("change", () => {
+      resetVisibleRows("dashboard");
+      state.dashboardData && renderDashboard();
+    });
+    $("dashStudentSearch").addEventListener("input", () => {
+      resetVisibleRows("dashboard");
+      state.dashboardData && renderDashboard();
+    });
     $("dashSchoolSelect").addEventListener("change", async () => {
       await listGroups($("dashSchoolSelect").value);
       $("repClassSchoolSelect").value = $("dashSchoolSelect").value || "";
@@ -1253,6 +1464,10 @@
     });
     $("stCancelEditBtn").addEventListener("click", resetStudentForm);
     $("stListBtn").addEventListener("click", listStudents);
+    $("stListMoreBtn").addEventListener("click", () => {
+      state.visibleRows.students += TABLE_STEP.students;
+      renderStudentsTable();
+    });
     $("stTemplateBtn").addEventListener("click", () => downloadWithAuth("/students/bulk/template.csv", "students_bulk_template.csv"));
     $("stBulkBtn").addEventListener("click", uploadStudentsCsv);
     $("stListRows").addEventListener("click", async (event) => {
@@ -1278,6 +1493,10 @@
       void createExam();
     });
     $("examLoadBtn").addEventListener("click", listExams);
+    $("examRowsMoreBtn").addEventListener("click", () => {
+      state.visibleRows.exams += TABLE_STEP.exams;
+      renderExamsTable();
+    });
     $("simLoadExamsBtn").addEventListener("click", listExams);
     $("examRows").addEventListener("click", async (event) => {
       const id = event.target?.dataset?.examPublish;
@@ -1331,11 +1550,25 @@
       $("repClassLevelSelect").value = "";
       $("repClassStudentSearch").value = "";
       $("repClassSubjectSelect").value = "";
+      resetVisibleRows("classroom");
       state.classroomData && renderClassroomReport();
     });
-    $("repClassLevelSelect").addEventListener("change", () => state.classroomData && renderClassroomReport());
-    $("repClassSubjectSelect").addEventListener("change", () => state.classroomData && renderClassroomReport());
-    $("repClassStudentSearch").addEventListener("input", () => state.classroomData && renderClassroomReport());
+    $("repClassLevelSelect").addEventListener("change", () => {
+      resetVisibleRows("classroom");
+      state.classroomData && renderClassroomReport();
+    });
+    $("repClassSubjectSelect").addEventListener("change", () => {
+      resetVisibleRows("classroom");
+      state.classroomData && renderClassroomReport();
+    });
+    $("repClassStudentSearch").addEventListener("input", () => {
+      resetVisibleRows("classroom");
+      state.classroomData && renderClassroomReport();
+    });
+    $("classroomRowsMoreBtn").addEventListener("click", () => {
+      state.visibleRows.classroom += TABLE_STEP.classroom;
+      state.classroomData && renderClassroomReport();
+    });
     $("repClassCsvBtn").addEventListener("click", () =>
       downloadWithAuth(`/reports/classroom/summary/export.csv${buildClassroomReportQuery()}`, "classroom_summary.csv")
     );
@@ -1358,6 +1591,44 @@
     $("covLoadBtn").addEventListener("click", loadQuestionReadiness);
     $("materialLoadBtn").addEventListener("click", loadMaterialCoverage);
     $("filesCsvBtn").addEventListener("click", () => downloadWithAuth("/reports/files/coverage/export.csv", "files_coverage.csv"));
+
+    $("aiQuestionsLoadBtn").addEventListener("click", () => void loadGeneratedQuestions());
+    $("aiApplyFiltersBtn").addEventListener("click", () => {
+      resetVisibleRows("ai");
+      renderAiQuestions();
+    });
+    $("aiRowsMoreBtn").addEventListener("click", () => {
+      state.visibleRows.ai += TABLE_STEP.ai;
+      renderAiQuestions();
+    });
+    $("aiStatusFilter").addEventListener("change", () => void loadGeneratedQuestions());
+    $("aiSearch").addEventListener("input", () => {
+      resetVisibleRows("ai");
+      renderAiQuestions();
+    });
+    $("aiQuestionRows").addEventListener("click", async (event) => {
+      const target = event.target?.closest?.("[data-ai-view], [data-ai-save]");
+      const viewId = target?.dataset?.aiView;
+      const saveId = target?.dataset?.aiSave;
+      if (viewId) {
+        const item = state.generatedQuestions.find((question) => question.id === viewId);
+        if (!item) return;
+        const detailNode = $("aiQuestionDetail");
+        detailNode.textContent = pretty(item);
+        detailNode.classList.remove("is-collapsed");
+        return;
+      }
+      if (saveId) {
+        const select = document.querySelector(`select[data-ai-status-select="${saveId}"]`);
+        const status = select?.value;
+        if (!status) return;
+        try {
+          await updateAiQuestionStatus(saveId, status);
+        } catch (error) {
+          setStatus("aiQuestionsStatus", error.message, "bad");
+        }
+      }
+    });
   };
 
   const init = async () => {
