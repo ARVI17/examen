@@ -410,6 +410,9 @@ const ensureDir = (filePath: string) => {
 const main = async () => {
   const startedAt = Date.now();
   const apply = hasFlag("apply");
+  const nodeEnv = (process.env.NODE_ENV || "development").trim().toLowerCase();
+  const localProductionPrepare = (process.env.LOCAL_PRODUCTION_PREPARE || "").trim().toLowerCase() === "true";
+  const confirmLocalProduction = hasFlag("confirm-local-production");
   const sourceMode = getArgValue("source", "auto").toLowerCase();
   const datasetId = getArgValue("dataset-id", "cfw5-qzt5");
   const csvPath = getArgValue("csv", path.join("storage", "materiales_apoyo", "colegios_colombia.csv"));
@@ -419,6 +422,12 @@ const main = async () => {
   const defaultDepartment = normalizeUpper(getArgValue("default-departamento", departmentFilter));
   const limit = Number(getArgValue("limit", "0"));
   const reportPath = getArgValue("report", path.join("storage", "reportes", "seed_colombia_schools_log.json"));
+
+  if (apply && nodeEnv === "production" && (!localProductionPrepare || !confirmLocalProduction)) {
+    throw new Error(
+      "Bloqueado en production: usa LOCAL_PRODUCTION_PREPARE=true y --confirm-local-production para importacion real controlada."
+    );
+  }
 
   let sourceType: "socrata" | "csv" = "socrata";
   let source = "";

@@ -31,7 +31,9 @@
     "db:reset:clean:dry": "ts-node scripts/db_reset_clean.ts --dry-run",
     "db:reset:clean": "ts-node scripts/db_reset_clean.ts --confirm-reset",
     "db:prepare:demo:dry": "ts-node scripts/db_prepare_demo.ts --dry-run",
-    "db:prepare:demo": "ts-node scripts/db_prepare_demo.ts --confirm-reset"
+    "db:prepare:demo": "ts-node scripts/db_prepare_demo.ts --confirm-reset",
+    "db:prepare:local-production:dry": "ts-node scripts/db_prepare_local_production.ts --dry-run",
+    "db:prepare:local-production": "ts-node scripts/db_prepare_local_production.ts --confirm-local-production-reset"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

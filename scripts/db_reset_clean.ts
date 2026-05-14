@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { spawnSync } from "child_process";
 
 const argv = process.argv.slice(2);
@@ -14,13 +16,16 @@ const getArgValue = (name: string, fallback: string) => {
 
 const dryRun = hasFlag("dry-run");
 const confirmed = hasFlag("confirm-reset");
+const confirmedLocalProductionReset = hasFlag("confirm-local-production-reset");
 const nodeEnv = (process.env.NODE_ENV || "development").trim().toLowerCase();
 const databaseUrl = process.env.DATABASE_URL || "";
+const localProductionPrepare = (process.env.LOCAL_PRODUCTION_PREPARE || "").trim().toLowerCase() === "true";
 const allowNonLocalDb = getArgValue("allow-non-local", "false").toLowerCase() === "true";
 const withSeed = getArgValue("with-seed", "true").toLowerCase() !== "false";
 const withColombia = getArgValue("with-colombia", "true").toLowerCase() !== "false";
 const departamento = getArgValue("departamento", "").trim();
 const csvPath = getArgValue("csv", "").trim();
+const backupFile = getArgValue("backup-file", "").trim();
 
 if (!dryRun && !confirmed) {
   console.error("Debes confirmar la operacion con --confirm-reset");
@@ -28,8 +33,22 @@ if (!dryRun && !confirmed) {
 }
 
 if (nodeEnv === "production") {
-  console.error("Bloqueado: db:reset:clean no se permite en NODE_ENV=production");
-  process.exit(1);
+  if (!localProductionPrepare || !confirmedLocalProductionReset) {
+    console.error(
+      "Bloqueado en production: usa LOCAL_PRODUCTION_PREPARE=true y --confirm-local-production-reset para entorno LAN controlado."
+    );
+    process.exit(1);
+  }
+  if (!backupFile) {
+    console.error("Bloqueado en production: debes indicar --backup-file=<ruta_backup.sql> antes de reset.");
+    process.exit(1);
+  }
+
+  const backupAbsPath = path.resolve(process.cwd(), backupFile);
+  if (!fs.existsSync(backupAbsPath)) {
+    console.error(`Bloqueado en production: backup no encontrado en ${backupAbsPath}`);
+    process.exit(1);
+  }
 }
 
 if (!databaseUrl) {
@@ -68,6 +87,9 @@ if (withSeed) {
 
 if (withColombia) {
   const args = ["ts-node", "scripts/import_colombia_schools.ts", "--apply"];
+  if (nodeEnv === "production") {
+    args.push("--confirm-local-production");
+  }
   if (departamento) {
     args.push(`--departamento=${departamento}`);
   }
