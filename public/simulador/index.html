@@ -31,6 +31,7 @@
         font-family: "Segoe UI", Tahoma, sans-serif;
         background: radial-gradient(circle at 95% -5%, #dbeafe 0%, transparent 28%), var(--bg);
         color: var(--text);
+        overflow-x: hidden;
       }
 
       .container {
@@ -132,6 +133,7 @@
       button {
         border: 0;
         padding: 11px 14px;
+        min-height: 44px;
         font-weight: 700;
         cursor: pointer;
       }
@@ -186,8 +188,13 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        flex-wrap: wrap;
         gap: 12px;
         padding: 16px 18px;
+      }
+
+      .header-actions {
+        width: min(220px, 100%);
       }
 
       .header p {
@@ -206,7 +213,7 @@
       }
 
       .section {
-        padding: 16px;
+        padding: 14px;
       }
 
       .meta {
@@ -231,7 +238,7 @@
       .exam-shell {
         margin-top: 12px;
         display: grid;
-        grid-template-columns: 300px minmax(0, 1fr);
+        grid-template-columns: minmax(250px, 320px) minmax(0, 1fr);
         gap: 12px;
       }
 
@@ -291,11 +298,12 @@
 
       .row {
         display: flex;
+        flex-wrap: wrap;
         gap: 8px;
       }
 
       .row button {
-        flex: 1;
+        flex: 1 1 140px;
       }
 
       .kpis {
@@ -331,7 +339,7 @@
 
       .bar-row {
         display: grid;
-        grid-template-columns: 170px 1fr 50px;
+        grid-template-columns: minmax(110px, 160px) minmax(0, 1fr) 48px;
         gap: 8px;
         align-items: center;
         font-size: 13px;
@@ -351,6 +359,7 @@
 
       .table-wrap {
         margin-top: 10px;
+        max-width: 100%;
         overflow-x: auto;
       }
 
@@ -414,6 +423,10 @@
 
         .row {
           flex-direction: column;
+        }
+
+        .row button {
+          min-width: 0;
         }
       }
 
@@ -517,7 +530,7 @@
             <h2>Simulador Saber 11</h2>
             <p id="studentMeta">Cargando estudiante...</p>
           </div>
-          <div style="width: 190px">
+          <div class="header-actions">
             <button id="logoutBtn" class="btn-danger" type="button">Cerrar sesion</button>
           </div>
         </header>

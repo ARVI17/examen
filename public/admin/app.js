@@ -113,6 +113,45 @@
     window.setTimeout(() => toast.classList.remove("show"), 2800);
   };
 
+  const syncCodeToggleLabel = (button, target) => {
+    if (!button || !target) return;
+    const hidden = target.classList.contains("is-collapsed");
+    const showLabel = button.dataset.showLabel || "Ver detalle";
+    const hideLabel = button.dataset.hideLabel || "Ocultar detalle";
+    button.textContent = hidden ? showLabel : hideLabel;
+  };
+
+  const toggleCodeBox = (targetId, button) => {
+    const target = $(targetId);
+    if (!target) return;
+    target.classList.toggle("is-collapsed");
+    syncCodeToggleLabel(button, target);
+  };
+
+  const copyCodeBox = async (targetId) => {
+    const target = $(targetId);
+    if (!target) return;
+    const text = target.textContent || "";
+    try {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const helper = document.createElement("textarea");
+        helper.value = text;
+        helper.setAttribute("readonly", "true");
+        helper.style.position = "fixed";
+        helper.style.opacity = "0";
+        document.body.appendChild(helper);
+        helper.select();
+        document.execCommand("copy");
+        helper.remove();
+      }
+      showToast("Detalle copiado");
+    } catch {
+      showToast("No fue posible copiar");
+    }
+  };
+
   const setButtonLoading = (buttonId, loading, label = "Procesando...") => {
     const button = $(buttonId);
     if (!button) return;
@@ -2121,6 +2160,14 @@
     $("sysBackupAssistBtn").addEventListener("click", () => void runSystemBackup(true));
     $("sysPrepareBtn").addEventListener("click", () => void runSystemLocalPrepare());
     $("sysOpsLoadBtn").addEventListener("click", () => void loadSystemOperations());
+    document.querySelectorAll("[data-code-toggle]").forEach((button) => {
+      const target = $(button.dataset.codeToggle || "");
+      syncCodeToggleLabel(button, target);
+      button.addEventListener("click", () => toggleCodeBox(button.dataset.codeToggle, button));
+    });
+    document.querySelectorAll("[data-code-copy]").forEach((button) => {
+      button.addEventListener("click", () => void copyCodeBox(button.dataset.codeCopy));
+    });
     $("sysChecklistList").addEventListener("change", async (event) => {
       const itemId = event.target?.dataset?.sysCheckToggle;
       if (!itemId) return;

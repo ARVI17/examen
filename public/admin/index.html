@@ -484,7 +484,7 @@
         </section>
 
         <section class="view" id="view-system">
-          <div class="content-grid two">
+          <div class="content-grid two system-grid">
             <article class="panel">
               <div class="panel-head">
                 <div><h2>Estado del sistema</h2><p>Salud general, LAN y servicios.</p></div>
@@ -496,16 +496,44 @@
               </div>
               <div id="sysStatusBox" class="status-message">Sin consulta.</div>
               <div id="sysStatusCards" class="stats-grid"></div>
-              <pre id="sysStatusOut" class="code-box">{}</pre>
+              <div class="code-tools">
+                <button
+                  class="ghost-button"
+                  type="button"
+                  data-code-toggle="sysStatusOut"
+                  data-show-label="Ver detalle JSON"
+                  data-hide-label="Ocultar detalle JSON"
+                >
+                  Ver detalle JSON
+                </button>
+                <button class="ghost-button" type="button" data-code-copy="sysStatusOut">Copiar diagnostico</button>
+              </div>
+              <pre id="sysStatusOut" class="code-box is-collapsed">{}</pre>
             </article>
             <article class="panel">
               <div class="panel-head"><div><h2>Backup</h2><p>Respaldo obligatorio antes de operaciones sensibles.</p></div></div>
+              <ul class="mini-list">
+                <li>Genera backup antes de importar o preparar produccion local.</li>
+                <li>Conserva una copia fuera de esta carpeta y fuera de /public.</li>
+              </ul>
               <div class="actions">
                 <button id="sysBackupCreateBtn" class="primary-button" type="button">Crear backup</button>
                 <button id="sysBackupAssistBtn" class="ghost-button" type="button">Asistente manual</button>
               </div>
               <div id="sysBackupStatus" class="status-message">Sin backup registrado en esta sesion.</div>
-              <pre id="sysBackupOut" class="code-box">{}</pre>
+              <div class="code-tools">
+                <button
+                  class="ghost-button"
+                  type="button"
+                  data-code-toggle="sysBackupOut"
+                  data-show-label="Ver detalle backup"
+                  data-hide-label="Ocultar detalle backup"
+                >
+                  Ver detalle backup
+                </button>
+                <button class="ghost-button" type="button" data-code-copy="sysBackupOut">Copiar detalle</button>
+              </div>
+              <pre id="sysBackupOut" class="code-box is-collapsed">{}</pre>
             </article>
           </div>
 
@@ -525,7 +553,19 @@
               <button id="sysApplyBtn" class="danger-button" type="button">Importar colegios</button>
             </div>
             <div id="sysImportStatus" class="status-message">Sin dry-run.</div>
-            <pre id="sysImportOut" class="code-box">{}</pre>
+            <div class="code-tools">
+              <button
+                class="ghost-button"
+                type="button"
+                data-code-toggle="sysImportOut"
+                data-show-label="Ver detalle de importacion"
+                data-hide-label="Ocultar detalle de importacion"
+              >
+                Ver detalle de importacion
+              </button>
+              <button class="ghost-button" type="button" data-code-copy="sysImportOut">Copiar detalle</button>
+            </div>
+            <pre id="sysImportOut" class="code-box is-collapsed">{}</pre>
           </article>
 
           <article class="panel">
@@ -543,10 +583,22 @@
               <button id="sysPrepareBtn" class="danger-button" type="button">Preparar produccion local</button>
             </div>
             <div id="sysPrepareStatus" class="status-message warn">Bloqueado por seguridad hasta completar requisitos.</div>
-            <pre id="sysPrepareOut" class="code-box">{}</pre>
+            <div class="code-tools">
+              <button
+                class="ghost-button"
+                type="button"
+                data-code-toggle="sysPrepareOut"
+                data-show-label="Ver detalle de preparacion"
+                data-hide-label="Ocultar detalle de preparacion"
+              >
+                Ver detalle de preparacion
+              </button>
+              <button class="ghost-button" type="button" data-code-copy="sysPrepareOut">Copiar detalle</button>
+            </div>
+            <pre id="sysPrepareOut" class="code-box is-collapsed">{}</pre>
           </article>
 
-          <div class="content-grid two">
+          <div class="content-grid two system-grid">
             <article class="panel">
               <div class="panel-head"><div><h2>Checklist de pruebas reales</h2><p>Marca validaciones LAN por rol.</p></div></div>
               <div id="sysChecklistStatus" class="status-message">Sin consulta.</div>
