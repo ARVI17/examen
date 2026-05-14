@@ -236,14 +236,23 @@ npm run ingest:kb:apply
 # Servidor MCP (stdio JSON-RPC)
 npm run mcp:server
 
-# Importador idempotente de colegios del Magdalena (dry-run)
-npm run seed:colegios:magdalena:dry
+# Importador idempotente de colegios Colombia (dry-run)
+npm run seed:colegios:colombia:dry
 
-# Aplicar importador en BD
-npm run seed:colegios:magdalena
+# Aplicar importador Colombia en BD
+npm run seed:colegios:colombia
 
-# Reset seguro solo dev/local (requiere --confirm interno)
-npm run db:reset:dev
+# Reset limpio solo local/staging (dry-run)
+npm run db:reset:clean:dry
+
+# Reset limpio solo local/staging (requiere confirmacion explicita)
+npm run db:reset:clean
+
+# Preparar entorno demo (dry-run)
+npm run db:prepare:demo:dry
+
+# Preparar entorno demo (opcional con lote IA controlado)
+npm run db:prepare:demo -- --with-ai=true --ai-count=6
 
 # Backup PostgreSQL (archivo .sql.gz + manifest)
 powershell -ExecutionPolicy Bypass -File .\scripts\db_backup.ps1
@@ -266,40 +275,44 @@ El log `storage/reportes/ingestion_kb_log.json` incluye metricas de clasificacio
 `keyFilesClassifiedAsKeyTable`, `keyFilesClassifiedAsStatement`, `keyFilesClassifiedAsUncertain`,
 `keyFilesSkippedByClassification` y detalle por archivo en `keyClassifications`.
 
-### Importacion colegios del Magdalena
+### Importacion colegios Colombia
 
-- Fuente oficial primaria soportada:
-  - Datos Abiertos Colombia dataset `c56g-ubd2`:
-    `INSTITUCIONES Y SEDES EDUCATIVAS, PUBLICAS Y PRIVADAS EN EL DEPARTAMENTO DEL MAGDALENA`.
+- Fuentes soportadas:
+  - Datos Abiertos Colombia (API Socrata) mediante `--dataset-id=<ID_DATASET>`.
+  - CSV oficial/local con columnas equivalentes.
 - El script soporta dos modos:
   - `source=socrata` (descarga por API Socrata)
   - `source=csv` (archivo local CSV)
 - Comandos:
   - Dry-run con Socrata:
-    `npm run seed:colegios:magdalena:dry`
+    `npm run seed:colegios:colombia:dry`
   - Aplicar con Socrata:
-    `npm run seed:colegios:magdalena`
+    `npm run seed:colegios:colombia`
   - Aplicar desde CSV local:
-    `npm run seed:colegios:magdalena -- --source=csv --csv=storage/materiales_apoyo/colegios_magdalena.csv`
+    `npm run seed:colegios:colombia -- --source=csv --csv=storage/materiales_apoyo/colegios_colombia.csv`
+  - Filtrar por departamento:
+    `npm run seed:colegios:colombia -- --departamento=MAGDALENA`
 - Normalizacion aplicada:
-  - Departamento en mayusculas (`MAGDALENA`)
+  - Departamento en mayusculas
   - Municipio en mayusculas
   - Sector normalizado a `OFICIAL` o `NO OFICIAL`
   - Dedupe por codigo DANE cuando existe; si no, por llave compuesta
   - Etiqueta concatenada:
-    - `MAGDALENA / MUNICIPIO / COLEGIO / SECTOR`
-    - `MAGDALENA / MUNICIPIO / ESTABLECIMIENTO / SEDE / SECTOR` (si hay sede)
+    - `DEPARTAMENTO / MUNICIPIO / COLEGIO / SECTOR`
+    - `DEPARTAMENTO / MUNICIPIO / ESTABLECIMIENTO / SEDE / SECTOR` (si hay sede)
 - Salida de auditoria:
-  - `storage/reportes/seed_magdalena_schools_log.json`
+  - `storage/reportes/seed_colombia_schools_log.json`
 
 ### Reset de base de datos (seguro)
 
-- `npm run db:reset:dev` ejecuta:
+- `npm run db:reset:clean` ejecuta:
   - `prisma migrate reset --force --skip-seed`
   - `npm run seed`
+  - `npm run seed:colegios:colombia`
 - Protecciones incluidas:
   - Bloqueo en `NODE_ENV=production`
-  - Bloqueo si `DATABASE_URL` no parece entorno local/dev
+  - Bloqueo si `DATABASE_URL` no parece entorno local/dev (salvo override explicito para staging controlado)
+  - Dry-run disponible (`npm run db:reset:clean:dry`)
 
 ## Hardening de produccion aplicado
 
