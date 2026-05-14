@@ -9,6 +9,7 @@
 - `42633f4`: selectores encadenados departamento/municipio/colegio en admin.
 - `63bc7d5`: guia de continuidad y flujos de catalogo Colombia.
 - `88adc39`: fuente nacional por defecto `cfw5-qzt5` validada.
+- `30d8f88` + `2997d16` + `4dd9903`: operacion del sistema segura desde admin (backend/UI/docs).
 
 ## Errores cerrados
 - Ruta legacy `/api/attempts/public/*` retirada del flujo activo del portal estudiante.
@@ -37,6 +38,7 @@
 - Prisma generate: `docker compose run --rm api npx prisma generate`
 - Build TS: `docker compose run --rm api npm run build`
 - Integracion: `docker compose run --rm api npm run test:integration`
+- Carga LAN controlada: `docker compose run --rm api npm run test:lan-load`
 
 ## Comandos prohibidos en produccion
 - `npx prisma migrate reset`
@@ -124,3 +126,4 @@ Etiqueta de busqueda:
 - Pipeline de importacion nacional con dataset oficial estable y versionado por fecha.
 - Politica formal de revision humana para publicar preguntas IA.
 - Observabilidad centralizada (errores UI + API + latencia DB) con alertas.
+- Prueba controlada en aula real con 50 equipos simultaneos y metricas comparativas (p50/p95 por endpoint).

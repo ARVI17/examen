@@ -288,6 +288,11 @@ LOCAL_PRODUCTION_PREPARE=true npm run db:prepare:local-production -- --backup-fi
 # PowerShell:
 $env:LOCAL_PRODUCTION_PREPARE='true'; npm run db:prepare:local-production -- --backup-file=backup_YYYYMMDD_HHMMSS.sql --with-ai=true --ai-count=5
 
+# Carga LAN controlada (solo lectura, sin mutaciones)
+npm run test:lan-load
+# En contenedor:
+docker compose run --rm api npm run test:lan-load
+
 # Backup PostgreSQL (archivo .sql.gz + manifest)
 powershell -ExecutionPolicy Bypass -File .\scripts\db_backup.ps1
 

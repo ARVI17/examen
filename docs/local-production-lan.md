@@ -40,6 +40,21 @@
 - Detener:
   - `docker compose down`
 
+## Prueba de carga LAN (no destructiva)
+- Script controlado:
+  - `npm run test:lan-load`
+- Variante desde contenedor:
+  - `docker compose run --rm api npm run test:lan-load`
+- Parametros opcionales:
+  - `LAN_LOAD_BASE_URL=http://api:4000`
+  - `LAN_LOAD_CONCURRENCY=5,10,25,50`
+  - `LAN_LOAD_DURATION_MS=15000`
+- Endpoints evaluados (solo lectura):
+  - `/health`, `/health/ready`, `/admin/`, `/simulador/`, `/connection-info`
+- Reglas:
+  - no ejecutar importaciones, backups ni preparacion local durante la carga
+  - revisar `docker compose logs api --tail=100` al finalizar
+
 ## Operacion web (solo ADMIN)
 - Abrir `http://<IP_LAN>:4000/admin/` y entrar a la seccion **Operacion del sistema**.
 - Funciones disponibles desde UI:
@@ -97,6 +112,13 @@
   - abrir `/simulador`, iniciar intento, responder, finalizar, ver resultado propio
 - API:
   - `/health` y `/health/ready` en `http://<IP_LAN>:4000`
+
+## Checklist rapido para 50 equipos LAN
+- Servidor por cable Ethernet (no WiFi).
+- IP fija o reserva DHCP en router.
+- Puerto 4000 abierto solo en perfil privado.
+- No ejecutar tareas pesadas (import/backup/IA) durante simulacro.
+- Validar primero con 10 equipos, luego 25, luego 50.
 
 ## Troubleshooting rapido
 - No conecta otro PC:
