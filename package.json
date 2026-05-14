@@ -33,7 +33,8 @@
     "db:prepare:demo:dry": "ts-node scripts/db_prepare_demo.ts --dry-run",
     "db:prepare:demo": "ts-node scripts/db_prepare_demo.ts --confirm-reset",
     "db:prepare:local-production:dry": "ts-node scripts/db_prepare_local_production.ts --dry-run",
-    "db:prepare:local-production": "ts-node scripts/db_prepare_local_production.ts --confirm-local-production-reset"
+    "db:prepare:local-production": "ts-node scripts/db_prepare_local_production.ts --confirm-local-production-reset",
+    "test:lan-load": "ts-node scripts/lan_smoke_load_test.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

@@ -83,6 +83,19 @@ const buildPreferredBaseUrl = (req: Request) => {
   };
 };
 
+const staticWebOptions = {
+  etag: true,
+  lastModified: true,
+  maxAge: "1h",
+  setHeaders: (res: Response, filePath: string) => {
+    if (filePath.endsWith(".html")) {
+      res.setHeader("Cache-Control", "no-cache, must-revalidate");
+      return;
+    }
+    res.setHeader("Cache-Control", "public, max-age=3600");
+  }
+};
+
 app.use(httpLogger);
 app.use(
   helmet({
@@ -162,8 +175,8 @@ app.use((req, res, next) => {
 
   next();
 });
-app.use("/admin", express.static(path.resolve(process.cwd(), "public", "admin")));
-app.use("/simulador", express.static(path.resolve(process.cwd(), "public", "simulador")));
+app.use("/admin", express.static(path.resolve(process.cwd(), "public", "admin"), staticWebOptions));
+app.use("/simulador", express.static(path.resolve(process.cwd(), "public", "simulador"), staticWebOptions));
 
 app.get("/", (_req, res) => {
   res.json({
