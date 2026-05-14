@@ -61,6 +61,7 @@
           <button class="nav-item" data-view="results"><i class="bi bi-table"></i><span>Resultados</span></button>
           <button class="nav-item" data-view="analysis"><i class="bi bi-graph-up-arrow"></i><span>Análisis</span></button>
           <button class="nav-item" data-view="reports"><i class="bi bi-file-earmark-bar-graph"></i><span>Reportes</span></button>
+          <button class="nav-item" data-view="system"><i class="bi bi-shield-check"></i><span>Operacion</span></button>
           <button class="nav-item" data-view="settings"><i class="bi bi-gear"></i><span>Configuración</span></button>
         </nav>
         <div class="sidebar-footer">
@@ -480,6 +481,91 @@
             </div>
             <pre id="aiQuestionDetail" class="code-box is-collapsed">{}</pre>
           </article>
+        </section>
+
+        <section class="view" id="view-system">
+          <div class="content-grid two">
+            <article class="panel">
+              <div class="panel-head">
+                <div><h2>Estado del sistema</h2><p>Salud general, LAN y servicios.</p></div>
+                <div class="actions">
+                  <button id="sysStatusBtn" class="ghost-button" type="button">Estado</button>
+                  <button id="sysLanBtn" class="ghost-button" type="button">LAN</button>
+                  <button id="sysHealthBtn" class="primary-button" type="button">Health</button>
+                </div>
+              </div>
+              <div id="sysStatusBox" class="status-message">Sin consulta.</div>
+              <div id="sysStatusCards" class="stats-grid"></div>
+              <pre id="sysStatusOut" class="code-box">{}</pre>
+            </article>
+            <article class="panel">
+              <div class="panel-head"><div><h2>Backup</h2><p>Respaldo obligatorio antes de operaciones sensibles.</p></div></div>
+              <div class="actions">
+                <button id="sysBackupCreateBtn" class="primary-button" type="button">Crear backup</button>
+                <button id="sysBackupAssistBtn" class="ghost-button" type="button">Asistente manual</button>
+              </div>
+              <div id="sysBackupStatus" class="status-message">Sin backup registrado en esta sesion.</div>
+              <pre id="sysBackupOut" class="code-box">{}</pre>
+            </article>
+          </div>
+
+          <article class="panel">
+            <div class="panel-head"><div><h2>Catalogo de colegios Colombia</h2><p>Dry-run y aplicacion protegida por confirmaciones.</p></div></div>
+            <div class="filter-row">
+              <label>Dataset ID<input id="sysDatasetId" value="cfw5-qzt5" /></label>
+              <label>Departamento<input id="sysDept" placeholder="MAGDALENA" /></label>
+              <label>Municipio<input id="sysMunicipio" placeholder="SANTA MARTA" /></label>
+              <label>Busqueda<input id="sysSearch" placeholder="PALOMINITO" /></label>
+              <label>Limite<input id="sysLimit" type="number" min="1" max="10000" value="5000" /></label>
+              <button id="sysDryRunBtn" class="primary-button" type="button">Ejecutar dry-run</button>
+            </div>
+            <div class="filter-row filter-row-extended">
+              <label>Confirmacion exacta<input id="sysApplyConfirm" placeholder="IMPORTAR COLEGIOS COLOMBIA" /></label>
+              <label class="checkbox-inline"><input id="sysApplyRisk" type="checkbox" />Aceptar riesgo de importacion real</label>
+              <button id="sysApplyBtn" class="danger-button" type="button">Importar colegios</button>
+            </div>
+            <div id="sysImportStatus" class="status-message">Sin dry-run.</div>
+            <pre id="sysImportOut" class="code-box">{}</pre>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head"><div><h2>Preparacion de produccion local</h2><p>Operacion de alto riesgo con bloqueo y confirmacion.</p></div></div>
+            <div class="filter-row">
+              <label>Backup file (opcional)<input id="sysPrepareBackupFile" placeholder="backup_YYYYMMDD_HHMMSS.sql" /></label>
+              <label>Departamento (opcional)<input id="sysPrepareDept" placeholder="MAGDALENA" /></label>
+              <label>IA count<input id="sysPrepareAiCount" type="number" min="1" max="10" value="5" /></label>
+              <label class="checkbox-inline"><input id="sysPrepareWithAi" type="checkbox" />Generar lote IA no publicado</label>
+              <label class="checkbox-inline"><input id="sysPrepareExecute" type="checkbox" />Ejecutar desde web (avanzado)</label>
+            </div>
+            <div class="filter-row filter-row-extended">
+              <label>Confirmacion exacta<input id="sysPrepareConfirm" placeholder="PREPARAR PRODUCCION LOCAL" /></label>
+              <label class="checkbox-inline"><input id="sysPrepareRisk" type="checkbox" />Acepto riesgo de perdida de datos</label>
+              <button id="sysPrepareBtn" class="danger-button" type="button">Preparar produccion local</button>
+            </div>
+            <div id="sysPrepareStatus" class="status-message warn">Bloqueado por seguridad hasta completar requisitos.</div>
+            <pre id="sysPrepareOut" class="code-box">{}</pre>
+          </article>
+
+          <div class="content-grid two">
+            <article class="panel">
+              <div class="panel-head"><div><h2>Checklist de pruebas reales</h2><p>Marca validaciones LAN por rol.</p></div></div>
+              <div id="sysChecklistStatus" class="status-message">Sin consulta.</div>
+              <div id="sysChecklistList" class="checklist-list"></div>
+            </article>
+            <article class="panel">
+              <div class="panel-head">
+                <div><h2>Operaciones recientes</h2><p>Auditoria resumida de acciones administrativas.</p></div>
+                <button id="sysOpsLoadBtn" class="ghost-button" type="button">Actualizar</button>
+              </div>
+              <div id="sysOpsStatus" class="status-message">Sin consulta.</div>
+              <div class="table-shell mobile-cards">
+                <table>
+                  <thead><tr><th>Fecha</th><th>Accion</th><th>Estado</th><th>Admin</th><th>Resumen</th></tr></thead>
+                  <tbody id="sysOpsRows"></tbody>
+                </table>
+              </div>
+            </article>
+          </div>
         </section>
 
         <section class="view" id="view-settings">

@@ -178,6 +178,7 @@ textarea {
 }
 
 .primary-button,
+.danger-button,
 .ghost-button,
 .icon-button {
   border: 0;
@@ -200,6 +201,17 @@ textarea {
 
 .primary-button:hover {
   background: var(--primary-strong);
+}
+
+.danger-button {
+  background: #b4233a;
+  color: #fff;
+  padding: 9px 14px;
+  box-shadow: 0 8px 18px rgba(180, 35, 58, 0.24);
+}
+
+.danger-button:hover {
+  background: #9f1f33;
 }
 
 .ghost-button {
@@ -227,6 +239,7 @@ textarea {
 }
 
 .primary-button:focus-visible,
+.danger-button:focus-visible,
 .ghost-button:focus-visible,
 .icon-button:focus-visible,
 .nav-item:focus-visible {
@@ -235,9 +248,31 @@ textarea {
 }
 
 .primary-button:disabled,
+.danger-button:disabled,
 .ghost-button:disabled {
   opacity: 0.65;
   cursor: not-allowed;
+}
+
+.checkbox-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  font-size: 12px;
+  color: #405064;
+  font-weight: 700;
+}
+
+.checkbox-inline input {
+  width: 16px;
+  min-height: 16px;
+  margin: 0;
+  accent-color: var(--primary);
 }
 
 .status-message {
@@ -545,6 +580,44 @@ textarea {
 .recommendation-list {
   display: grid;
   gap: 10px;
+}
+
+.checklist-list {
+  display: grid;
+  gap: 8px;
+}
+
+.checklist-item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  padding: 10px;
+  display: grid;
+  gap: 6px;
+}
+
+.checklist-item .check-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.checklist-item .check-area {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.checklist-item .check-label {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.checklist-item .check-note {
+  margin-top: 4px;
 }
 
 .recommendation-card {

@@ -12,6 +12,7 @@
     results: ["Resultados", "Ranking, promedios y desempeño por salón."],
     analysis: ["Análisis", "Fortalezas, debilidades y recomendaciones."],
     reports: ["Reportes", "Cobertura documental y banco de preguntas."],
+    system: ["Operacion del sistema", "Control seguro de LAN, backup y operaciones sensibles."],
     settings: ["Configuración", "Usuarios, conexión y datos técnicos."]
   };
 
@@ -32,6 +33,16 @@
     classroomData: null,
     generatedQuestions: [],
     generatedQuestionsTotal: 0,
+    system: {
+      status: null,
+      lan: null,
+      health: null,
+      dryRun: null,
+      backup: null,
+      checklist: [],
+      operations: [],
+      canApplyImport: false
+    },
     editingStudentId: null,
     editingSchoolId: null,
     visibleRows: {
@@ -277,8 +288,10 @@
   const applyRoleUi = () => {
     const isAdmin = state.user?.role === "ADMIN";
     const settingsButton = document.querySelector('[data-view="settings"]');
+    const systemButton = document.querySelector('[data-view="system"]');
     if (settingsButton) settingsButton.classList.toggle("is-hidden", !isAdmin);
-    if (!isAdmin && state.activeView === "settings") {
+    if (systemButton) systemButton.classList.toggle("is-hidden", !isAdmin);
+    if (!isAdmin && (state.activeView === "settings" || state.activeView === "system")) {
       setView("dashboard");
     }
   };
@@ -305,6 +318,9 @@
     setText("viewTitle", title);
     setText("viewSubtitle", subtitle);
     $("sidebar")?.classList.remove("open");
+    if (view === "system" && state.user?.role === "ADMIN") {
+      void refreshSystemPanel();
+    }
   };
 
   const fillSelect = (id, items, { placeholder = "Todos", value = "id", label = "name" } = {}) => {
@@ -1463,6 +1479,315 @@
     await loadGeneratedQuestions();
   };
 
+  const isSystemAdmin = () => state.user?.role === "ADMIN";
+
+  const systemTone = (status) => {
+    if (status === "OK" || status === true || status === "SUCCESS") return "ok";
+    if (status === "WARN") return "warn";
+    return "bad";
+  };
+
+  const systemValue = (value) => (value === undefined || value === null || value === "" ? "-" : value);
+
+  const setSystemApplyState = () => {
+    const button = $("sysApplyBtn");
+    if (!button) return;
+    button.disabled = !isSystemAdmin() || !state.system.canApplyImport;
+  };
+
+  const renderSystemStatusCards = () => {
+    const target = $("sysStatusCards");
+    if (!target) return;
+    const status = state.system.status || {};
+    const lan = state.system.lan || {};
+    const health = state.system.health || {};
+    const services = status.services || {};
+    const cards = [
+      { title: "Entorno", value: systemValue(status.nodeEnv), hint: `Host ${systemValue(status.host)}:${systemValue(status.port)}`, icon: "bi-cpu" },
+      { title: "IP LAN", value: systemValue(lan.lanIp || status.lanIp), hint: "Uso interno en red privada", icon: "bi-hdd-network" },
+      { title: "Base de datos", value: services.db === "up" ? "Disponible" : "No disponible", hint: `Ready: ${status.databaseReady ? "si" : "no"}`, icon: "bi-database-check" },
+      { title: "Ollama", value: services.ollama === "up" ? "Disponible" : services.ollama === "not-configured" ? "No configurado" : "No disponible", hint: `Health: ${health.checks?.ollama?.status || "-"}`, icon: "bi-robot" },
+      { title: "Health", value: systemValue(health.status), hint: `Checks en ${systemValue(health.durationMs)} ms`, icon: "bi-heart-pulse" },
+      { title: "Operacion", value: status.operationLock?.running ? "En curso" : "Libre", hint: status.operationLock?.action || "Sin bloqueo", icon: "bi-shield-check" }
+    ];
+
+    target.innerHTML = cards
+      .map(
+        (item) => `<article class="stat-card">
+          <div class="stat-head"><span>${escapeHtml(item.title)}</span><i class="bi ${item.icon}"></i></div>
+          <strong>${escapeHtml(String(item.value))}</strong>
+          <small>${escapeHtml(String(item.hint))}</small>
+        </article>`
+      )
+      .join("");
+  };
+
+  const loadSystemStatus = async () => {
+    if (!isSystemAdmin()) return;
+    try {
+      setButtonLoading("sysStatusBtn", true, "Consultando...");
+      const response = await apiRequest("/admin/system/status");
+      state.system.status = response.data || null;
+      renderSystemStatusCards();
+      $("sysStatusOut").textContent = pretty(response.data);
+      setStatus("sysStatusBox", response.data?.ok ? "Estado general operativo." : "Estado con advertencias.", response.data?.ok ? "ok" : "warn");
+    } catch (error) {
+      setStatus("sysStatusBox", error.message, "bad");
+    } finally {
+      setButtonLoading("sysStatusBtn", false);
+    }
+  };
+
+  const loadSystemLan = async () => {
+    if (!isSystemAdmin()) return;
+    try {
+      setButtonLoading("sysLanBtn", true, "Consultando...");
+      const response = await apiRequest("/admin/system/lan");
+      state.system.lan = response.data || null;
+      renderSystemStatusCards();
+      $("sysStatusOut").textContent = pretty({
+        status: state.system.status,
+        lan: response.data
+      });
+      setStatus("sysStatusBox", response.data?.lanIp ? "LAN detectada y lista para pruebas." : "No se detecto IP LAN valida.", response.data?.lanIp ? "ok" : "warn");
+    } catch (error) {
+      setStatus("sysStatusBox", error.message, "bad");
+    } finally {
+      setButtonLoading("sysLanBtn", false);
+    }
+  };
+
+  const loadSystemHealth = async () => {
+    if (!isSystemAdmin()) return;
+    try {
+      setButtonLoading("sysHealthBtn", true, "Verificando...");
+      const response = await apiRequest("/admin/system/health");
+      state.system.health = response.data || null;
+      renderSystemStatusCards();
+      $("sysStatusOut").textContent = pretty({
+        status: state.system.status,
+        health: response.data
+      });
+      setStatus("sysStatusBox", `Health ${response.data?.status || "-"}`, systemTone(response.data?.status));
+    } catch (error) {
+      setStatus("sysStatusBox", error.message, "bad");
+    } finally {
+      setButtonLoading("sysHealthBtn", false);
+    }
+  };
+
+  const renderSystemOperations = () => {
+    const rowsNode = $("sysOpsRows");
+    if (!rowsNode) return;
+    const rows = state.system.operations || [];
+    if (!rows.length) {
+      rowsNode.innerHTML = "<tr><td colspan='5'>Sin operaciones registradas.</td></tr>";
+      return;
+    }
+
+    rowsNode.innerHTML = rows
+      .map((item) => {
+        const tone = item.status === "SUCCESS" ? "high" : "medium";
+        const adminName = item.admin?.name || item.admin?.email || "-";
+        const summary = item.message || item.metadata?.message || item.metadata?.report?.message || "-";
+        return `<tr>${td("Fecha", formatText(formatShortDate(item.createdAt)))}${td("Accion", formatText(item.action))}${td(
+          "Estado",
+          `<span class="badge-soft ${tone}">${escapeHtml(item.status || "INFO")}</span>`
+        )}${td("Admin", formatText(adminName))}${td("Resumen", formatText(summary))}</tr>`;
+      })
+      .join("");
+  };
+
+  const loadSystemOperations = async () => {
+    if (!isSystemAdmin()) return;
+    try {
+      setButtonLoading("sysOpsLoadBtn", true, "Actualizando...");
+      const response = await apiRequest("/admin/system/operations");
+      state.system.operations = response.data?.items || [];
+      renderSystemOperations();
+      setStatus("sysOpsStatus", `Operaciones: ${state.system.operations.length}`, "ok");
+    } catch (error) {
+      setStatus("sysOpsStatus", error.message, "bad");
+    } finally {
+      setButtonLoading("sysOpsLoadBtn", false);
+    }
+  };
+
+  const renderSystemChecklist = () => {
+    const target = $("sysChecklistList");
+    if (!target) return;
+    const items = state.system.checklist || [];
+    if (!items.length) {
+      target.innerHTML = "<article class='checklist-item'><div class='check-label'>Sin items disponibles.</div></article>";
+      return;
+    }
+    target.innerHTML = items
+      .map(
+        (item) => `<article class="checklist-item">
+          <div class="check-head">
+            <span class="check-area">${escapeHtml(item.area || "")}</span>
+            <label class="checkbox-inline"><input type="checkbox" data-sys-check-toggle="${escapeHtml(item.id)}" ${item.checked ? "checked" : ""}/>Completado</label>
+          </div>
+          <div class="check-label">${escapeHtml(item.label || item.id)}</div>
+          <input data-sys-check-note="${escapeHtml(item.id)}" value="${escapeHtml(item.note || "")}" placeholder="Nota opcional" />
+          <div class="actions">
+            <button class="ghost-button" type="button" data-sys-check-save="${escapeHtml(item.id)}">Guardar</button>
+            <small class="table-meta">${escapeHtml(item.updatedAt ? `Actualizado: ${formatShortDate(item.updatedAt)}` : "Sin actualizar")}</small>
+          </div>
+        </article>`
+      )
+      .join("");
+  };
+
+  const loadSystemChecklist = async () => {
+    if (!isSystemAdmin()) return;
+    try {
+      const response = await apiRequest("/admin/system/checklist");
+      state.system.checklist = response.data?.items || [];
+      renderSystemChecklist();
+      setStatus("sysChecklistStatus", `Items: ${state.system.checklist.length}`, "ok");
+    } catch (error) {
+      setStatus("sysChecklistStatus", error.message, "bad");
+    }
+  };
+
+  const saveSystemChecklistItem = async (itemId, checked, note) => {
+    await apiRequest(`/admin/system/checklist/${encodeURIComponent(itemId)}`, {
+      method: "POST",
+      body: {
+        checked: Boolean(checked),
+        note: String(note || "").trim() || undefined
+      }
+    });
+  };
+
+  const runSystemDryRun = async () => {
+    if (!isSystemAdmin()) return;
+    try {
+      setButtonLoading("sysDryRunBtn", true, "Ejecutando...");
+      const limit = Number($("sysLimit")?.value || 5000);
+      const payload = cleanObject({
+        datasetId: ($("sysDatasetId")?.value || "cfw5-qzt5").trim(),
+        departamento: normalizeUpperText($("sysDept")?.value || ""),
+        municipio: normalizeUpperText($("sysMunicipio")?.value || ""),
+        search: ($("sysSearch")?.value || "").trim(),
+        limit: Number.isFinite(limit) ? Math.max(1, Math.min(10000, limit)) : 5000
+      });
+      const response = await apiRequest("/admin/system/schools/import/dry-run", { method: "POST", body: payload });
+      state.system.dryRun = response.data || null;
+      const prerequisites = response.data?.prerequisites || {};
+      state.system.canApplyImport = Boolean(prerequisites.hasRecentDryRun && prerequisites.hasRecentBackup);
+      setSystemApplyState();
+      $("sysImportOut").textContent = pretty(response.data);
+      if (state.system.canApplyImport) {
+        setStatus("sysImportStatus", "Dry-run OK y backup reciente detectado. Puedes aplicar importacion.", "ok");
+      } else {
+        setStatus(
+          "sysImportStatus",
+          "Dry-run ejecutado. Requisitos pendientes para aplicar: backup reciente y dry-run valido.",
+          "warn"
+        );
+      }
+      await loadSystemOperations();
+    } catch (error) {
+      setStatus("sysImportStatus", error.message, "bad");
+    } finally {
+      setButtonLoading("sysDryRunBtn", false);
+    }
+  };
+
+  const runSystemImportApply = async () => {
+    if (!isSystemAdmin()) return;
+    try {
+      setButtonLoading("sysApplyBtn", true, "Importando...");
+      const payload = {
+        confirmText: ($("sysApplyConfirm")?.value || "").trim(),
+        acceptedRisk: Boolean($("sysApplyRisk")?.checked),
+        datasetId: ($("sysDatasetId")?.value || "cfw5-qzt5").trim(),
+        filters: cleanObject({
+          departamento: normalizeUpperText($("sysDept")?.value || ""),
+          municipio: normalizeUpperText($("sysMunicipio")?.value || ""),
+          search: ($("sysSearch")?.value || "").trim()
+        })
+      };
+      const response = await apiRequest("/admin/system/schools/import/apply", { method: "POST", body: payload });
+      $("sysImportOut").textContent = pretty(response.data);
+      setStatus("sysImportStatus", "Importacion ejecutada correctamente.", "ok");
+      state.system.canApplyImport = false;
+      setSystemApplyState();
+      await loadSystemOperations();
+      await loadSystemStatus();
+    } catch (error) {
+      setStatus("sysImportStatus", error.message, "bad");
+    } finally {
+      setButtonLoading("sysApplyBtn", false);
+    }
+  };
+
+  const runSystemBackup = async (assistantOnly) => {
+    if (!isSystemAdmin()) return;
+    try {
+      setButtonLoading(assistantOnly ? "sysBackupAssistBtn" : "sysBackupCreateBtn", true, assistantOnly ? "Preparando..." : "Creando...");
+      const response = await apiRequest("/admin/system/backup", {
+        method: "POST",
+        body: { assistantOnly: Boolean(assistantOnly) }
+      });
+      state.system.backup = response.data || null;
+      $("sysBackupOut").textContent = pretty(response.data);
+      setStatus(
+        "sysBackupStatus",
+        assistantOnly ? "Asistente de backup listo. Ejecuta el comando sugerido en consola." : "Backup procesado.",
+        assistantOnly ? "warn" : "ok"
+      );
+      if (!assistantOnly) {
+        state.system.canApplyImport = false;
+        setSystemApplyState();
+      }
+      await loadSystemOperations();
+    } catch (error) {
+      setStatus("sysBackupStatus", error.message, "bad");
+    } finally {
+      setButtonLoading(assistantOnly ? "sysBackupAssistBtn" : "sysBackupCreateBtn", false);
+    }
+  };
+
+  const runSystemLocalPrepare = async () => {
+    if (!isSystemAdmin()) return;
+    try {
+      setButtonLoading("sysPrepareBtn", true, "Procesando...");
+      const aiCount = Number($("sysPrepareAiCount")?.value || 5);
+      const payload = cleanObject({
+        confirmText: ($("sysPrepareConfirm")?.value || "").trim(),
+        acceptedDataLossRisk: Boolean($("sysPrepareRisk")?.checked),
+        execute: Boolean($("sysPrepareExecute")?.checked),
+        withSchools: true,
+        withDemoUsers: true,
+        withAi: Boolean($("sysPrepareWithAi")?.checked),
+        aiCount: Number.isFinite(aiCount) ? Math.max(1, Math.min(10, aiCount)) : 5,
+        departamento: normalizeUpperText($("sysPrepareDept")?.value || ""),
+        backupFile: ($("sysPrepareBackupFile")?.value || "").trim()
+      });
+      const response = await apiRequest("/admin/system/local-production/prepare", { method: "POST", body: payload });
+      $("sysPrepareOut").textContent = pretty(response.data);
+      const tone = response.data?.mode === "assistant" ? "warn" : "ok";
+      setStatus("sysPrepareStatus", response.data?.mode === "assistant" ? "Asistente listo para ejecucion controlada." : "Preparacion ejecutada.", tone);
+      await loadSystemOperations();
+    } catch (error) {
+      setStatus("sysPrepareStatus", error.message, "bad");
+    } finally {
+      setButtonLoading("sysPrepareBtn", false);
+    }
+  };
+
+  const refreshSystemPanel = async () => {
+    if (!isSystemAdmin()) {
+      setStatus("sysStatusBox", "Solo ADMIN puede operar esta seccion.", "warn");
+      return;
+    }
+    setSystemApplyState();
+    await Promise.allSettled([loadSystemStatus(), loadSystemLan(), loadSystemHealth(), loadSystemChecklist(), loadSystemOperations()]);
+  };
+
   const findPendingStrictAttemptByStudent = async () => {
     try {
       const doc = $("simStrictStudentDoc").value.trim();
@@ -1496,6 +1821,11 @@
     await loadSchoolMunicipalities($("dashDepartmentSelect").value || $("schoolFilterDepartment").value);
     await listSchools();
     await Promise.allSettled([listGroups(), listStudents(), listUsers(), listExams(), loadDashboard(), loadGeneratedQuestions()]);
+    if (isSystemAdmin()) {
+      await refreshSystemPanel();
+    } else {
+      setSystemApplyState();
+    }
   };
 
   const bindEvents = () => {
@@ -1781,6 +2111,43 @@
         }
       }
     });
+
+    $("sysStatusBtn").addEventListener("click", () => void loadSystemStatus());
+    $("sysLanBtn").addEventListener("click", () => void loadSystemLan());
+    $("sysHealthBtn").addEventListener("click", () => void loadSystemHealth());
+    $("sysDryRunBtn").addEventListener("click", () => void runSystemDryRun());
+    $("sysApplyBtn").addEventListener("click", () => void runSystemImportApply());
+    $("sysBackupCreateBtn").addEventListener("click", () => void runSystemBackup(false));
+    $("sysBackupAssistBtn").addEventListener("click", () => void runSystemBackup(true));
+    $("sysPrepareBtn").addEventListener("click", () => void runSystemLocalPrepare());
+    $("sysOpsLoadBtn").addEventListener("click", () => void loadSystemOperations());
+    $("sysChecklistList").addEventListener("change", async (event) => {
+      const itemId = event.target?.dataset?.sysCheckToggle;
+      if (!itemId) return;
+      const noteInput = document.querySelector(`[data-sys-check-note="${itemId}"]`);
+      try {
+        await saveSystemChecklistItem(itemId, event.target.checked, noteInput?.value || "");
+        setStatus("sysChecklistStatus", "Checklist actualizado.", "ok");
+        await loadSystemChecklist();
+        await loadSystemOperations();
+      } catch (error) {
+        setStatus("sysChecklistStatus", error.message, "bad");
+      }
+    });
+    $("sysChecklistList").addEventListener("click", async (event) => {
+      const itemId = event.target?.dataset?.sysCheckSave;
+      if (!itemId) return;
+      const noteInput = document.querySelector(`[data-sys-check-note="${itemId}"]`);
+      const toggleInput = document.querySelector(`[data-sys-check-toggle="${itemId}"]`);
+      try {
+        await saveSystemChecklistItem(itemId, Boolean(toggleInput?.checked), noteInput?.value || "");
+        setStatus("sysChecklistStatus", "Checklist actualizado.", "ok");
+        await loadSystemChecklist();
+        await loadSystemOperations();
+      } catch (error) {
+        setStatus("sysChecklistStatus", error.message, "bad");
+      }
+    });
   };
 
   const init = async () => {
@@ -1794,3 +2161,5 @@
 
   init();
 })();
+
+
