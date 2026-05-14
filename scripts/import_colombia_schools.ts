@@ -48,6 +48,11 @@ type ImportStats = {
   notes: string[];
 };
 
+type DatasetCapability = {
+  hasDepartamento: boolean;
+  hasMunicipio: boolean;
+};
+
 const prisma = new PrismaClient();
 const argv = process.argv.slice(2);
 
@@ -212,15 +217,34 @@ const normalizeRow = (
   defaultDepartment: string
 ): NormalizedSchool | null => {
   const departamentoRaw =
-    pick(row, ["departamento", "nombre_departamento", "depto", "dpto"]) || defaultDepartment;
-  const municipioRaw = pick(row, ["municipio", "nombre_municipio", "ciudad"]);
+    pick(row, [
+      "departamento",
+      "nombre_departamento",
+      "departamento_nombre",
+      "nombredepartamento",
+      "cod_dane_departamento",
+      "codigodepartamento",
+      "depto",
+      "dpto"
+    ]) || defaultDepartment;
+  const municipioRaw = pick(row, [
+    "municipio",
+    "nombre_municipio",
+    "municipio_nombre",
+    "nombremunicipio",
+    "cod_dane_municipio",
+    "codigomunicipio",
+    "ciudad"
+  ]);
   const establecimientoRaw = pick(row, [
+    "nombre",
+    "institucion",
     "nombre_institucion_educativa",
     "nombre_institucion",
     "institucion_educativa_principal",
     "establecimiento",
     "nombre_establecimiento",
-    "institucion"
+    "nombreestablecimiento"
   ]);
 
   const departamento = normalizeUpper(departamentoRaw);
@@ -237,13 +261,18 @@ const normalizeRow = (
   const sedeRaw = normalizeText(pick(row, ["sede", "nombre_sede", "nombre_sede_establecimiento_educativo"]));
   const sede = sedeRaw ? normalizeUpper(sedeRaw) : null;
 
-  const sectorOriginal = normalizeText(pick(row, ["sector", "sector_original", "publica_o_privada", "p_blica_o_privada"]));
+  const sectorOriginal = normalizeText(
+    pick(row, ["sector", "naturaleza", "oficial_no_oficial", "sector_original", "publica_o_privada", "p_blica_o_privada"])
+  );
   const sectorNormalizado = normalizeSector(sectorOriginal);
 
   const codigoDaneRaw = normalizeText(
     pick(row, [
       "codigo_dane",
+      "cod_dane",
+      "dane",
       "codigo_dane_establecimiento",
+      "codigoestablecimiento",
       "codigo_establecimiento_educativo",
       "codigo_establecimiento",
       "codigo_sede"
@@ -335,8 +364,40 @@ const fetchSocrataRows = async (datasetId: string, maxRecords = 0) => {
     rows,
     sourceName: meta.name || `Socrata ${datasetId}`,
     sourceAttribution: meta.attribution || "",
-    sourceUpdatedAt: meta.rowsUpdatedAt ? new Date(meta.rowsUpdatedAt * 1000).toISOString() : undefined
+    sourceUpdatedAt: meta.rowsUpdatedAt ? new Date(meta.rowsUpdatedAt * 1000).toISOString() : undefined,
+    columns: Array.isArray((meta as unknown as { columns?: Array<{ fieldName?: string }> }).columns)
+      ? (((meta as unknown as { columns?: Array<{ fieldName?: string }> }).columns || [])
+          .map((col) => normalizeHeader(String(col.fieldName || "")))
+          .filter(Boolean) as string[])
+      : []
   };
+};
+
+const validateCapability = (columns: string[]): DatasetCapability => {
+  const columnSet = new Set(columns.map((col) => normalizeHeader(col)));
+  const hasAny = (aliases: string[]) => aliases.some((alias) => columnSet.has(normalizeHeader(alias)));
+
+  const hasDepartamento = hasAny([
+    "departamento",
+    "nombre_departamento",
+    "departamento_nombre",
+    "nombredepartamento",
+    "cod_dane_departamento",
+    "codigodepartamento",
+    "depto",
+    "dpto"
+  ]);
+  const hasMunicipio = hasAny([
+    "municipio",
+    "nombre_municipio",
+    "municipio_nombre",
+    "nombremunicipio",
+    "cod_dane_municipio",
+    "codigomunicipio",
+    "ciudad"
+  ]);
+
+  return { hasDepartamento, hasMunicipio };
 };
 
 const ensureDir = (filePath: string) => {
@@ -350,9 +411,11 @@ const main = async () => {
   const startedAt = Date.now();
   const apply = hasFlag("apply");
   const sourceMode = getArgValue("source", "auto").toLowerCase();
-  const datasetId = getArgValue("dataset-id", "c56g-ubd2");
+  const datasetId = getArgValue("dataset-id", "cfw5-qzt5");
   const csvPath = getArgValue("csv", path.join("storage", "materiales_apoyo", "colegios_colombia.csv"));
   const departmentFilter = normalizeUpper(getArgValue("departamento", ""));
+  const municipalityFilter = normalizeUpper(getArgValue("municipio", ""));
+  const searchFilter = normalizeForSearch(getArgValue("search", ""));
   const defaultDepartment = normalizeUpper(getArgValue("default-departamento", departmentFilter));
   const limit = Number(getArgValue("limit", "0"));
   const reportPath = getArgValue("report", path.join("storage", "reportes", "seed_colombia_schools_log.json"));
@@ -362,6 +425,7 @@ const main = async () => {
   let sourceAttribution = "";
   let sourceUpdatedAt: string | undefined;
   let rawRows: RawRow[] = [];
+  let capability: DatasetCapability | null = null;
 
   const csvAbsPath = path.resolve(process.cwd(), csvPath);
   if (sourceMode === "csv" || (sourceMode === "auto" && fs.existsSync(csvAbsPath))) {
@@ -371,6 +435,8 @@ const main = async () => {
     rawRows = toRowsFromCsv(fs.readFileSync(csvAbsPath, "utf8"));
     sourceType = "csv";
     source = csvAbsPath;
+    const firstRowKeys = rawRows.length > 0 ? Object.keys(rawRows[0]).map((key) => normalizeHeader(key)) : [];
+    capability = validateCapability(firstRowKeys);
   } else {
     const socrata = await fetchSocrataRows(datasetId, Number.isFinite(limit) && limit > 0 ? limit : 0);
     rawRows = socrata.rows;
@@ -378,6 +444,13 @@ const main = async () => {
     source = `https://www.datos.gov.co/resource/${datasetId}.json`;
     sourceAttribution = socrata.sourceAttribution;
     sourceUpdatedAt = socrata.sourceUpdatedAt;
+    capability = validateCapability(socrata.columns);
+  }
+
+  if (!capability?.hasDepartamento || !capability?.hasMunicipio) {
+    throw new Error(
+      "La fuente seleccionada no contiene departamento/municipio; use una fuente de sedes o CSV oficial con esas columnas."
+    );
   }
 
   const fetchedAt = new Date().toISOString();
@@ -421,6 +494,17 @@ const main = async () => {
 
     if (departmentFilter && normalized.departamento !== departmentFilter) {
       continue;
+    }
+    if (municipalityFilter && normalized.municipio !== municipalityFilter) {
+      continue;
+    }
+    if (searchFilter) {
+      const candidate = normalizeForSearch(
+        `${normalized.searchLabel} ${normalized.establecimiento} ${normalized.sede ?? ""} ${normalized.codigoDane ?? ""}`.trim()
+      );
+      if (!candidate.includes(searchFilter)) {
+        continue;
+      }
     }
 
     if (seen.has(normalized.dedupKey)) {

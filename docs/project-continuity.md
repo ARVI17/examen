@@ -43,10 +43,19 @@ Protecciones:
 - Bloqueo por `DATABASE_URL` no local (excepto override explicito en staging controlado).
 
 ## Importacion colegios Colombia
+- Dataset nacional por defecto:
+  - `cfw5-qzt5` (MEN, nacional, con departamento/municipio/sector/codigo DANE).
+- Dataset departamental historico:
+  - `c56g-ubd2` (Magdalena). No usar como default nacional.
 - Dry-run: `npm run seed:colegios:colombia:dry`
 - Apply: `npm run seed:colegios:colombia`
 - Por departamento: `npm run seed:colegios:colombia -- --departamento=MAGDALENA`
+- Por municipio: `npm run seed:colegios:colombia -- --departamento=MAGDALENA --municipio=\"SANTA MARTA\"`
+- Por busqueda: `npm run seed:colegios:colombia -- --departamento=MAGDALENA --search=PALOMINITO`
 - Desde CSV: `npm run seed:colegios:colombia -- --source=csv --csv=storage/materiales_apoyo/colegios_colombia.csv`
+
+Validacion de fuente:
+- El importador falla de forma controlada si la fuente no trae `departamento` y `municipio`.
 
 Etiqueta de busqueda:
 - `DEPARTAMENTO / MUNICIPIO / COLEGIO / SECTOR`

@@ -278,8 +278,11 @@ El log `storage/reportes/ingestion_kb_log.json` incluye metricas de clasificacio
 ### Importacion colegios Colombia
 
 - Fuentes soportadas:
-  - Datos Abiertos Colombia (API Socrata) mediante `--dataset-id=<ID_DATASET>`.
+  - Fuente nacional por defecto (Socrata/MEN): dataset `cfw5-qzt5` (`MEN_ESTABLECIMIENTOS_EDUCATIVOS_PREESCOLAR_BÁSICA_Y_MEDIA`).
+  - Datos Abiertos Colombia (API Socrata) alterna mediante `--dataset-id=<ID_DATASET>`.
   - CSV oficial/local con columnas equivalentes.
+- Nota:
+  - `c56g-ubd2` es util para Magdalena, pero es departamental y no debe usarse como default nacional.
 - El script soporta dos modos:
   - `source=socrata` (descarga por API Socrata)
   - `source=csv` (archivo local CSV)
@@ -288,10 +291,16 @@ El log `storage/reportes/ingestion_kb_log.json` incluye metricas de clasificacio
     `npm run seed:colegios:colombia:dry`
   - Aplicar con Socrata:
     `npm run seed:colegios:colombia`
+  - Aplicar con dataset explicito:
+    `npm run seed:colegios:colombia -- --dataset-id=cfw5-qzt5`
   - Aplicar desde CSV local:
     `npm run seed:colegios:colombia -- --source=csv --csv=storage/materiales_apoyo/colegios_colombia.csv`
   - Filtrar por departamento:
     `npm run seed:colegios:colombia -- --departamento=MAGDALENA`
+  - Filtrar por municipio:
+    `npm run seed:colegios:colombia -- --departamento=MAGDALENA --municipio=\"SANTA MARTA\"`
+  - Buscar por texto:
+    `npm run seed:colegios:colombia -- --departamento=MAGDALENA --search=PALOMINITO`
 - Normalizacion aplicada:
   - Departamento en mayusculas
   - Municipio en mayusculas
@@ -302,6 +311,8 @@ El log `storage/reportes/ingestion_kb_log.json` incluye metricas de clasificacio
     - `DEPARTAMENTO / MUNICIPIO / ESTABLECIMIENTO / SEDE / SECTOR` (si hay sede)
 - Salida de auditoria:
   - `storage/reportes/seed_colombia_schools_log.json`
+- Validacion de fuente:
+  - Si la fuente no contiene `departamento` y `municipio`, el script aborta con error controlado.
 
 ### Reset de base de datos (seguro)
 
