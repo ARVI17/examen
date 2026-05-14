@@ -1,5 +1,6 @@
 import { Router } from "express";
 import authRoutes from "../modules/auth/auth.routes";
+import adminSystemRoutes from "../modules/admin-system/admin-system.routes";
 import attemptRoutes from "../modules/attempts/attempts.routes";
 import examRoutes from "../modules/exams/exams.routes";
 import fileRoutes from "../modules/files/files.routes";
@@ -15,6 +16,7 @@ import userRoutes from "../modules/users/users.routes";
 const router = Router();
 
 router.use("/auth", authRoutes);
+router.use("/admin/system", adminSystemRoutes);
 router.use("/student-auth", studentAuthRoutes);
 router.use("/student", studentPortalRoutes);
 router.use("/users", userRoutes);

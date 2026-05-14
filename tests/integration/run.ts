@@ -62,6 +62,11 @@ const main = async () => {
     ensure(response.body?.error?.code === "INVALID_JSON", "codigo de error esperado INVALID_JSON");
   });
 
+  await run("AdminSystem | Anonymous cannot access status", async () => {
+    const response = await client.get("/api/admin/system/status");
+    ensure(response.status === 401, `status esperado 401, recibido ${response.status}`);
+  });
+
   let adminToken = "";
   let createdQuestionId = "";
   let createdExamId = "";
@@ -103,6 +108,60 @@ const main = async () => {
     ensure(response.body?.success === true, "login no devolvio success=true");
     ensure(typeof response.body?.data?.token === "string", "token no presente");
     adminToken = response.body.data.token;
+  });
+
+  await run("AdminSystem | ADMIN can access status", async () => {
+    const response = await client.get("/api/admin/system/status").set("Authorization", `Bearer ${adminToken}`);
+    ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
+    ensure(response.body?.success === true, "respuesta esperaba success=true");
+  });
+
+  await run("AdminSystem | Apply fails without exact confirmText", async () => {
+    const response = await client
+      .post("/api/admin/system/schools/import/apply")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        confirmText: "IMPORTAR COLEGIOS",
+        acceptedRisk: true
+      });
+
+    ensure(response.status === 400, `status esperado 400, recibido ${response.status}`);
+  });
+
+  await run("AdminSystem | Apply fails without acceptedRisk", async () => {
+    const response = await client
+      .post("/api/admin/system/schools/import/apply")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        confirmText: "IMPORTAR COLEGIOS COLOMBIA",
+        acceptedRisk: false
+      });
+
+    ensure(response.status === 400, `status esperado 400, recibido ${response.status}`);
+  });
+
+  await run("AdminSystem | Prepare fails without exact confirmText", async () => {
+    const response = await client
+      .post("/api/admin/system/local-production/prepare")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        confirmText: "PREPARAR LOCAL",
+        acceptedDataLossRisk: true
+      });
+
+    ensure(response.status === 400, `status esperado 400, recibido ${response.status}`);
+  });
+
+  await run("AdminSystem | Prepare fails without acceptedDataLossRisk", async () => {
+    const response = await client
+      .post("/api/admin/system/local-production/prepare")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        confirmText: "PREPARAR PRODUCCION LOCAL",
+        acceptedDataLossRisk: false
+      });
+
+    ensure(response.status === 400, `status esperado 400, recibido ${response.status}`);
   });
 
   await run("Auth | Register blocked without ADMIN token", async () => {
@@ -214,6 +273,23 @@ const main = async () => {
     ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
     ensure(typeof response.body?.data?.token === "string", "token docente no presente");
     docenteToken = response.body.data.token;
+  });
+
+  await run("AdminSystem | DOCENTE cannot access status", async () => {
+    const response = await client.get("/api/admin/system/status").set("Authorization", `Bearer ${docenteToken}`);
+    ensure(response.status === 403, `status esperado 403, recibido ${response.status}`);
+  });
+
+  await run("AdminSystem | Dry-run requires ADMIN", async () => {
+    const response = await client
+      .post("/api/admin/system/schools/import/dry-run")
+      .set("Authorization", `Bearer ${docenteToken}`)
+      .send({
+        datasetId: "cfw5-qzt5",
+        limit: 5
+      });
+
+    ensure(response.status === 403, `status esperado 403, recibido ${response.status}`);
   });
 
   await run("DOCENTE | Scope keeps access to assigned school", async () => {
@@ -549,6 +625,11 @@ const main = async () => {
     ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
     ensure(typeof response.body?.data?.token === "string", "token estudiante no presente");
     studentToken = response.body.data.token;
+  });
+
+  await run("AdminSystem | ESTUDIANTE cannot access status", async () => {
+    const response = await client.get("/api/admin/system/status").set("Authorization", `Bearer ${studentToken}`);
+    ensure(response.status === 401, `status esperado 401, recibido ${response.status}`);
   });
 
   await run("StudentAuth | Login second student by document", async () => {
