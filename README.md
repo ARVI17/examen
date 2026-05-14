@@ -254,6 +254,14 @@ npm run db:prepare:demo:dry
 # Preparar entorno demo (opcional con lote IA controlado)
 npm run db:prepare:demo -- --with-ai=true --ai-count=6
 
+# Produccion local/LAN (dry-run de preparacion controlada)
+npm run db:prepare:local-production:dry
+
+# Produccion local/LAN (requiere backup + doble confirmacion)
+LOCAL_PRODUCTION_PREPARE=true npm run db:prepare:local-production -- --backup-file=backup_YYYYMMDD_HHMMSS.sql --with-ai=true --ai-count=5
+# PowerShell:
+$env:LOCAL_PRODUCTION_PREPARE='true'; npm run db:prepare:local-production -- --backup-file=backup_YYYYMMDD_HHMMSS.sql --with-ai=true --ai-count=5
+
 # Backup PostgreSQL (archivo .sql.gz + manifest)
 powershell -ExecutionPolicy Bypass -File .\scripts\db_backup.ps1
 
@@ -291,6 +299,10 @@ El log `storage/reportes/ingestion_kb_log.json` incluye metricas de clasificacio
     `npm run seed:colegios:colombia:dry`
   - Aplicar con Socrata:
     `npm run seed:colegios:colombia`
+  - Aplicar en produccion local controlada:
+    `LOCAL_PRODUCTION_PREPARE=true npm run seed:colegios:colombia -- --apply --confirm-local-production`
+  - PowerShell:
+    `$env:LOCAL_PRODUCTION_PREPARE='true'; npm run seed:colegios:colombia -- --apply --confirm-local-production`
   - Aplicar con dataset explicito:
     `npm run seed:colegios:colombia -- --dataset-id=cfw5-qzt5`
   - Aplicar desde CSV local:
@@ -321,9 +333,27 @@ El log `storage/reportes/ingestion_kb_log.json` incluye metricas de clasificacio
   - `npm run seed`
   - `npm run seed:colegios:colombia`
 - Protecciones incluidas:
-  - Bloqueo en `NODE_ENV=production`
+  - Bloqueo en `NODE_ENV=production`, salvo modo controlado local/LAN con:
+    - `LOCAL_PRODUCTION_PREPARE=true`
+    - `--confirm-local-production-reset`
+    - `--backup-file=<ruta_backup.sql>` existente
   - Bloqueo si `DATABASE_URL` no parece entorno local/dev (salvo override explicito para staging controlado)
   - Dry-run disponible (`npm run db:reset:clean:dry`)
+
+### Preparacion desde cero en produccion local/LAN (este PC)
+
+1. Crear backup obligatorio:
+   - `pg_dump "$DATABASE_URL" > backup_YYYYMMDD_HHMMSS.sql`
+2. Simular flujo:
+   - `LOCAL_PRODUCTION_PREPARE=true npm run db:prepare:local-production:dry`
+3. Ejecutar flujo controlado:
+   - `LOCAL_PRODUCTION_PREPARE=true npm run db:prepare:local-production -- --backup-file=backup_YYYYMMDD_HHMMSS.sql --confirm-local-production-reset`
+4. El flujo:
+   - reset limpio controlado
+   - seed base
+   - importacion colegios Colombia
+   - prisma generate
+   - opcional lote IA no publicado (`--with-ai=true --ai-count=5`)
 
 ## Hardening de produccion aplicado
 

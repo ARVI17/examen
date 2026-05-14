@@ -1,10 +1,14 @@
 # Project Continuity Guide
 
-## Estado consolidado (hasta `88294ac`)
+## Estado consolidado (hasta `88adc39`)
 - `343f4b1`: hardening IA, importador Magdalena, reset seguro base.
 - `40a955e`: UI admin/docente responsive + simulador enfocado + revision IA.
 - `5f1a052`: checklist de release para despliegue.
 - `88294ac`: manejo JSON malformado retorna `400 INVALID_JSON`.
+- `3dea137`: catalogo nacional de colegios + endpoints departamento/municipio.
+- `42633f4`: selectores encadenados departamento/municipio/colegio en admin.
+- `63bc7d5`: guia de continuidad y flujos de catalogo Colombia.
+- `88adc39`: fuente nacional por defecto `cfw5-qzt5` validada.
 
 ## Errores cerrados
 - Ruta legacy `/api/attempts/public/*` retirada del flujo activo del portal estudiante.
@@ -29,6 +33,7 @@
 - `npm run db:reset:dev`
 - `npm run db:reset:clean`
 - `npm run db:prepare:demo`
+- `npm run db:prepare:local-production` sin backup y sin confirmacion explicita
 - Seeds/import masivos sin backup ni ventana controlada
 - Publicar preguntas IA en lote sin revision humana
 
@@ -42,6 +47,19 @@ Protecciones:
 - Bloqueo en `NODE_ENV=production`.
 - Bloqueo por `DATABASE_URL` no local (excepto override explicito en staging controlado).
 
+## Produccion local/LAN: preparacion controlada (este PC)
+1. Crear backup SQL antes de cualquier limpieza.
+2. Definir `LOCAL_PRODUCTION_PREPARE=true` solo para la ejecucion controlada.
+3. Dry-run:
+   - `npm run db:prepare:local-production:dry`
+4. Apply:
+   - `npm run db:prepare:local-production -- --backup-file=backup_YYYYMMDD_HHMMSS.sql --confirm-local-production-reset`
+5. Seguridad aplicada:
+   - Requiere `NODE_ENV=production`
+   - Requiere `LOCAL_PRODUCTION_PREPARE=true`
+   - Requiere backup existente (`--backup-file`)
+   - Doble confirmacion de reset local
+
 ## Importacion colegios Colombia
 - Dataset nacional por defecto:
   - `cfw5-qzt5` (MEN, nacional, con departamento/municipio/sector/codigo DANE).
@@ -49,6 +67,8 @@ Protecciones:
   - `c56g-ubd2` (Magdalena). No usar como default nacional.
 - Dry-run: `npm run seed:colegios:colombia:dry`
 - Apply: `npm run seed:colegios:colombia`
+- Apply en production local controlada:
+  - `LOCAL_PRODUCTION_PREPARE=true npm run seed:colegios:colombia -- --apply --confirm-local-production`
 - Por departamento: `npm run seed:colegios:colombia -- --departamento=MAGDALENA`
 - Por municipio: `npm run seed:colegios:colombia -- --departamento=MAGDALENA --municipio=\"SANTA MARTA\"`
 - Por busqueda: `npm run seed:colegios:colombia -- --departamento=MAGDALENA --search=PALOMINITO`
