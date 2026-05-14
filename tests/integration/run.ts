@@ -51,6 +51,17 @@ const main = async () => {
   const runId = Date.now();
   const client = request(app);
 
+  await run("API | Malformed JSON body returns 400", async () => {
+    const response = await client
+      .post("/api/auth/login")
+      .set("Content-Type", "application/json")
+      .send("{\"email\":\"admin@saber11.com\",\"password\":\"admin123\"");
+
+    ensure(response.status === 400, `status esperado 400, recibido ${response.status}`);
+    ensure(response.body?.success === false, "respuesta esperaba success=false");
+    ensure(response.body?.error?.code === "INVALID_JSON", "codigo de error esperado INVALID_JSON");
+  });
+
   let adminToken = "";
   let createdQuestionId = "";
   let createdExamId = "";

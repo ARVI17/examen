@@ -3,7 +3,7 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import path from "path";
-import { Request } from "express";
+import { NextFunction, Request, Response } from "express";
 import swaggerUi from "swagger-ui-express";
 import { AppError } from "./common/errors/AppError";
 import logger from "./common/logger";
@@ -107,6 +107,38 @@ app.use(
   })
 );
 app.use(express.json({ limit: "2mb" }));
+app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
+  if (res.headersSent) {
+    return next(error);
+  }
+
+  const withMeta = error as {
+    message?: string;
+    status?: number;
+    statusCode?: number;
+    type?: string;
+    body?: unknown;
+  };
+
+  const hasJsonMessage = typeof withMeta?.message === "string" && withMeta.message.toLowerCase().includes("json");
+  const isMalformedJson =
+    withMeta?.type === "entity.parse.failed" ||
+    (hasJsonMessage && (withMeta?.status === 400 || withMeta?.statusCode === 400 || "body" in (withMeta ?? {})));
+
+  if (!isMalformedJson) {
+    return next(error);
+  }
+
+  return res.status(400).json({
+    success: false,
+    message: "Invalid JSON body",
+    error: {
+      code: "INVALID_JSON",
+      details: null,
+      requestId: req.id || req.headers["x-request-id"] || null
+    }
+  });
+});
 app.use(sanitizeRequest);
 app.use(apiRateLimiter);
 app.use((req, res, next) => {

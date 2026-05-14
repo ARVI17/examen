@@ -22,9 +22,49 @@ const cleanupUploadedFile = (req: Request) => {
   }
 };
 
+const isMalformedJsonError = (error: unknown): boolean => {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const withMeta = error as {
+    name?: string;
+    message?: string;
+    status?: number;
+    statusCode?: number;
+    type?: string;
+    body?: unknown;
+    expose?: boolean;
+  };
+
+  const hasJsonMessage = typeof withMeta.message === "string" && withMeta.message.toLowerCase().includes("json");
+
+  if (withMeta.type === "entity.parse.failed") {
+    return true;
+  }
+
+  const status = withMeta.status ?? withMeta.statusCode;
+  const looksLikeSyntax = withMeta.name === "SyntaxError";
+  const hasBodyPayload = "body" in withMeta;
+
+  return hasJsonMessage && (status === 400 || looksLikeSyntax || withMeta.expose === true || hasBodyPayload);
+};
+
 export const errorHandler = (error: unknown, req: Request, res: Response, _next: NextFunction) => {
   const requestId = req.id || req.headers["x-request-id"] || null;
   cleanupUploadedFile(req);
+
+  if (isMalformedJsonError(error)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid JSON body",
+      error: {
+        code: "INVALID_JSON",
+        details: null,
+        requestId
+      }
+    });
+  }
 
   if (error instanceof AppError) {
     return res.status(error.statusCode).json({
