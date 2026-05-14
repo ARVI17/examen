@@ -21,6 +21,8 @@
     apiBase: `${window.location.origin}/api`,
     activeView: "dashboard",
     schools: [],
+    schoolDepartments: [],
+    schoolMunicipalities: [],
     groups: [],
     students: [],
     users: [],
@@ -168,6 +170,12 @@
     if (numeric >= 60) return "low";
     return "critical";
   };
+
+  const normalizeUpperText = (value) =>
+    String(value || "")
+      .trim()
+      .replace(/\s+/g, " ")
+      .toUpperCase();
 
   const renderBadge = (value, label) => {
     const cls = performanceClass(value);
@@ -459,6 +467,8 @@
     if (selectedSubject) $("dashSubjectSelect").value = selectedSubject;
   };
 
+  const formatSchoolLabel = (school) => school?.searchLabel || school?.name || school?.establecimiento || "Colegio";
+
   const renderDashboard = () => {
     const data = state.dashboardData || {};
     const selectedExam = $("dashExamSelect").value;
@@ -591,27 +601,104 @@
     }
   };
 
+  const loadSchoolDepartments = async (preferred = "") => {
+    const response = await apiRequest("/schools/departments");
+    const departments = response.data?.items || [];
+    state.schoolDepartments = departments;
+    const options = departments.map((departamento) => ({ id: departamento, name: departamento }));
+    fillSelect("dashDepartmentSelect", options, { placeholder: "Todos los departamentos" });
+    fillSelect("schoolFilterDepartment", options, { placeholder: "Todos los departamentos" });
+    const selected = preferred || $("dashDepartmentSelect").value || $("schoolFilterDepartment").value;
+    if (selected) {
+      $("dashDepartmentSelect").value = selected;
+      $("schoolFilterDepartment").value = selected;
+    }
+  };
+
+  const loadSchoolMunicipalities = async (departamento, preferred = "") => {
+    const normalizedDepartment = normalizeUpperText(departamento);
+    if (!normalizedDepartment) {
+      state.schoolMunicipalities = [];
+      fillSelect("dashMunicipalitySelect", [], { placeholder: "Todos los municipios" });
+      fillSelect("schoolFilterMunicipality", [], { placeholder: "Todos los municipios" });
+      return;
+    }
+    const response = await apiRequest(`/schools/municipalities${toQueryString({ departamento: normalizedDepartment })}`);
+    const municipalities = response.data?.items || [];
+    state.schoolMunicipalities = municipalities;
+    const options = municipalities.map((municipio) => ({ id: municipio, name: municipio }));
+    fillSelect("dashMunicipalitySelect", options, { placeholder: "Todos los municipios" });
+    fillSelect("schoolFilterMunicipality", options, { placeholder: "Todos los municipios" });
+    if (preferred) {
+      $("dashMunicipalitySelect").value = preferred;
+      $("schoolFilterMunicipality").value = preferred;
+    }
+  };
+
+  const getSelectedSchoolFilters = () => {
+    const departamento = normalizeUpperText($("schoolFilterDepartment").value || $("dashDepartmentSelect").value);
+    const municipio = normalizeUpperText($("schoolFilterMunicipality").value || $("dashMunicipalitySelect").value);
+    const q = $("schoolFilterSearch").value.trim();
+    return { departamento, municipio, q };
+  };
+
+  const applySchoolSelections = () => {
+    const current = {
+      dash: $("dashSchoolSelect").value,
+      report: $("repClassSchoolSelect").value,
+      group: $("groupSchoolSelect").value,
+      student: $("stSchoolSelect").value
+    };
+    fillSelect("dashSchoolSelect", state.schools, { placeholder: "Todos los colegios", label: formatSchoolLabel });
+    fillSelect("repClassSchoolSelect", state.schools, { placeholder: "Todos los colegios", label: formatSchoolLabel });
+    fillSelect("groupSchoolSelect", state.schools, { placeholder: "Selecciona colegio", label: formatSchoolLabel });
+    fillSelect("stSchoolSelect", state.schools, { placeholder: "Sin asignar", label: formatSchoolLabel });
+    if (current.dash) $("dashSchoolSelect").value = current.dash;
+    if (current.report) $("repClassSchoolSelect").value = current.report;
+    if (current.group) $("groupSchoolSelect").value = current.group;
+    if (current.student) $("stSchoolSelect").value = current.student;
+  };
+
   const listSchools = async () => {
-    const response = await apiRequest("/schools?limit=200");
+    const filters = getSelectedSchoolFilters();
+    const query = toQueryString({
+      limit: 250,
+      departamento: filters.departamento,
+      municipio: filters.municipio,
+      q: filters.q
+    });
+    const response = await apiRequest(`/schools${query}`);
     state.schools = response.data?.items || [];
-    fillSelect("dashSchoolSelect", state.schools, { placeholder: "Todos los colegios" });
-    fillSelect("repClassSchoolSelect", state.schools, { placeholder: "Todos los colegios" });
-    fillSelect("groupSchoolSelect", state.schools, { placeholder: "Selecciona colegio" });
-    fillSelect("stSchoolSelect", state.schools, { placeholder: "Sin asignar" });
+    applySchoolSelections();
+
     if (state.user?.role === "DOCENTE" && state.schools.length === 1) {
       const schoolId = state.schools[0].id;
       $("dashSchoolSelect").value = schoolId;
       $("repClassSchoolSelect").value = schoolId;
       $("groupSchoolSelect").value = schoolId;
+      $("stSchoolSelect").value = schoolId;
     }
-    $("schoolRows").innerHTML = state.schools
-      .map(
-        (school) => `<tr><td>${escapeHtml(school.name)}</td><td>${escapeHtml(school.code || "-")}</td><td>${renderBadge(
-          school.isActive ? 80 : 20,
-          school.isActive ? "Activo" : "Inactivo"
-        )}</td><td><button class="ghost-button" data-school-edit="${school.id}">Editar</button></td></tr>`
-      )
-      .join("");
+
+    $("schoolRows").innerHTML = state.schools.length
+      ? state.schools
+          .map(
+            (school) =>
+              `<tr>${td("Departamento", escapeHtml(school.departamento || "-"))}${td(
+                "Municipio",
+                escapeHtml(school.municipio || "-")
+              )}${td("Colegio", escapeHtml(school.establecimiento || school.name))}${td(
+                "Sector",
+                escapeHtml(school.sectorNormalizado || "-")
+              )}${td("Código DANE", escapeHtml(school.codigoDane || "-"))}${td(
+                "Estado",
+                renderBadge(school.isActive ? 80 : 20, school.isActive ? "Activo" : "Inactivo")
+              )}${td("Acciones", `<button class="ghost-button" data-school-edit="${school.id}">Editar</button>`)}</tr>`
+          )
+          .join("")
+      : "<tr><td colspan='7'>No hay colegios para los filtros seleccionados.</td></tr>";
+
+    const total = response.data?.total ?? state.schools.length;
+    setStatus("schoolListStatus", `Mostrando ${state.schools.length} de ${total} colegios.`, state.schools.length ? "ok" : "warn");
   };
 
   const saveSchool = async () => {
@@ -619,9 +706,19 @@
       const body = cleanObject({
         code: $("schoolCode").value.trim(),
         name: $("schoolName").value.trim(),
+        establecimiento: $("schoolEstablecimiento").value.trim(),
+        sede: $("schoolSede").value.trim(),
+        departamento: normalizeUpperText($("schoolDepartamento").value),
+        municipio: normalizeUpperText($("schoolMunicipio").value),
+        sector_normalizado: $("schoolSectorNormalizado").value,
+        codigo_dane: $("schoolCodigoDane").value.trim(),
+        direccion: $("schoolDireccion").value.trim(),
         description: $("schoolDescription").value.trim(),
         is_active: $("schoolActive").value === "true"
       });
+      if (!body.name && body.establecimiento) {
+        body.name = body.establecimiento;
+      }
       if (!body.name) throw new Error("El nombre del colegio es obligatorio.");
       const id = $("schoolEditingId").value;
       await apiRequest(id ? `/schools/${id}` : "/schools", { method: id ? "PATCH" : "POST", body });
@@ -634,7 +731,19 @@
   };
 
   const resetSchoolForm = () => {
-    ["schoolEditingId", "schoolCode", "schoolName", "schoolDescription"].forEach((id) => ($(id).value = ""));
+    [
+      "schoolEditingId",
+      "schoolCode",
+      "schoolCodigoDane",
+      "schoolName",
+      "schoolEstablecimiento",
+      "schoolSede",
+      "schoolDepartamento",
+      "schoolMunicipio",
+      "schoolDireccion",
+      "schoolDescription"
+    ].forEach((id) => ($(id).value = ""));
+    $("schoolSectorNormalizado").value = "";
     $("schoolActive").value = "true";
   };
 
@@ -1383,6 +1492,8 @@
 
   const bootstrapData = async () => {
     await loadConnectionInfo();
+    await loadSchoolDepartments();
+    await loadSchoolMunicipalities($("dashDepartmentSelect").value || $("schoolFilterDepartment").value);
     await listSchools();
     await Promise.allSettled([listGroups(), listStudents(), listUsers(), listExams(), loadDashboard(), loadGeneratedQuestions()]);
   };
@@ -1427,6 +1538,19 @@
       resetVisibleRows("dashboard");
       state.dashboardData && renderDashboard();
     });
+    $("dashDepartmentSelect").addEventListener("change", async () => {
+      const departamento = $("dashDepartmentSelect").value;
+      $("schoolFilterDepartment").value = departamento;
+      await loadSchoolMunicipalities(departamento);
+      $("schoolFilterMunicipality").value = $("dashMunicipalitySelect").value;
+      await listSchools();
+      await listGroups($("dashSchoolSelect").value);
+    });
+    $("dashMunicipalitySelect").addEventListener("change", async () => {
+      $("schoolFilterMunicipality").value = $("dashMunicipalitySelect").value;
+      await listSchools();
+      await listGroups($("dashSchoolSelect").value);
+    });
     $("dashSchoolSelect").addEventListener("change", async () => {
       await listGroups($("dashSchoolSelect").value);
       $("repClassSchoolSelect").value = $("dashSchoolSelect").value || "";
@@ -1440,6 +1564,27 @@
     });
     $("schoolCancelBtn").addEventListener("click", resetSchoolForm);
     $("schoolLoadBtn").addEventListener("click", listSchools);
+    $("schoolFilterDepartment").addEventListener("change", async () => {
+      const departamento = $("schoolFilterDepartment").value;
+      $("dashDepartmentSelect").value = departamento;
+      await loadSchoolMunicipalities(departamento);
+      $("dashMunicipalitySelect").value = $("schoolFilterMunicipality").value;
+      await listSchools();
+      await listGroups($("dashSchoolSelect").value);
+    });
+    $("schoolFilterMunicipality").addEventListener("change", async () => {
+      $("dashMunicipalitySelect").value = $("schoolFilterMunicipality").value;
+      await listSchools();
+      await listGroups($("dashSchoolSelect").value);
+    });
+    $("schoolFilterSearch").addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      void listSchools();
+    });
+    $("schoolApplyFiltersBtn").addEventListener("click", () => {
+      void listSchools();
+    });
     $("schoolRows").addEventListener("click", (event) => {
       const id = event.target?.dataset?.schoolEdit;
       if (!id) return;
@@ -1447,7 +1592,14 @@
       if (!school) return;
       $("schoolEditingId").value = school.id;
       $("schoolCode").value = school.code || "";
+      $("schoolCodigoDane").value = school.codigoDane || "";
       $("schoolName").value = school.name || "";
+      $("schoolEstablecimiento").value = school.establecimiento || "";
+      $("schoolSede").value = school.sede || "";
+      $("schoolDepartamento").value = school.departamento || "";
+      $("schoolMunicipio").value = school.municipio || "";
+      $("schoolSectorNormalizado").value = school.sectorNormalizado || "";
+      $("schoolDireccion").value = school.direccion || "";
       $("schoolDescription").value = school.description || "";
       $("schoolActive").value = school.isActive ? "true" : "false";
     });

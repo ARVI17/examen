@@ -85,6 +85,8 @@
         <section class="view active" id="view-dashboard">
           <div class="panel compact">
             <div class="filter-row">
+              <label>Departamento<select id="dashDepartmentSelect"></select></label>
+              <label>Municipio<select id="dashMunicipalitySelect"></select></label>
               <label>Colegio<select id="dashSchoolSelect"></select></label>
               <label>Salón<select id="dashGroupSelect"></select></label>
               <label>Grado<input id="dashGrado" placeholder="11" /></label>
@@ -146,8 +148,23 @@
               <div class="panel-head"><div><h2>Colegio</h2><p>Crear o editar institución.</p></div></div>
               <form id="schoolForm" class="stack-form">
                 <input id="schoolEditingId" type="hidden" />
-                <label>Código<input id="schoolCode" placeholder="COLEGIO_DEMO" /></label>
-                <label>Nombre<input id="schoolName" required /></label>
+                <div class="form-grid">
+                  <label>Código<input id="schoolCode" placeholder="COLEGIO_DEMO" /></label>
+                  <label>Código DANE<input id="schoolCodigoDane" placeholder="470001000000" /></label>
+                  <label>Nombre<input id="schoolName" required /></label>
+                  <label>Establecimiento<input id="schoolEstablecimiento" /></label>
+                  <label>Sede<input id="schoolSede" /></label>
+                  <label>Departamento<input id="schoolDepartamento" placeholder="MAGDALENA" /></label>
+                  <label>Municipio<input id="schoolMunicipio" placeholder="SANTA MARTA" /></label>
+                  <label>Sector
+                    <select id="schoolSectorNormalizado">
+                      <option value="">Sin definir</option>
+                      <option value="OFICIAL">OFICIAL</option>
+                      <option value="NO OFICIAL">NO OFICIAL</option>
+                    </select>
+                  </label>
+                  <label>Dirección<input id="schoolDireccion" /></label>
+                </div>
                 <label>Descripción<textarea id="schoolDescription" rows="3"></textarea></label>
                 <label>Estado<select id="schoolActive"><option value="true">Activo</option><option value="false">Inactivo</option></select></label>
                 <div class="actions"><button class="primary-button" type="submit">Guardar colegio</button><button id="schoolCancelBtn" class="ghost-button" type="button">Cancelar</button></div>
@@ -159,8 +176,15 @@
                 <div><h2>Colegios registrados</h2><p>Selecciona para editar o consultar salones.</p></div>
                 <button id="schoolLoadBtn" class="ghost-button" type="button"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
               </div>
-              <div class="table-shell">
-                <table><thead><tr><th>Nombre</th><th>Código</th><th>Estado</th><th></th></tr></thead><tbody id="schoolRows"></tbody></table>
+              <div class="filter-row">
+                <label>Departamento<select id="schoolFilterDepartment"></select></label>
+                <label>Municipio<select id="schoolFilterMunicipality"></select></label>
+                <label>Búsqueda<input id="schoolFilterSearch" placeholder="Nombre o código DANE" /></label>
+                <button id="schoolApplyFiltersBtn" class="ghost-button" type="button"><i class="bi bi-funnel"></i> Filtrar</button>
+              </div>
+              <div id="schoolListStatus" class="status-message">Sin consulta.</div>
+              <div class="table-shell mobile-cards">
+                <table><thead><tr><th>Departamento</th><th>Municipio</th><th>Colegio</th><th>Sector</th><th>Código DANE</th><th>Estado</th><th></th></tr></thead><tbody id="schoolRows"></tbody></table>
               </div>
             </article>
           </div>
