@@ -27,9 +27,30 @@ export class SchoolsRepository {
         where,
         skip,
         take,
-        orderBy: { createdAt: "desc" }
+        orderBy: [{ departamento: "asc" }, { municipio: "asc" }, { name: "asc" }]
       })
     ]);
+  }
+
+  static listDistinctDepartments(where?: Prisma.SchoolWhereInput) {
+    return prisma.school.findMany({
+      where,
+      distinct: ["departamento"],
+      select: { departamento: true },
+      orderBy: { departamento: "asc" }
+    });
+  }
+
+  static listDistinctMunicipalities(departamento: string, where?: Prisma.SchoolWhereInput) {
+    return prisma.school.findMany({
+      where: {
+        ...where,
+        departamento
+      },
+      distinct: ["municipio"],
+      select: { municipio: true },
+      orderBy: { municipio: "asc" }
+    });
   }
 
   static updateSchool(id: string, data: SchoolUpdateInput) {
@@ -91,4 +112,3 @@ export class SchoolsRepository {
     });
   }
 }
-

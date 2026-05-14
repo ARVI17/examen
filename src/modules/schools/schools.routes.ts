@@ -8,7 +8,9 @@ import {
   createSchoolGroupSchema,
   createSchoolSchema,
   groupParamsSchema,
+  listSchoolDepartmentsQuerySchema,
   listSchoolGroupsQuerySchema,
+  listSchoolMunicipalitiesQuerySchema,
   listSchoolsQuerySchema,
   schoolParamsSchema,
   updateSchoolGroupSchema,
@@ -20,6 +22,18 @@ const router = Router();
 router.use(authenticate, adminRouteRateLimiter);
 
 router.get("/", authorize(RoleCode.ADMIN, RoleCode.DOCENTE), validateRequest({ query: listSchoolsQuerySchema }), SchoolsController.listSchools);
+router.get(
+  "/departments",
+  authorize(RoleCode.ADMIN, RoleCode.DOCENTE),
+  validateRequest({ query: listSchoolDepartmentsQuerySchema }),
+  SchoolsController.listDepartments
+);
+router.get(
+  "/municipalities",
+  authorize(RoleCode.ADMIN, RoleCode.DOCENTE),
+  validateRequest({ query: listSchoolMunicipalitiesQuerySchema }),
+  SchoolsController.listMunicipalities
+);
 router.get("/:id", authorize(RoleCode.ADMIN, RoleCode.DOCENTE), validateRequest({ params: schoolParamsSchema }), SchoolsController.getSchoolById);
 router.get(
   "/:id/groups",

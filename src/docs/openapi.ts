@@ -343,12 +343,26 @@ export const openApiDocument = {
     "/api/schools": {
       get: {
         tags: ["Schools"],
-        summary: "Listar colegios",
+        summary: "Listar colegios (admite filtros por departamento/municipio/sector)",
         security: bearerSecurity
       },
       post: {
         tags: ["Schools"],
         summary: "Crear colegio",
+        security: bearerSecurity
+      }
+    },
+    "/api/schools/departments": {
+      get: {
+        tags: ["Schools"],
+        summary: "Listar departamentos disponibles en el catalogo de colegios",
+        security: bearerSecurity
+      }
+    },
+    "/api/schools/municipalities": {
+      get: {
+        tags: ["Schools"],
+        summary: "Listar municipios de un departamento en el catalogo de colegios",
         security: bearerSecurity
       }
     },

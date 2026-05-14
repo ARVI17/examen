@@ -13,6 +13,36 @@ import {
 
 type ActorUser = Express.Request["user"];
 
+const normalizeUpper = (value?: string | null) => (value ? value.trim().replace(/\s+/g, " ").toUpperCase() : undefined);
+
+const normalizeBasic = (value?: string | null) => (value ? value.trim().replace(/\s+/g, " ") : undefined);
+
+const normalizeForSearch = (value?: string | null) => {
+  if (!value) {
+    return undefined;
+  }
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+const buildSchoolSearchLabel = (payload: Partial<SchoolCreateInput>) => {
+  const departamento = normalizeUpper(payload.departamento);
+  const municipio = normalizeUpper(payload.municipio);
+  const establecimiento = normalizeBasic(payload.establecimiento || payload.name);
+  const sede = normalizeBasic(payload.sede);
+  const sector = normalizeUpper(payload.sectorNormalizado);
+
+  const parts = [departamento, municipio, establecimiento, sede, sector].filter(Boolean) as string[];
+  if (parts.length === 0) {
+    return undefined;
+  }
+  return parts.join(" / ");
+};
+
 export class SchoolsService {
   static async createSchool(payload: SchoolCreateInput, actorId?: string) {
     if (payload.code) {
@@ -22,7 +52,28 @@ export class SchoolsService {
       }
     }
 
-    const school = await SchoolsRepository.createSchool(payload);
+    const normalizedPayload: SchoolCreateInput = {
+      ...payload,
+      establecimiento: normalizeBasic(payload.establecimiento),
+      sede: normalizeBasic(payload.sede),
+      departamento: normalizeUpper(payload.departamento),
+      municipio: normalizeUpper(payload.municipio),
+      departamentoCodigo: normalizeBasic(payload.departamentoCodigo),
+      municipioCodigo: normalizeBasic(payload.municipioCodigo),
+      sectorOriginal: normalizeBasic(payload.sectorOriginal),
+      sectorNormalizado: normalizeUpper(payload.sectorNormalizado) as SchoolCreateInput["sectorNormalizado"],
+      zona: normalizeUpper(payload.zona),
+      direccion: normalizeBasic(payload.direccion),
+      codigoDane: normalizeBasic(payload.codigoDane),
+      estadoFuente: normalizeBasic(payload.estadoFuente),
+      fuente: normalizeBasic(payload.fuente),
+      searchLabel: payload.searchLabel ? normalizeBasic(payload.searchLabel) : buildSchoolSearchLabel(payload),
+      nombreNormalizado: payload.nombreNormalizado
+        ? normalizeForSearch(payload.nombreNormalizado)
+        : normalizeForSearch(payload.establecimiento || payload.name)
+    };
+
+    const school = await SchoolsRepository.createSchool(normalizedPayload);
 
     await createAuditLog({
       entidad: "schools",
@@ -40,14 +91,34 @@ export class SchoolsService {
 
   static async listSchools(query: Record<string, unknown>, actor?: ActorUser) {
     const pagination = getPagination(query);
-    const typedQuery = query as { q?: string; isActive?: boolean };
+    const typedQuery = query as {
+      q?: string;
+      departamento?: string;
+      municipio?: string;
+      codigoDane?: string;
+      sectorNormalizado?: "OFICIAL" | "NO OFICIAL";
+      isActive?: boolean;
+    };
+    const departamento = normalizeUpper(typedQuery.departamento);
+    const municipio = normalizeUpper(typedQuery.municipio);
+    const codigoDane = normalizeBasic(typedQuery.codigoDane);
+    const sectorNormalizado = normalizeUpper(typedQuery.sectorNormalizado) as "OFICIAL" | "NO OFICIAL" | undefined;
+    const search = typedQuery.q ? typedQuery.q.trim() : undefined;
 
     let where: Prisma.SchoolWhereInput = {
+      departamento,
+      municipio,
+      codigoDane,
+      sectorNormalizado,
       isActive: typedQuery.isActive,
-      OR: typedQuery.q
+      OR: search
         ? [
-            { name: { contains: typedQuery.q, mode: "insensitive" } },
-            { code: { contains: typedQuery.q, mode: "insensitive" } }
+            { name: { contains: search, mode: "insensitive" } },
+            { code: { contains: search, mode: "insensitive" } },
+            { establecimiento: { contains: search, mode: "insensitive" } },
+            { sede: { contains: search, mode: "insensitive" } },
+            { searchLabel: { contains: search, mode: "insensitive" } },
+            { nombreNormalizado: { contains: normalizeForSearch(search), mode: "insensitive" } }
           ]
         : undefined
     };
@@ -70,6 +141,59 @@ export class SchoolsService {
       total,
       items
     };
+  }
+
+  static async listDepartments(query: Record<string, unknown>, actor?: ActorUser) {
+    const typedQuery = query as { q?: string };
+    const search = typedQuery.q ? typedQuery.q.trim() : undefined;
+
+    let where: Prisma.SchoolWhereInput | undefined;
+    if (isDocenteUser(actor)) {
+      ensureDocenteScopeConfigured(actor);
+      const scope = getNormalizedScope(actor);
+      where = {
+        id: {
+          in: scope.schoolIds
+        }
+      };
+    }
+
+    const rows = await SchoolsRepository.listDistinctDepartments(where);
+    const items = rows
+      .map((row) => row.departamento?.trim())
+      .filter((value): value is string => Boolean(value))
+      .filter((value) => (search ? value.toLowerCase().includes(search.toLowerCase()) : true));
+
+    return { items };
+  }
+
+  static async listMunicipalities(query: Record<string, unknown>, actor?: ActorUser) {
+    const typedQuery = query as { departamento: string; q?: string };
+    const departamento = normalizeUpper(typedQuery.departamento);
+    if (!departamento) {
+      throw new AppError("departamento es obligatorio", 400, "VALIDATION_ERROR");
+    }
+
+    const search = typedQuery.q ? typedQuery.q.trim() : undefined;
+
+    let where: Prisma.SchoolWhereInput | undefined;
+    if (isDocenteUser(actor)) {
+      ensureDocenteScopeConfigured(actor);
+      const scope = getNormalizedScope(actor);
+      where = {
+        id: {
+          in: scope.schoolIds
+        }
+      };
+    }
+
+    const rows = await SchoolsRepository.listDistinctMunicipalities(departamento, where);
+    const items = rows
+      .map((row) => row.municipio?.trim())
+      .filter((value): value is string => Boolean(value))
+      .filter((value) => (search ? value.toLowerCase().includes(search.toLowerCase()) : true));
+
+    return { items };
   }
 
   static async getSchoolById(id: string, actor?: ActorUser) {
@@ -98,7 +222,32 @@ export class SchoolsService {
       }
     }
 
-    const updated = await SchoolsRepository.updateSchool(id, payload);
+    const normalizedPayload: SchoolUpdateInput = {
+      ...payload,
+      establecimiento: normalizeBasic(payload.establecimiento),
+      sede: normalizeBasic(payload.sede),
+      departamento: normalizeUpper(payload.departamento),
+      municipio: normalizeUpper(payload.municipio),
+      departamentoCodigo: normalizeBasic(payload.departamentoCodigo),
+      municipioCodigo: normalizeBasic(payload.municipioCodigo),
+      sectorOriginal: normalizeBasic(payload.sectorOriginal),
+      sectorNormalizado: normalizeUpper(payload.sectorNormalizado) as SchoolCreateInput["sectorNormalizado"],
+      zona: normalizeUpper(payload.zona),
+      direccion: normalizeBasic(payload.direccion),
+      codigoDane: normalizeBasic(payload.codigoDane),
+      estadoFuente: normalizeBasic(payload.estadoFuente),
+      fuente: normalizeBasic(payload.fuente),
+      searchLabel: payload.searchLabel
+        ? normalizeBasic(payload.searchLabel)
+        : buildSchoolSearchLabel({ ...existing, ...payload } as Partial<SchoolCreateInput>),
+      nombreNormalizado: payload.nombreNormalizado
+        ? normalizeForSearch(payload.nombreNormalizado)
+        : payload.name || payload.establecimiento
+          ? normalizeForSearch(payload.establecimiento || payload.name)
+          : existing.nombreNormalizado || normalizeForSearch(existing.establecimiento || existing.name)
+    };
+
+    const updated = await SchoolsRepository.updateSchool(id, normalizedPayload);
 
     await createAuditLog({
       entidad: "schools",

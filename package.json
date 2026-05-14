@@ -25,7 +25,13 @@
     "ingest:kb:apply": "ts-node scripts/ingest_knowledge_base.ts --apply",
     "mcp:server": "ts-node scripts/mcp_exam_server.ts",
     "seed:colegios:magdalena": "ts-node scripts/import_magdalena_schools.ts --apply",
-    "seed:colegios:magdalena:dry": "ts-node scripts/import_magdalena_schools.ts"
+    "seed:colegios:magdalena:dry": "ts-node scripts/import_magdalena_schools.ts",
+    "seed:colegios:colombia": "ts-node scripts/import_colombia_schools.ts --apply",
+    "seed:colegios:colombia:dry": "ts-node scripts/import_colombia_schools.ts",
+    "db:reset:clean:dry": "ts-node scripts/db_reset_clean.ts --dry-run",
+    "db:reset:clean": "ts-node scripts/db_reset_clean.ts --confirm-reset",
+    "db:prepare:demo:dry": "ts-node scripts/db_prepare_demo.ts --dry-run",
+    "db:prepare:demo": "ts-node scripts/db_prepare_demo.ts --confirm-reset"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

@@ -167,6 +167,22 @@ model School {
   id          String           @id @default(uuid())
   code        String?          @unique
   name        String
+  establecimiento String?
+  sede        String?
+  departamento String?
+  municipio   String?
+  departamentoCodigo String?
+  municipioCodigo String?
+  sectorOriginal String?
+  sectorNormalizado String?
+  zona        String?
+  direccion   String?
+  codigoDane  String?
+  estadoFuente String?
+  fuente      String?
+  fechaFuente DateTime?
+  searchLabel String?
+  nombreNormalizado String?
   description String?
   isActive    Boolean          @default(true)
   createdAt   DateTime         @default(now())
@@ -177,6 +193,13 @@ model School {
   userScopeAssignments UserScopeAssignment[]
 
   @@index([name])
+  @@index([departamento])
+  @@index([municipio])
+  @@index([sectorNormalizado])
+  @@index([codigoDane])
+  @@index([departamento, municipio])
+  @@index([searchLabel])
+  @@index([nombreNormalizado])
   @@index([isActive])
   @@map("schools")
 }

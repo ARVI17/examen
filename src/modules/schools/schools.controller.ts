@@ -3,6 +3,16 @@ import { sendSuccess } from "../../common/utils/api-response";
 import { SchoolsService } from "./schools.service";
 
 export class SchoolsController {
+  static async listDepartments(req: Request, res: Response) {
+    const data = await SchoolsService.listDepartments(req.query as Record<string, unknown>, req.user);
+    return sendSuccess(res, "Listado de departamentos", data);
+  }
+
+  static async listMunicipalities(req: Request, res: Response) {
+    const data = await SchoolsService.listMunicipalities(req.query as Record<string, unknown>, req.user);
+    return sendSuccess(res, "Listado de municipios", data);
+  }
+
   static async createSchool(req: Request, res: Response) {
     const data = await SchoolsService.createSchool(req.body, req.user?.id);
     return sendSuccess(res, "Colegio creado", data, 201);
