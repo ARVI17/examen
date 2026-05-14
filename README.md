@@ -224,6 +224,32 @@ API:
   - `PUT /api/users/:id/scopes` con `scope_school_ids` y/o `scope_group_ids`.
 - Sin alcance configurado, el docente recibe `DOCENTE_SCOPE_NOT_CONFIGURED` en rutas protegidas.
 
+### Operacion del sistema (solo ADMIN)
+
+Panel web en `/admin` con seccion **Operacion del sistema** para ejecutar acciones predefinidas y auditadas, sin consola libre:
+
+- `GET /api/admin/system/status`
+- `GET /api/admin/system/lan`
+- `GET /api/admin/system/health`
+- `GET /api/admin/system/operations`
+- `GET /api/admin/system/checklist`
+- `POST /api/admin/system/checklist/:itemId`
+- `POST /api/admin/system/schools/import/dry-run`
+- `POST /api/admin/system/schools/import/apply`
+- `POST /api/admin/system/backup`
+- `POST /api/admin/system/local-production/prepare`
+
+Protecciones:
+
+- Autenticacion obligatoria.
+- Rol `ADMIN` obligatorio (DOCENTE/ESTUDIANTE bloqueados).
+- Confirmaciones exactas para acciones sensibles:
+  - `IMPORTAR COLEGIOS COLOMBIA`
+  - `PREPARAR PRODUCCION LOCAL`
+- Dry-run y backup reciente requeridos antes de importacion real.
+- `LOCAL_PRODUCTION_PREPARE=true` obligatorio para operaciones de alto riesgo en produccion local.
+- Sin exposicion de secretos ni ejecucion de comandos arbitrarios.
+
 ### Nuevos comandos utiles (multi-colegio / ingesta / MCP)
 
 ```bash

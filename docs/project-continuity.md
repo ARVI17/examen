@@ -18,6 +18,16 @@
   - `DOCENTE` filtrado por scope backend/API.
   - `ESTUDIANTE` aislado a `/api/student/*`.
 
+## Operacion administrada desde plataforma (ADMIN)
+- Nueva seccion en `/admin`: **Operacion del sistema**.
+- Backend dedicado: `src/modules/admin-system/*`.
+- Endpoints protegidos con `authenticate + authorize(RoleCode.ADMIN)`.
+- Controles sensibles:
+  - `schools/import/apply` requiere dry-run reciente + backup reciente + confirmacion exacta.
+  - `local-production/prepare` requiere confirmacion exacta + aceptacion de riesgo + `LOCAL_PRODUCTION_PREPARE=true`.
+- Auditoria reutiliza `audit_logs` existente (`entidad=admin_system`).
+- Sin terminal web y sin comandos arbitrarios.
+
 ## Comandos seguros (operacion diaria)
 - Build API: `docker compose build api`
 - Levantar servicios: `docker compose up -d`

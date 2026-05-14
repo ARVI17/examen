@@ -40,6 +40,21 @@
 - Detener:
   - `docker compose down`
 
+## Operacion web (solo ADMIN)
+- Abrir `http://<IP_LAN>:4000/admin/` y entrar a la seccion **Operacion del sistema**.
+- Funciones disponibles desde UI:
+  - Estado general/LAN/health.
+  - Dry-run de importacion de colegios.
+  - Apply de importacion (con confirmacion exacta y prerequisitos).
+  - Backup (ejecucion o asistente).
+  - Preparacion local guiada (asistente o ejecucion controlada).
+  - Checklist de pruebas reales y operaciones recientes.
+- Bloqueos de seguridad:
+  - Solo rol `ADMIN`.
+  - DOCENTE y ESTUDIANTE no pueden acceder.
+  - Sin comandos libres ni terminal web.
+  - Sin exposicion de secretos.
+
 ## Backup previo obligatorio (antes de migraciones/import/reset)
 - Host con `DATABASE_URL`:
   - `pg_dump "$DATABASE_URL" > backup_YYYYMMDD_HHMMSS.sql`
