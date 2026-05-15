@@ -59,6 +59,7 @@
 - Abrir `http://<IP_LAN>:4000/admin/` y entrar a la seccion **Operacion del sistema**.
 - Funciones disponibles desde UI:
   - Estado general/LAN/health.
+  - Centro **Monitoreo del simulacro** (estado rapido, semaforo, recordatorios y comandos copiable solo texto).
   - Dry-run de importacion de colegios.
   - Apply de importacion (con confirmacion exacta y prerequisitos).
   - Backup (ejecucion o asistente).
@@ -69,6 +70,20 @@
   - DOCENTE y ESTUDIANTE no pueden acceder.
   - Sin comandos libres ni terminal web.
   - Sin exposicion de secretos.
+
+### Uso del Centro de monitoreo LAN (dia de simulacro)
+- Revisar semaforo:
+  - Verde: iniciar prueba.
+  - Amarillo: corregir advertencias antes de iniciar.
+  - Rojo: no iniciar hasta resolver API/DB/ready.
+- Copiar desde UI:
+  - URL simulador para estudiantes.
+  - URL admin para apoyo tecnico.
+  - URL health y ready para diagnostico rapido.
+- Seguir checklist:
+  - Antes: red, firewall, carga del servidor, prueba escalonada.
+  - Durante: no ejecutar importaciones/backups/IA pesada.
+  - Despues: revisar resultados y logs, generar backup posterior si aplica.
 
 ## Backup previo obligatorio (antes de migraciones/import/reset)
 - Host con `DATABASE_URL`:

@@ -537,6 +537,129 @@
             </article>
           </div>
 
+          <article class="panel system-monitor-panel">
+            <div class="panel-head">
+              <div><h2>Monitoreo del simulacro</h2><p>Centro de estado en vivo, recordatorios y guia LAN para el dia de prueba.</p></div>
+              <div class="actions">
+                <button id="sysMonitorRefreshBtn" class="primary-button" type="button">Actualizar estado</button>
+              </div>
+            </div>
+            <div id="sysMonitorStatus" class="status-message">Sin datos de monitoreo.</div>
+            <div id="sysMonitorSemaphore" class="status-message warn">Semaforo pendiente de evaluacion.</div>
+
+            <div class="system-monitor-grid">
+              <section class="monitor-card">
+                <h3>Estado rapido</h3>
+                <div class="monitor-chip-grid">
+                  <article class="monitor-chip"><span>API</span><strong id="sysQuickApi">-</strong></article>
+                  <article class="monitor-chip"><span>Base de datos</span><strong id="sysQuickDb">-</strong></article>
+                  <article class="monitor-chip"><span>Ollama</span><strong id="sysQuickOllama">-</strong></article>
+                  <article class="monitor-chip"><span>LAN</span><strong id="sysQuickLan">-</strong></article>
+                  <article class="monitor-chip"><span>Health</span><strong id="sysQuickHealth">-</strong></article>
+                  <article class="monitor-chip"><span>Ultimo refresco</span><strong id="sysQuickUpdated">-</strong></article>
+                </div>
+              </section>
+              <section class="monitor-card">
+                <h3>URLs de operacion LAN</h3>
+                <ul class="monitor-link-list">
+                  <li><span>IP servidor</span><strong id="sysMonitorLanIp">-</strong></li>
+                  <li><span>Simulador</span><strong id="sysMonitorSimUrl">-</strong></li>
+                  <li><span>Admin</span><strong id="sysMonitorAdminUrl">-</strong></li>
+                  <li><span>Health</span><strong id="sysMonitorHealthUrl">-</strong></li>
+                  <li><span>Ready</span><strong id="sysMonitorReadyUrl">-</strong></li>
+                </ul>
+                <div class="actions monitor-copy-actions">
+                  <button class="ghost-button" type="button" data-copy-from="sysMonitorSimUrl">Copiar URL Simulador</button>
+                  <button class="ghost-button" type="button" data-copy-from="sysMonitorAdminUrl">Copiar URL Admin</button>
+                  <button class="ghost-button" type="button" data-copy-from="sysMonitorHealthUrl">Copiar URL Health</button>
+                  <button id="sysCopyQuickChecklistBtn" class="ghost-button" type="button">Copiar checklist rapido</button>
+                </div>
+              </section>
+            </div>
+
+            <div class="system-monitor-grid">
+              <section class="monitor-card">
+                <h3>Recordatorios operativos</h3>
+                <details class="monitor-details" open>
+                  <summary>Antes del simulacro</summary>
+                  <ul class="mini-list">
+                    <li>Conectar servidor por cable Ethernet si es posible y mantener cargador activo.</li>
+                    <li>Confirmar IP LAN activa y acceso desde otro PC a <code>/simulador</code>.</li>
+                    <li>Verificar <code>/health</code> y <code>/health/ready</code> en la IP LAN.</li>
+                    <li>No ejecutar importaciones, backups ni tareas pesadas de IA antes de iniciar.</li>
+                    <li>Validar red privada y firewall con puerto 4000 habilitado.</li>
+                    <li>Realizar prueba escalonada 5 -> 10 -> 25 -> 50 estudiantes.</li>
+                  </ul>
+                </details>
+                <details class="monitor-details">
+                  <summary>Durante el simulacro</summary>
+                  <ul class="mini-list">
+                    <li>Monitorear healthchecks y logs solo ante incidencias.</li>
+                    <li>No reiniciar Docker salvo emergencia real.</li>
+                    <li>No ejecutar reset, prepare ni importacion de colegios.</li>
+                    <li>Si falla un estudiante: recargar navegador y validar red local antes de cambios mayores.</li>
+                    <li>Si fallan varios equipos: revisar WiFi/LAN primero, luego revisar API.</li>
+                  </ul>
+                </details>
+                <details class="monitor-details">
+                  <summary>Despues del simulacro</summary>
+                  <ul class="mini-list">
+                    <li>Revisar resultados y reportes finales por rol.</li>
+                    <li>Guardar evidencia y registrar incidentes observados.</li>
+                    <li>Ejecutar backup posterior si los datos deben conservarse.</li>
+                    <li>No borrar datos sin respaldo y aprobacion operativa.</li>
+                  </ul>
+                </details>
+              </section>
+              <section class="monitor-card">
+                <h3>Capacidad LAN y diagnostico</h3>
+                <div class="monitor-capacity-grid">
+                  <article><span>Ultima carga LAN</span><strong>50 concurrencias</strong></article>
+                  <article><span>Resultado</span><strong>0 errores</strong></article>
+                  <article><span>p95 global</span><strong>82.5 ms</strong></article>
+                </div>
+                <p class="monitor-note">Este resultado no reemplaza una prueba con equipos reales en aula.</p>
+                <p class="monitor-note">Sugerencia: validar siempre en escalado progresivo 5 -> 10 -> 25 -> 50.</p>
+                <details class="monitor-details">
+                  <summary>Problemas comunes y respuesta rapida</summary>
+                  <ul class="mini-list">
+                    <li><strong>Otro PC no abre la app:</strong> validar misma red, IP, firewall y puerto 4000.</li>
+                    <li><strong>Estudiante no inicia prueba:</strong> validar sesion, prueba asignada y logs API.</li>
+                    <li><strong>Sistema lento:</strong> evitar IA pesada y revisar calidad de red antes de reiniciar.</li>
+                    <li><strong>Error 500:</strong> registrar hora e inspeccionar <code>docker compose logs api --tail=100</code>.</li>
+                  </ul>
+                </details>
+              </section>
+            </div>
+
+            <section class="monitor-card monitor-command-card">
+              <h3>Comandos de referencia (solo copiable)</h3>
+              <p class="monitor-note">Estos comandos no se ejecutan desde la plataforma. Son referencia para el responsable tecnico.</p>
+              <div class="monitor-command-list">
+                <article class="monitor-command-row">
+                  <code>docker compose ps</code>
+                  <button class="ghost-button" type="button" data-copy-text="docker compose ps">Copiar</button>
+                </article>
+                <article class="monitor-command-row">
+                  <code>docker compose logs api --tail=100</code>
+                  <button class="ghost-button" type="button" data-copy-text="docker compose logs api --tail=100">Copiar</button>
+                </article>
+                <article class="monitor-command-row">
+                  <code>curl -f http://192.168.1.25:4000/health</code>
+                  <button class="ghost-button" type="button" data-copy-text="curl -f http://192.168.1.25:4000/health">Copiar</button>
+                </article>
+                <article class="monitor-command-row">
+                  <code>curl -f http://192.168.1.25:4000/health/ready</code>
+                  <button class="ghost-button" type="button" data-copy-text="curl -f http://192.168.1.25:4000/health/ready">Copiar</button>
+                </article>
+                <article class="monitor-command-row">
+                  <code>docker compose run --rm api npm run test:lan-load</code>
+                  <button class="ghost-button" type="button" data-copy-text="docker compose run --rm api npm run test:lan-load">Copiar</button>
+                </article>
+              </div>
+            </section>
+          </article>
+
           <article class="panel">
             <div class="panel-head"><div><h2>Catalogo de colegios Colombia</h2><p>Dry-run y aplicacion protegida por confirmaciones.</p></div></div>
             <div class="filter-row">

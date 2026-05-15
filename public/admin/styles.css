@@ -799,6 +799,173 @@ tr:hover td {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
+#view-system .system-monitor-panel {
+  display: grid;
+  gap: 10px;
+}
+
+#view-system .system-monitor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+#view-system .monitor-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+#view-system .monitor-card h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #1f3149;
+}
+
+#view-system .monitor-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 8px;
+}
+
+#view-system .monitor-chip {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+#view-system .monitor-chip span {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+#view-system .monitor-chip strong {
+  font-size: 13px;
+  color: #1f3149;
+}
+
+#view-system .monitor-link-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+#view-system .monitor-link-list li {
+  display: grid;
+  gap: 2px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 8px 10px;
+}
+
+#view-system .monitor-link-list span {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+#view-system .monitor-link-list strong {
+  font-size: 12px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+#view-system .monitor-copy-actions {
+  justify-content: flex-start;
+}
+
+#view-system .monitor-details {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 8px 10px;
+}
+
+#view-system .monitor-details summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  color: #2e4058;
+}
+
+#view-system .monitor-details > ul {
+  margin-top: 8px;
+}
+
+#view-system .monitor-capacity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(124px, 1fr));
+  gap: 8px;
+}
+
+#view-system .monitor-capacity-grid article {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 9px;
+  display: grid;
+  gap: 3px;
+}
+
+#view-system .monitor-capacity-grid span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+#view-system .monitor-capacity-grid strong {
+  font-size: 13px;
+  color: #1f3149;
+}
+
+#view-system .monitor-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+#view-system .monitor-command-card {
+  gap: 8px;
+}
+
+#view-system .monitor-command-list {
+  display: grid;
+  gap: 8px;
+}
+
+#view-system .monitor-command-row {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+#view-system .monitor-command-row code {
+  display: block;
+  color: #0f172a;
+  background: #f1f5f9;
+  border: 1px solid #dce5f0;
+  border-radius: 6px;
+  padding: 7px 8px;
+  font-size: 12px;
+  word-break: break-word;
+}
+
 .bulk-box,
 .summary-line {
   margin-top: 12px;
@@ -918,6 +1085,10 @@ tr:hover td {
   #view-system .filter-row {
     grid-template-columns: repeat(2, minmax(140px, 1fr));
   }
+
+  #view-system .system-monitor-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 1080px) {
@@ -964,6 +1135,15 @@ tr:hover td {
 
   #view-system .filter-row {
     grid-template-columns: 1fr;
+  }
+
+  #view-system .monitor-command-row {
+    grid-template-columns: 1fr;
+  }
+
+  #view-system .monitor-copy-actions .ghost-button,
+  #view-system .monitor-command-row .ghost-button {
+    width: 100%;
   }
 
   .sim-layout {

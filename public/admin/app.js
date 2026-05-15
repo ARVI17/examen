@@ -132,6 +132,10 @@
     const target = $(targetId);
     if (!target) return;
     const text = target.textContent || "";
+    await copyPlainText(text, "Detalle copiado");
+  };
+
+  const copyPlainText = async (text, successMessage = "Copiado") => {
     try {
       if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
         await navigator.clipboard.writeText(text);
@@ -146,7 +150,7 @@
         document.execCommand("copy");
         helper.remove();
       }
-      showToast("Detalle copiado");
+      showToast(successMessage);
     } catch {
       showToast("No fue posible copiar");
     }
@@ -1528,6 +1532,87 @@
 
   const systemValue = (value) => (value === undefined || value === null || value === "" ? "-" : value);
 
+  const formatDateTime = (value) => {
+    if (!value) return "-";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "-";
+    return date.toLocaleString("es-CO", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  };
+
+  const resolveSystemUrls = () => {
+    const status = state.system.status || {};
+    const lan = state.system.lan || {};
+    const origin = `${window.location.origin}`;
+    const adminUrl = lan.adminUrl || status.adminUrl || `${origin}/admin/`;
+    const simulatorUrl = lan.simulatorUrl || status.simulatorUrl || `${origin}/simulador/`;
+    const healthUrl = lan.healthUrl || status.healthUrl || `${origin}/health`;
+    const readyUrl = lan.readyUrl || status.readyUrl || `${origin}/health/ready`;
+    const lanIp = lan.lanIp || status.lanIp || null;
+    return { lanIp, adminUrl, simulatorUrl, healthUrl, readyUrl };
+  };
+
+  const buildQuickLanChecklistText = () => {
+    const urls = resolveSystemUrls();
+    return [
+      "Checklist rapido simulacro LAN",
+      `Servidor/IP confirmado: ${urls.lanIp || "-"}`,
+      `URL simulador: ${urls.simulatorUrl}`,
+      `URL admin: ${urls.adminUrl}`,
+      `Health: ${urls.healthUrl}`,
+      `Ready: ${urls.readyUrl}`,
+      "- Docker activo y PC conectado a corriente",
+      "- Otro PC abre /simulador por IP LAN",
+      "- Celular abre /simulador por IP LAN",
+      "- Prueba escalonada 5 -> 10 -> 25 -> 50",
+      "- No ejecutar import/backups/IA pesada durante el simulacro"
+    ].join("\n");
+  };
+
+  const renderSystemMonitoring = () => {
+    const status = state.system.status || {};
+    const health = state.system.health || {};
+    const urls = resolveSystemUrls();
+    const services = status.services || {};
+    const apiUp = services.api === "up";
+    const dbUp = services.db === "up" || status.databaseReady === true || health.checks?.database?.status === "OK";
+    const ollamaState = services.ollama || "not-configured";
+    const ollamaOk = ollamaState === "up" || health.checks?.ollama?.status === "OK";
+    const lanOk = Boolean(urls.lanIp);
+    const healthStatus = health.status || (dbUp ? "OK" : "ERROR");
+    const refreshAt = health.timestamp || status.currentTime || null;
+
+    setText("sysQuickApi", apiUp ? "OK" : "ERROR");
+    setText("sysQuickDb", dbUp ? "OK" : "ERROR");
+    setText("sysQuickOllama", ollamaState === "not-configured" ? "WARN" : ollamaOk ? "OK" : "WARN");
+    setText("sysQuickLan", lanOk ? "OK" : "WARN");
+    setText("sysQuickHealth", systemValue(healthStatus));
+    setText("sysQuickUpdated", formatDateTime(refreshAt));
+
+    setText("sysMonitorLanIp", systemValue(urls.lanIp));
+    setText("sysMonitorSimUrl", urls.simulatorUrl || "-");
+    setText("sysMonitorAdminUrl", urls.adminUrl || "-");
+    setText("sysMonitorHealthUrl", urls.healthUrl || "-");
+    setText("sysMonitorReadyUrl", urls.readyUrl || "-");
+
+    const monitorTone = !apiUp || !dbUp || healthStatus === "ERROR" ? "bad" : healthStatus === "WARN" || !lanOk || !ollamaOk ? "warn" : "ok";
+    const monitorMessage =
+      monitorTone === "ok"
+        ? "Listo para prueba LAN: API, base de datos y ready en estado saludable."
+        : monitorTone === "warn"
+          ? "Revisar advertencias antes de iniciar: valida LAN/Ollama y confirma accesos de prueba."
+          : "No iniciar simulacro hasta corregir errores criticos en API o base de datos.";
+    setStatus("sysMonitorSemaphore", monitorMessage, monitorTone);
+
+    const statusMessage = `API ${apiUp ? "OK" : "ERROR"} | DB ${dbUp ? "OK" : "ERROR"} | Health ${systemValue(healthStatus)} | LAN ${lanOk ? "OK" : "WARN"}`;
+    setStatus("sysMonitorStatus", statusMessage, monitorTone);
+  };
+
   const setSystemApplyState = () => {
     const button = $("sysApplyBtn");
     if (!button) return;
@@ -1568,6 +1653,7 @@
       const response = await apiRequest("/admin/system/status");
       state.system.status = response.data || null;
       renderSystemStatusCards();
+      renderSystemMonitoring();
       $("sysStatusOut").textContent = pretty(response.data);
       setStatus("sysStatusBox", response.data?.ok ? "Estado general operativo." : "Estado con advertencias.", response.data?.ok ? "ok" : "warn");
     } catch (error) {
@@ -1584,6 +1670,7 @@
       const response = await apiRequest("/admin/system/lan");
       state.system.lan = response.data || null;
       renderSystemStatusCards();
+      renderSystemMonitoring();
       $("sysStatusOut").textContent = pretty({
         status: state.system.status,
         lan: response.data
@@ -1603,6 +1690,7 @@
       const response = await apiRequest("/admin/system/health");
       state.system.health = response.data || null;
       renderSystemStatusCards();
+      renderSystemMonitoring();
       $("sysStatusOut").textContent = pretty({
         status: state.system.status,
         health: response.data
@@ -1825,6 +1913,7 @@
     }
     setSystemApplyState();
     await Promise.allSettled([loadSystemStatus(), loadSystemLan(), loadSystemHealth(), loadSystemChecklist(), loadSystemOperations()]);
+    renderSystemMonitoring();
   };
 
   const findPendingStrictAttemptByStudent = async () => {
@@ -2154,6 +2243,8 @@
     $("sysStatusBtn").addEventListener("click", () => void loadSystemStatus());
     $("sysLanBtn").addEventListener("click", () => void loadSystemLan());
     $("sysHealthBtn").addEventListener("click", () => void loadSystemHealth());
+    $("sysMonitorRefreshBtn")?.addEventListener("click", () => void refreshSystemPanel());
+    $("sysCopyQuickChecklistBtn")?.addEventListener("click", () => void copyPlainText(buildQuickLanChecklistText(), "Checklist copiado"));
     $("sysDryRunBtn").addEventListener("click", () => void runSystemDryRun());
     $("sysApplyBtn").addEventListener("click", () => void runSystemImportApply());
     $("sysBackupCreateBtn").addEventListener("click", () => void runSystemBackup(false));
@@ -2167,6 +2258,17 @@
     });
     document.querySelectorAll("[data-code-copy]").forEach((button) => {
       button.addEventListener("click", () => void copyCodeBox(button.dataset.codeCopy));
+    });
+    document.querySelectorAll("[data-copy-text]").forEach((button) => {
+      button.addEventListener("click", () => void copyPlainText(button.dataset.copyText || "", "Comando copiado"));
+    });
+    document.querySelectorAll("[data-copy-from]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const sourceId = button.dataset.copyFrom || "";
+        const source = $(sourceId);
+        if (!source) return;
+        void copyPlainText((source.textContent || "").trim(), "Enlace copiado");
+      });
     });
     $("sysChecklistList").addEventListener("change", async (event) => {
       const itemId = event.target?.dataset?.sysCheckToggle;

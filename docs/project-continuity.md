@@ -10,6 +10,7 @@
 - `63bc7d5`: guia de continuidad y flujos de catalogo Colombia.
 - `88adc39`: fuente nacional por defecto `cfw5-qzt5` validada.
 - `30d8f88` + `2997d16` + `4dd9903`: operacion del sistema segura desde admin (backend/UI/docs).
+- `HEAD`: centro de monitoreo LAN permanente en Operacion del sistema (recordatorios + semaforo + guia operativa).
 
 ## Errores cerrados
 - Ruta legacy `/api/attempts/public/*` retirada del flujo activo del portal estudiante.
@@ -21,6 +22,7 @@
 
 ## Operacion administrada desde plataforma (ADMIN)
 - Nueva seccion en `/admin`: **Operacion del sistema**.
+- Sub-seccion fija: **Monitoreo del simulacro**.
 - Backend dedicado: `src/modules/admin-system/*`.
 - Endpoints protegidos con `authenticate + authorize(RoleCode.ADMIN)`.
 - Controles sensibles:
@@ -28,6 +30,7 @@
   - `local-production/prepare` requiere confirmacion exacta + aceptacion de riesgo + `LOCAL_PRODUCTION_PREPARE=true`.
 - Auditoria reutiliza `audit_logs` existente (`entidad=admin_system`).
 - Sin terminal web y sin comandos arbitrarios.
+- Los comandos en UI son solo texto copiable, nunca ejecutables desde navegador.
 
 ## Comandos seguros (operacion diaria)
 - Build API: `docker compose build api`

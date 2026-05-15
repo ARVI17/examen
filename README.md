@@ -228,6 +228,8 @@ API:
 
 Panel web en `/admin` con seccion **Operacion del sistema** para ejecutar acciones predefinidas y auditadas, sin consola libre:
 
+- Sub-seccion permanente: **Monitoreo del simulacro** (estado rapido, semaforo LAN, recordatorios antes/durante/despues y comandos solo copiable).
+
 - `GET /api/admin/system/status`
 - `GET /api/admin/system/lan`
 - `GET /api/admin/system/health`
@@ -249,6 +251,7 @@ Protecciones:
 - Dry-run y backup reciente requeridos antes de importacion real.
 - `LOCAL_PRODUCTION_PREPARE=true` obligatorio para operaciones de alto riesgo en produccion local.
 - Sin exposicion de secretos ni ejecucion de comandos arbitrarios.
+- Los comandos visibles en UI no se ejecutan desde la plataforma; son referencia operativa.
 
 ### Nuevos comandos utiles (multi-colegio / ingesta / MCP)
 
