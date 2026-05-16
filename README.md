@@ -216,6 +216,36 @@ API:
   - Las rutas `/api/attempts/public/*` fueron retiradas.
   - Usa exclusivamente `/api/student/*` con sesion de estudiante.
 
+### Resiliencia de intentos (simulador estudiante)
+
+- Guardado temprano en servidor:
+  - al seleccionar respuesta
+  - al cambiar de pregunta
+  - al finalizar intento
+- Respaldo local temporal:
+  - estado de intento y cola pendiente en navegador (sin secretos)
+  - sincronizacion automatica al volver la conexion
+- Retoma de intento:
+  - recarga de pagina: recupera progreso y sincroniza pendientes
+  - cambio de equipo: el servidor mantiene intento activo y permite continuar tras login
+- Seguridad:
+  - el estudiante solo puede leer/modificar sus propios intentos y resultados
+  - intentos finalizados no aceptan nuevas respuestas
+
+### Logging operativo (requestId)
+
+- Cada respuesta incluye header `X-Request-Id`.
+- Logs HTTP incluyen:
+  - `requestId`, metodo, ruta, status, duracion, rol y actor
+- Eventos operativos relevantes:
+  - `STUDENT_ATTEMPT_STARTED`
+  - `STUDENT_ATTEMPT_RESUMED`
+  - `STUDENT_ANSWER_SAVED`
+  - `STUDENT_ANSWER_SYNC_ERROR`
+  - `STUDENT_ATTEMPT_SUBMITTED`
+  - `STUDENT_ATTEMPT_SUBMIT_FAILED`
+- No se registran secretos (`Authorization`, cookies, passwords).
+
 ### Alcance docente por colegio/grupo
 
 - El rol `DOCENTE` ahora requiere alcance explícito en backend (colegios/grupos asignados).

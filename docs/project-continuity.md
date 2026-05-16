@@ -19,6 +19,9 @@
   - `ADMIN` alcance global.
   - `DOCENTE` filtrado por scope backend/API.
   - `ESTUDIANTE` aislado a `/api/student/*`.
+- Error 500 en `POST /api/student/attempts/start` cerrado:
+  - causa: invocacion de metodo estatico via `this` sin binding en controlador.
+  - correccion: llamadas explicitas `StudentPortalController.auditEvent(...)`.
 
 ## Operacion administrada desde plataforma (ADMIN)
 - Nueva seccion en `/admin`: **Operacion del sistema**.
@@ -42,6 +45,9 @@
 - Build TS: `docker compose run --rm api npm run build`
 - Integracion: `docker compose run --rm api npm run test:integration`
 - Carga LAN controlada: `docker compose run --rm api npm run test:lan-load`
+- Limpieza solo datos de usuario (con backup y confirmacion):
+  - `LOCAL_PRODUCTION_PREPARE=true npm run db:clean:user-data -- --dry-run --keep-admin=true --backup-file=<ruta>`
+  - `LOCAL_PRODUCTION_PREPARE=true npm run db:clean:user-data -- --confirm="LIMPIAR DATOS USUARIOS" --keep-admin=true --backup-file=<ruta>`
 
 ## Comandos prohibidos en produccion
 - `npx prisma migrate reset`
@@ -130,3 +136,4 @@ Etiqueta de busqueda:
 - Politica formal de revision humana para publicar preguntas IA.
 - Observabilidad centralizada (errores UI + API + latencia DB) con alertas.
 - Prueba controlada en aula real con 50 equipos simultaneos y metricas comparativas (p50/p95 por endpoint).
+- Tablero historico de eventos `requestId` por intento para soporte operativo en simulacro (UI de soporte, no expuesto a estudiantes).

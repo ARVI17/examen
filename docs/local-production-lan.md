@@ -109,7 +109,20 @@
 - Apply:
   - `LOCAL_PRODUCTION_PREPARE=true npm run db:prepare:local-production -- --backup-file=backup_YYYYMMDD_HHMMSS.sql --confirm-local-production-reset --with-ai=true --ai-count=5`
   - PowerShell:
-    - `$env:LOCAL_PRODUCTION_PREPARE='true'; npm run db:prepare:local-production -- --backup-file=backup_YYYYMMDD_HHMMSS.sql --confirm-local-production-reset --with-ai=true --ai-count=5`
+  - `$env:LOCAL_PRODUCTION_PREPARE='true'; npm run db:prepare:local-production -- --backup-file=backup_YYYYMMDD_HHMMSS.sql --confirm-local-production-reset --with-ai=true --ai-count=5`
+
+## Limpieza controlada de datos de usuario (sin tocar colegios)
+- Uso recomendado antes de una nueva jornada real cuando se desea conservar catalogo de colegios:
+  1. Crear backup SQL.
+  2. Ejecutar dry-run:
+     - `$env:LOCAL_PRODUCTION_PREPARE='true'; npm run db:clean:user-data -- --dry-run --keep-admin=true --backup-file=storage/backups/manual/backup_YYYYMMDD_HHMMSS.sql`
+  3. Ejecutar apply con confirmacion exacta:
+     - `$env:LOCAL_PRODUCTION_PREPARE='true'; npm run db:clean:user-data -- --confirm='LIMPIAR DATOS USUARIOS' --keep-admin=true --backup-file=storage/backups/manual/backup_YYYYMMDD_HHMMSS.sql`
+- Garantias:
+  - conserva usuarios ADMIN
+  - conserva estructura y migraciones
+  - elimina intentos/respuestas/resultados/asignaciones de pruebas previas
+  - requiere backup-file existente
 
 ## Comandos prohibidos en produccion local
 - `npx prisma migrate reset`
@@ -127,6 +140,30 @@
   - abrir `/simulador`, iniciar intento, responder, finalizar, ver resultado propio
 - API:
   - `/health` y `/health/ready` en `http://<IP_LAN>:4000`
+
+## Recuperacion de intento estudiante (cortes/red)
+- El simulador muestra estado de sincronizacion (`Guardando`, `Guardado`, `Pendiente por sincronizar`, `Sin conexion`).
+- Si se pierde red:
+  - las respuestas se encolan localmente
+  - al reconectar, se sincronizan al servidor
+- Si se recarga la pagina:
+  - se restaura estado local temporal
+  - se reconcilia con el intento activo del servidor
+- Si cambia de equipo:
+  - iniciar sesion nuevamente
+  - continuar intento activo desde servidor
+- Regla operativa: el servidor es la fuente principal; el navegador es respaldo temporal.
+
+## Diagnostico rapido: pantalla oscura en /admin
+- Si aparece overlay/backdrop bloqueando la UI:
+  1. Refrescar `Ctrl+F5`.
+  2. Cerrar modales abiertos y presionar `Esc`.
+  3. Revisar que no haya operaciones pendientes en seccion Operacion del sistema.
+  4. Verificar que el contenedor `api` corresponda al ultimo build:
+     - `docker compose build api`
+     - `docker compose up -d api`
+  5. Revisar logs:
+     - `docker compose logs api --tail=100`
 
 ## Checklist rapido para 50 equipos LAN
 - Servidor por cable Ethernet (no WiFi).
