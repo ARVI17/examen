@@ -113,6 +113,34 @@
     window.setTimeout(() => toast.classList.remove("show"), 2800);
   };
 
+  const clearStaleOverlays = () => {
+    document.body.classList.remove("modal-open", "overlay-open", "is-loading", "ui-locked", "no-scroll");
+    document.body.style.removeProperty("pointer-events");
+    document.body.style.removeProperty("opacity");
+    document.body.style.removeProperty("filter");
+    document.body.style.removeProperty("overflow");
+    document.documentElement.style.removeProperty("overflow");
+
+    const staleNodes = document.querySelectorAll(
+      ".modal-backdrop, .app-overlay, .overlay-backdrop, [data-ui-overlay], [data-backdrop], [data-global-lock='true']"
+    );
+    staleNodes.forEach((node) => {
+      if (node.id === "toast") return;
+      node.classList.add("is-hidden");
+      node.setAttribute("aria-hidden", "true");
+      node.setAttribute("hidden", "hidden");
+      node.style.removeProperty("opacity");
+      node.style.removeProperty("filter");
+      node.style.removeProperty("pointer-events");
+      node.style.removeProperty("display");
+    });
+  };
+
+  const resetGlobalUiLocks = () => {
+    clearStaleOverlays();
+    $("sidebar")?.classList.remove("open");
+  };
+
   const syncCodeToggleLabel = (button, target) => {
     if (!button || !target) return;
     const hidden = target.classList.contains("is-collapsed");
@@ -320,6 +348,7 @@
   };
 
   const setAuthenticatedUi = (authenticated) => {
+    resetGlobalUiLocks();
     $("loginView").classList.toggle("is-hidden", authenticated);
     $("appShell").classList.toggle("is-hidden", !authenticated);
     setText(
@@ -352,6 +381,7 @@
   };
 
   const setView = (view) => {
+    resetGlobalUiLocks();
     state.activeView = view;
     document.querySelectorAll(".view").forEach((element) => element.classList.remove("active"));
     document.querySelectorAll(".nav-item").forEach((element) => element.classList.remove("active"));
@@ -1577,6 +1607,7 @@
   const renderSystemMonitoring = () => {
     const status = state.system.status || {};
     const health = state.system.health || {};
+    const monitoring = status.monitoring || {};
     const urls = resolveSystemUrls();
     const services = status.services || {};
     const apiUp = services.api === "up";
@@ -1593,6 +1624,10 @@
     setText("sysQuickLan", lanOk ? "OK" : "WARN");
     setText("sysQuickHealth", systemValue(healthStatus));
     setText("sysQuickUpdated", formatDateTime(refreshAt));
+    setText("sysQuickActiveAttempts", systemValue(monitoring.activeAttempts));
+    setText("sysQuickSaved15m", systemValue(monitoring.answersSavedLast15m));
+    setText("sysQuickSubmitted24h", systemValue(monitoring.submittedAttemptsLast24h));
+    setText("sysQuickSyncErrors", systemValue(monitoring.syncErrorsLast15m));
 
     setText("sysMonitorLanIp", systemValue(urls.lanIp));
     setText("sysMonitorSimUrl", urls.simulatorUrl || "-");
@@ -1609,7 +1644,7 @@
           : "No iniciar simulacro hasta corregir errores criticos en API o base de datos.";
     setStatus("sysMonitorSemaphore", monitorMessage, monitorTone);
 
-    const statusMessage = `API ${apiUp ? "OK" : "ERROR"} | DB ${dbUp ? "OK" : "ERROR"} | Health ${systemValue(healthStatus)} | LAN ${lanOk ? "OK" : "WARN"}`;
+    const statusMessage = `API ${apiUp ? "OK" : "ERROR"} | DB ${dbUp ? "OK" : "ERROR"} | Health ${systemValue(healthStatus)} | LAN ${lanOk ? "OK" : "WARN"} | Intentos activos ${systemValue(monitoring.activeAttempts)} | Errores sync 15m ${systemValue(monitoring.syncErrorsLast15m)}`;
     setStatus("sysMonitorStatus", statusMessage, monitorTone);
   };
 
@@ -1912,8 +1947,12 @@
       return;
     }
     setSystemApplyState();
-    await Promise.allSettled([loadSystemStatus(), loadSystemLan(), loadSystemHealth(), loadSystemChecklist(), loadSystemOperations()]);
-    renderSystemMonitoring();
+    try {
+      await Promise.allSettled([loadSystemStatus(), loadSystemLan(), loadSystemHealth(), loadSystemChecklist(), loadSystemOperations()]);
+    } finally {
+      renderSystemMonitoring();
+      resetGlobalUiLocks();
+    }
   };
 
   const findPendingStrictAttemptByStudent = async () => {
@@ -1963,6 +2002,11 @@
     });
     $("logoutBtn").addEventListener("click", logout);
     $("menuToggle").addEventListener("click", () => $("sidebar").classList.toggle("open"));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        resetGlobalUiLocks();
+      }
+    });
     document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => setView(button.dataset.view)));
     setupPasswordToggle("loginPassword", "loginTogglePassword");
 
@@ -2300,12 +2344,14 @@
   };
 
   const init = async () => {
+    resetGlobalUiLocks();
     bindEvents();
     $("groupYear").value = String(new Date().getFullYear());
     await loadConnectionInfo();
     const hasSession = await loadCurrentUser();
     if (hasSession) await bootstrapData();
     else setAuthenticatedUi(false);
+    resetGlobalUiLocks();
   };
 
   init();

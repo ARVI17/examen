@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
-    <link rel="stylesheet" href="/admin/styles.css" />
+    <link rel="stylesheet" href="/admin/styles.css?v=20260516" />
   </head>
   <body>
     <main id="loginView" class="login-view">
@@ -557,6 +557,10 @@
                   <article class="monitor-chip"><span>LAN</span><strong id="sysQuickLan">-</strong></article>
                   <article class="monitor-chip"><span>Health</span><strong id="sysQuickHealth">-</strong></article>
                   <article class="monitor-chip"><span>Ultimo refresco</span><strong id="sysQuickUpdated">-</strong></article>
+                  <article class="monitor-chip"><span>Intentos activos</span><strong id="sysQuickActiveAttempts">-</strong></article>
+                  <article class="monitor-chip"><span>Guardados (15m)</span><strong id="sysQuickSaved15m">-</strong></article>
+                  <article class="monitor-chip"><span>Intentos finalizados (24h)</span><strong id="sysQuickSubmitted24h">-</strong></article>
+                  <article class="monitor-chip"><span>Errores sync (15m)</span><strong id="sysQuickSyncErrors">-</strong></article>
                 </div>
               </section>
               <section class="monitor-card">
@@ -780,7 +784,7 @@
 
     <div id="toast" class="toast-lite" role="status" aria-live="polite"></div>
 
-    <script src="/admin/vendor/chart.umd.min.js" defer></script>
-    <script src="/admin/app.js" defer></script>
+    <script src="/admin/vendor/chart.umd.min.js?v=20260516" defer></script>
+    <script src="/admin/app.js?v=20260516" defer></script>
   </body>
 </html>

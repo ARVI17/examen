@@ -88,6 +88,12 @@ textarea {
   display: none !important;
 }
 
+body:not(.modal-open) .modal-backdrop,
+body:not(.overlay-open) .app-overlay,
+body:not(.overlay-open) .overlay-backdrop {
+  display: none !important;
+}
+
 .login-view {
   min-height: 100vh;
   display: grid;
