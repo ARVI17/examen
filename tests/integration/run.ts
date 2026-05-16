@@ -117,6 +117,32 @@ const main = async () => {
     ensure(response.body?.success === true, "respuesta esperaba success=true");
   });
 
+  await run("Schools Catalog | ADMIN can list multiple departments", async () => {
+    const response = await client.get("/api/schools/departments").set("Authorization", `Bearer ${adminToken}`);
+    ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
+    const departments: string[] = response.body?.data?.items || [];
+    ensure(departments.length > 1, `se esperaban multiples departamentos, recibido ${departments.length}`);
+    ensure(departments.includes("MAGDALENA"), "MAGDALENA no aparece en departamentos");
+  });
+
+  await run("Schools Catalog | MAGDALENA includes SANTA MARTA municipality", async () => {
+    const response = await client
+      .get("/api/schools/municipalities?departamento=MAGDALENA")
+      .set("Authorization", `Bearer ${adminToken}`);
+    ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
+    const municipalities: string[] = response.body?.data?.items || [];
+    ensure(municipalities.includes("SANTA MARTA"), "SANTA MARTA no aparece en municipios de MAGDALENA");
+  });
+
+  await run("Schools Catalog | PALOMINITO can be found in MAGDALENA/SANTA MARTA", async () => {
+    const response = await client
+      .get("/api/schools?departamento=MAGDALENA&municipio=SANTA%20MARTA&q=PALOMINITO&limit=25")
+      .set("Authorization", `Bearer ${adminToken}`);
+    ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
+    const items = response.body?.data?.items || [];
+    ensure(items.length >= 1, "No se encontraron colegios para PALOMINITO");
+  });
+
   await run("AdminSystem | Apply fails without exact confirmText", async () => {
     const response = await client
       .post("/api/admin/system/schools/import/apply")
@@ -648,6 +674,22 @@ const main = async () => {
   await run("AdminSystem | ESTUDIANTE cannot access status", async () => {
     const response = await client.get("/api/admin/system/status").set("Authorization", `Bearer ${studentToken}`);
     ensure(response.status === 401, `status esperado 401, recibido ${response.status}`);
+  });
+
+  await run("Users | Reject invalid scope school id", async () => {
+    const response = await client
+      .post("/api/users")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({
+        name: "Docente Scope Invalido",
+        email: `it.scope.invalid.${runId}@saber11.local`,
+        password: "Docente#2026!",
+        role: "DOCENTE",
+        scope_school_ids: [randomUUID()]
+      });
+
+    ensure(response.status === 400, `status esperado 400, recibido ${response.status}`);
+    ensure(response.body?.error?.code === "INVALID_SCOPE_SCHOOL", "codigo esperado INVALID_SCOPE_SCHOOL");
   });
 
   await run("StudentAuth | Login second student by document", async () => {

@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -14,8 +14,8 @@
     <main id="loginView" class="login-view">
       <section class="login-card" aria-labelledby="loginTitle">
         <div class="brand-mark" aria-hidden="true">S11</div>
-        <h1 id="loginTitle">Iniciar sesión</h1>
-        <p>Accede al panel académico para gestionar colegios, pruebas y resultados.</p>
+        <h1 id="loginTitle">Iniciar sesiÃ³n</h1>
+        <p>Accede al panel acadÃ©mico para gestionar colegios, pruebas y resultados.</p>
         <form id="loginForm" class="stack-form" novalidate>
           <div class="field">
             <label for="loginEmail">Correo</label>
@@ -25,11 +25,11 @@
             </div>
           </div>
           <div class="field">
-            <label for="loginPassword">Contraseña</label>
+            <label for="loginPassword">ContraseÃ±a</label>
             <div class="input-wrap">
               <i class="bi bi-key"></i>
               <input id="loginPassword" type="password" autocomplete="current-password" />
-              <button id="loginTogglePassword" class="icon-button" type="button" aria-label="Mostrar contraseña">
+              <button id="loginTogglePassword" class="icon-button" type="button" aria-label="Mostrar contraseÃ±a">
                 <i class="bi bi-eye"></i>
               </button>
             </div>
@@ -37,7 +37,7 @@
           <button id="loginBtn" class="primary-button" type="submit">
             <span class="btn-label">Entrar al panel</span>
           </button>
-          <div id="loginStatus" class="status-message warn" role="status" aria-live="polite">Sesión requerida.</div>
+          <div id="loginStatus" class="status-message warn" role="status" aria-live="polite">SesiÃ³n requerida.</div>
         </form>
       </section>
     </main>
@@ -47,11 +47,11 @@
         <div class="sidebar-brand">
           <div class="brand-mark small">S11</div>
           <div>
-            <strong>Control académico</strong>
+            <strong>Control acadÃ©mico</strong>
             <span>Simulador Saber 11</span>
           </div>
         </div>
-        <nav class="side-nav" id="sideNav" aria-label="Navegación principal">
+        <nav class="side-nav" id="sideNav" aria-label="NavegaciÃ³n principal">
           <button class="nav-item active" data-view="dashboard"><i class="bi bi-grid"></i><span>Inicio</span></button>
           <button class="nav-item" data-view="schools"><i class="bi bi-buildings"></i><span>Colegios</span></button>
           <button class="nav-item" data-view="groups"><i class="bi bi-door-open"></i><span>Salones</span></button>
@@ -59,23 +59,23 @@
           <button class="nav-item" data-view="exams"><i class="bi bi-journal-check"></i><span>Pruebas</span></button>
           <button class="nav-item" data-view="simulator"><i class="bi bi-pencil-square"></i><span>Simulador</span></button>
           <button class="nav-item" data-view="results"><i class="bi bi-table"></i><span>Resultados</span></button>
-          <button class="nav-item" data-view="analysis"><i class="bi bi-graph-up-arrow"></i><span>Análisis</span></button>
+          <button class="nav-item" data-view="analysis"><i class="bi bi-graph-up-arrow"></i><span>AnÃ¡lisis</span></button>
           <button class="nav-item" data-view="reports"><i class="bi bi-file-earmark-bar-graph"></i><span>Reportes</span></button>
           <button class="nav-item" data-view="system"><i class="bi bi-shield-check"></i><span>Operacion</span></button>
-          <button class="nav-item" data-view="settings"><i class="bi bi-gear"></i><span>Configuración</span></button>
+          <button class="nav-item" data-view="settings"><i class="bi bi-gear"></i><span>ConfiguraciÃ³n</span></button>
         </nav>
         <div class="sidebar-footer">
-          <div id="sessionText" class="session-text">Sin sesión</div>
+          <div id="sessionText" class="session-text">Sin sesiÃ³n</div>
           <button id="logoutBtn" class="ghost-button" type="button"><i class="bi bi-box-arrow-left"></i> Salir</button>
         </div>
       </aside>
 
       <main class="workspace">
         <header class="topbar">
-          <button id="menuToggle" class="icon-button menu-toggle" type="button" aria-label="Abrir menú"><i class="bi bi-list"></i></button>
+          <button id="menuToggle" class="icon-button menu-toggle" type="button" aria-label="Abrir menÃº"><i class="bi bi-list"></i></button>
           <div>
             <h1 id="viewTitle">Inicio</h1>
-            <p id="viewSubtitle">Resumen operativo y desempeño académico.</p>
+            <p id="viewSubtitle">Resumen operativo y desempeÃ±o acadÃ©mico.</p>
           </div>
           <div class="topbar-actions">
             <a id="simLink" class="ghost-button" href="/simulador" target="_blank" rel="noreferrer"><i class="bi bi-display"></i> Vista estudiante</a>
@@ -89,7 +89,7 @@
               <label>Departamento<select id="dashDepartmentSelect"></select></label>
               <label>Municipio<select id="dashMunicipalitySelect"></select></label>
               <label>Colegio<select id="dashSchoolSelect"></select></label>
-              <label>Salón<select id="dashGroupSelect"></select></label>
+              <label>SalÃ³n<select id="dashGroupSelect"></select></label>
               <label>Grado<input id="dashGrado" placeholder="11" /></label>
               <label>Desde<input id="dashFrom" type="date" /></label>
               <label>Hasta<input id="dashTo" type="date" /></label>
@@ -118,7 +118,7 @@
             </article>
             <article class="panel">
               <div class="panel-head">
-                <div><h2>Distribución académica</h2><p>Lectura rápida de desempeño reciente.</p></div>
+                <div><h2>DistribuciÃ³n acadÃ©mica</h2><p>Lectura rÃ¡pida de desempeÃ±o reciente.</p></div>
               </div>
               <div class="chart-box"><canvas id="summaryChart"></canvas></div>
               <div id="dashRecommendations" class="recommendation-list"></div>
@@ -127,7 +127,7 @@
 
           <article class="panel">
             <div class="panel-head">
-              <div><h2>Últimos resultados</h2><p>Intento más reciente por estudiante.</p></div>
+              <div><h2>Ãšltimos resultados</h2><p>Intento mÃ¡s reciente por estudiante.</p></div>
             </div>
             <div id="dashRowsStatus" class="status-message">Sin resultados para mostrar.</div>
             <div class="table-shell mobile-cards">
@@ -146,12 +146,12 @@
         <section class="view" id="view-schools">
           <div class="content-grid two">
             <article class="panel">
-              <div class="panel-head"><div><h2>Colegio</h2><p>Crear o editar institución.</p></div></div>
+              <div class="panel-head"><div><h2>Colegio</h2><p>Crear o editar instituciÃ³n.</p></div></div>
               <form id="schoolForm" class="stack-form">
                 <input id="schoolEditingId" type="hidden" />
                 <div class="form-grid">
-                  <label>Código<input id="schoolCode" placeholder="COLEGIO_DEMO" /></label>
-                  <label>Código DANE<input id="schoolCodigoDane" placeholder="470001000000" /></label>
+                  <label>CÃ³digo<input id="schoolCode" placeholder="COLEGIO_DEMO" /></label>
+                  <label>CÃ³digo DANE<input id="schoolCodigoDane" placeholder="470001000000" /></label>
                   <label>Nombre<input id="schoolName" required /></label>
                   <label>Establecimiento<input id="schoolEstablecimiento" /></label>
                   <label>Sede<input id="schoolSede" /></label>
@@ -164,9 +164,9 @@
                       <option value="NO OFICIAL">NO OFICIAL</option>
                     </select>
                   </label>
-                  <label>Dirección<input id="schoolDireccion" /></label>
+                  <label>DirecciÃ³n<input id="schoolDireccion" /></label>
                 </div>
-                <label>Descripción<textarea id="schoolDescription" rows="3"></textarea></label>
+                <label>DescripciÃ³n<textarea id="schoolDescription" rows="3"></textarea></label>
                 <label>Estado<select id="schoolActive"><option value="true">Activo</option><option value="false">Inactivo</option></select></label>
                 <div class="actions"><button class="primary-button" type="submit">Guardar colegio</button><button id="schoolCancelBtn" class="ghost-button" type="button">Cancelar</button></div>
                 <div id="schoolStatus" class="status-message">Sin cambios.</div>
@@ -180,12 +180,12 @@
               <div class="filter-row">
                 <label>Departamento<select id="schoolFilterDepartment"></select></label>
                 <label>Municipio<select id="schoolFilterMunicipality"></select></label>
-                <label>Búsqueda<input id="schoolFilterSearch" placeholder="Nombre o código DANE" /></label>
+                <label>BÃºsqueda<input id="schoolFilterSearch" placeholder="Nombre o cÃ³digo DANE" /></label>
                 <button id="schoolApplyFiltersBtn" class="ghost-button" type="button"><i class="bi bi-funnel"></i> Filtrar</button>
               </div>
               <div id="schoolListStatus" class="status-message">Sin consulta.</div>
               <div class="table-shell mobile-cards">
-                <table><thead><tr><th>Departamento</th><th>Municipio</th><th>Colegio</th><th>Sector</th><th>Código DANE</th><th>Estado</th><th></th></tr></thead><tbody id="schoolRows"></tbody></table>
+                <table><thead><tr><th>Departamento</th><th>Municipio</th><th>Colegio</th><th>Sector</th><th>CÃ³digo DANE</th><th>Estado</th><th></th></tr></thead><tbody id="schoolRows"></tbody></table>
               </div>
             </article>
           </div>
@@ -194,14 +194,14 @@
         <section class="view" id="view-groups">
           <div class="content-grid two">
             <article class="panel">
-              <div class="panel-head"><div><h2>Salón</h2><p>Crear grupo dentro de un colegio.</p></div></div>
+              <div class="panel-head"><div><h2>SalÃ³n</h2><p>Crear grupo dentro de un colegio.</p></div></div>
               <form id="groupForm" class="stack-form">
                 <label>Colegio<select id="groupSchoolSelect"></select></label>
-                <label>Código<input id="groupCode" placeholder="11A" /></label>
+                <label>CÃ³digo<input id="groupCode" placeholder="11A" /></label>
                 <label>Nombre<input id="groupName" placeholder="11-A" required /></label>
                 <label>Grado<input id="groupGrade" value="11" /></label>
-                <label>Año académico<input id="groupYear" type="number" min="2000" max="2100" /></label>
-                <div class="actions"><button class="primary-button" type="submit">Guardar salón</button></div>
+                <label>AÃ±o acadÃ©mico<input id="groupYear" type="number" min="2000" max="2100" /></label>
+                <div class="actions"><button class="primary-button" type="submit">Guardar salÃ³n</button></div>
                 <div id="groupStatus" class="status-message">Sin cambios.</div>
               </form>
             </article>
@@ -211,7 +211,7 @@
                 <button id="groupLoadBtn" class="ghost-button" type="button"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
               </div>
               <div class="table-shell">
-                <table><thead><tr><th>Salón</th><th>Grado</th><th>Año</th><th>Estado</th></tr></thead><tbody id="groupRows"></tbody></table>
+                <table><thead><tr><th>SalÃ³n</th><th>Grado</th><th>AÃ±o</th><th>Estado</th></tr></thead><tbody id="groupRows"></tbody></table>
               </div>
             </article>
           </div>
@@ -220,7 +220,7 @@
         <section class="view" id="view-students">
           <div class="content-grid two">
             <article class="panel">
-              <div class="panel-head"><div><h2>Estudiante</h2><p>Registro individual con colegio y salón.</p></div></div>
+              <div class="panel-head"><div><h2>Estudiante</h2><p>Registro individual con colegio y salÃ³n.</p></div></div>
               <form id="studentForm" class="stack-form">
                 <input id="stEditingId" type="hidden" />
                 <div class="form-grid">
@@ -230,11 +230,15 @@
                   <label>Documento<input id="stDocumento" required /></label>
                   <label>Grado<input id="stGrado" value="11" /></label>
                   <label>Grupo<input id="stGrupo" /></label>
+                  <label>Departamento<select id="stDepartmentSelect"><option value="">Cargando departamentos...</option></select><small class="field-help">Seleccione el departamento del colegio.</small></label>
+                  <label>Municipio<select id="stMunicipalitySelect" disabled><option value="">Seleccione primero un departamento</option></select><small class="field-help">Se carga segun el departamento.</small></label>
+                  <label class="field-span-2">Buscar colegio<input id="stSchoolSearch" placeholder="Ejemplo: PALOMINITO" /><small class="field-help">Si la lista es larga, escriba y presione Enter.</small></label>
                   <label>Colegio<select id="stSchoolSelect"></select></label>
-                  <label>Salón<select id="stGroupSelect"></select></label>
-                  <label>Institución<input id="stInstitucion" /></label>
+                  <label>SalÃ³n<select id="stGroupSelect"></select></label>
+                  <label>InstituciÃ³n<input id="stInstitucion" /></label>
                   <label>Email<input id="stEmail" type="email" /></label>
                 </div>
+                <div id="stSchoolCatalogStatus" class="status-message warn">Seleccione primero un departamento.</div>
                 <div class="actions"><button id="stCreateBtn" class="primary-button" type="submit">Guardar estudiante</button><button id="stCancelEditBtn" class="ghost-button" type="button">Cancelar</button></div>
                 <div id="stCreateStatus" class="status-message">Sin cambios.</div>
               </form>
@@ -249,18 +253,18 @@
           </div>
           <article class="panel">
             <div class="panel-head">
-              <div><h2>Listado de estudiantes</h2><p>Búsqueda rápida y acciones básicas.</p></div>
+              <div><h2>Listado de estudiantes</h2><p>BÃºsqueda rÃ¡pida y acciones bÃ¡sicas.</p></div>
               <button id="stListBtn" class="ghost-button" type="button"><i class="bi bi-search"></i> Buscar</button>
             </div>
             <div class="filter-row">
               <label>Grado<input id="stFilterGrado" value="11" /></label>
               <label>Documento<input id="stFilterDoc" /></label>
               <label>Grupo<input id="stFilterGrupo" /></label>
-              <label>Institución<input id="stFilterInstitucion" /></label>
+              <label>InstituciÃ³n<input id="stFilterInstitucion" /></label>
             </div>
             <div id="stListStatus" class="status-message">Sin consulta.</div>
             <div class="table-shell mobile-cards">
-              <table><thead><tr><th>Documento</th><th>Nombre</th><th>Grado</th><th>Grupo</th><th>Institución</th><th>Acciones</th></tr></thead><tbody id="stListRows"></tbody></table>
+              <table><thead><tr><th>Documento</th><th>Nombre</th><th>Grado</th><th>Grupo</th><th>InstituciÃ³n</th><th>Acciones</th></tr></thead><tbody id="stListRows"></tbody></table>
             </div>
             <div class="table-tools">
               <small id="stListMeta" class="table-meta">Mostrando 0 de 0</small>
@@ -272,7 +276,7 @@
         <section class="view" id="view-exams">
           <div class="content-grid two">
             <article class="panel">
-              <div class="panel-head"><div><h2>Crear prueba</h2><p>Configura simulacros, diagnósticos o Saber 11.</p></div></div>
+              <div class="panel-head"><div><h2>Crear prueba</h2><p>Configura simulacros, diagnÃ³sticos o Saber 11.</p></div></div>
               <form id="examForm" class="stack-form">
                 <div class="form-grid">
                   <label>Nombre<input id="examName" required /></label>
@@ -280,10 +284,10 @@
                   <label>Grado<input id="examGrade" value="11" /></label>
                   <label>Estado<select id="examStatus"><option>DRAFT</option><option>PUBLICADO</option><option>ARCHIVADO</option></select></label>
                   <label>Tiempo min<input id="examTime" type="number" value="120" min="1" /></label>
-                  <label>Puntaje máximo<input id="examMaxScore" type="number" value="100" min="1" /></label>
+                  <label>Puntaje mÃ¡ximo<input id="examMaxScore" type="number" value="100" min="1" /></label>
                   <label>Total preguntas<input id="examTotalQuestions" type="number" value="0" min="0" /></label>
                 </div>
-                <label>Descripción<textarea id="examDescription" rows="3"></textarea></label>
+                <label>DescripciÃ³n<textarea id="examDescription" rows="3"></textarea></label>
                 <div class="actions"><button class="primary-button" type="submit">Guardar prueba</button></div>
                 <div id="examStatusBox" class="status-message">Sin cambios.</div>
               </form>
@@ -311,7 +315,7 @@
         <section class="view" id="view-simulator">
           <div class="content-grid two">
             <article class="panel">
-              <div class="panel-head"><div><h2>Iniciar intento</h2><p>Prueba rápida desde administración.</p></div></div>
+              <div class="panel-head"><div><h2>Iniciar intento</h2><p>Prueba rÃ¡pida desde administraciÃ³n.</p></div></div>
               <div class="stack-form">
                 <label>Prueba<select id="simExamSelect"></select></label>
                 <div class="form-grid">
@@ -337,14 +341,14 @@
                   <button id="simStopAttemptBtn" class="ghost-button" type="button">Detener</button>
                   <button id="simRestartAttemptBtn" class="ghost-button" type="button">Reiniciar</button>
                 </div>
-                <div id="simStrictStatus" class="status-message">Sin acción.</div>
+                <div id="simStrictStatus" class="status-message">Sin acciÃ³n.</div>
               </div>
             </article>
           </div>
           <article class="panel">
             <div class="sim-layout">
               <div>
-                <h2>Navegación</h2>
+                <h2>NavegaciÃ³n</h2>
                 <div id="simNav" class="qnav"></div>
                 <div class="actions"><button id="simPrevBtn" class="ghost-button" type="button">Anterior</button><button id="simNextBtn" class="ghost-button" type="button">Siguiente</button></div>
                 <div class="actions"><button id="simSaveBtn" class="primary-button" type="button">Guardar</button><button id="simSubmitBtn" class="primary-button" type="button">Enviar y calificar</button></div>
@@ -357,7 +361,7 @@
             </div>
           </article>
           <article class="panel">
-            <div class="panel-head"><div><h2>Resultado</h2><p>Calificación del intento.</p></div></div>
+            <div class="panel-head"><div><h2>Resultado</h2><p>CalificaciÃ³n del intento.</p></div></div>
             <div id="simKpis" class="stats-grid"></div>
             <div id="simAreaBars" class="bar-list"></div>
             <pre id="simResultOutput" class="code-box">{}</pre>
@@ -367,15 +371,15 @@
         <section class="view" id="view-results">
           <article class="panel">
             <div class="panel-head">
-              <div><h2>Resultados por salón</h2><p>Consulta ranking, promedios y desempeño.</p></div>
+              <div><h2>Resultados por salÃ³n</h2><p>Consulta ranking, promedios y desempeÃ±o.</p></div>
               <div class="actions"><button id="repClassCsvBtn" class="ghost-button" type="button">CSV</button><button id="repClassPdfBtn" class="ghost-button" type="button">PDF</button></div>
             </div>
             <div class="filter-row">
               <label>Colegio<select id="repClassSchoolSelect"></select></label>
-              <label>Salón<select id="repClassGroupSelect"></select></label>
+              <label>SalÃ³n<select id="repClassGroupSelect"></select></label>
               <label>Grado<input id="repClassGrado" value="11" /></label>
               <label>Grupo<input id="repClassGrupo" /></label>
-              <label>Institución<input id="repClassInstitucion" /></label>
+              <label>InstituciÃ³n<input id="repClassInstitucion" /></label>
               <label>Desde<input id="repClassFrom" type="date" /></label>
               <label>Hasta<input id="repClassTo" type="date" /></label>
               <button id="repClassBtn" class="primary-button" type="button">Consultar</button>
@@ -411,7 +415,7 @@
         <section class="view" id="view-analysis">
           <div class="content-grid two">
             <article class="panel">
-              <div class="panel-head"><div><h2>Análisis de estudiante</h2><p>Fortalezas, debilidades y evolución.</p></div></div>
+              <div class="panel-head"><div><h2>AnÃ¡lisis de estudiante</h2><p>Fortalezas, debilidades y evoluciÃ³n.</p></div></div>
               <div class="filter-row">
                 <label>Documento<input id="repStudentDoc" /></label>
                 <label>Grado<input id="repStudentGrado" /></label>
@@ -423,7 +427,7 @@
               <pre id="repStudentOutput" class="code-box is-collapsed">{}</pre>
             </article>
             <article class="panel">
-              <div class="panel-head"><div><h2>Recomendaciones académicas</h2><p>Sugerencias automáticas basadas en resultados.</p></div></div>
+              <div class="panel-head"><div><h2>Recomendaciones acadÃ©micas</h2><p>Sugerencias automÃ¡ticas basadas en resultados.</p></div></div>
               <div id="globalRecommendations" class="recommendation-list"></div>
             </article>
           </div>
@@ -432,10 +436,10 @@
         <section class="view" id="view-reports">
           <div class="content-grid two">
             <article class="panel">
-              <div class="panel-head"><div><h2>Cobertura de preguntas</h2><p>Preparación del banco para pruebas reales.</p></div></div>
-              <div class="filter-row"><label>Grado<input id="covGrade" value="11" /></label><label>Meta por área<input id="covTarget" value="120" type="number" /></label><button id="covLoadBtn" class="primary-button" type="button">Consultar</button></div>
+              <div class="panel-head"><div><h2>Cobertura de preguntas</h2><p>PreparaciÃ³n del banco para pruebas reales.</p></div></div>
+              <div class="filter-row"><label>Grado<input id="covGrade" value="11" /></label><label>Meta por Ã¡rea<input id="covTarget" value="120" type="number" /></label><button id="covLoadBtn" class="primary-button" type="button">Consultar</button></div>
               <div id="covStatus" class="status-message">Sin consulta.</div>
-              <div class="table-shell"><table><thead><tr><th>Área</th><th>Total</th><th>Meta</th><th>Déficit</th><th>%</th></tr></thead><tbody id="covRows"></tbody></table></div>
+              <div class="table-shell"><table><thead><tr><th>Ãrea</th><th>Total</th><th>Meta</th><th>DÃ©ficit</th><th>%</th></tr></thead><tbody id="covRows"></tbody></table></div>
             </article>
             <article class="panel">
               <div class="panel-head"><div><h2>Material local</h2><p>Estado de fuentes y documentos base.</p></div></div>
@@ -759,6 +763,21 @@
                   <label>Rol<select id="uRol"><option>DOCENTE</option><option>ADMIN</option></select></label>
                   <label>Estado<select id="uActivo"><option value="true">Activo</option><option value="false">Inactivo</option></select></label>
                 </div>
+                <div id="uScopeFields" class="form-grid">
+                  <label>Departamento alcance<select id="uDepartmentSelect"><option value="">Cargando departamentos...</option></select><small class="field-help">Seleccione el departamento del colegio del docente.</small></label>
+                  <label>Municipio alcance<select id="uMunicipalitySelect" disabled><option value="">Seleccione primero un departamento</option></select><small class="field-help">Se carga segun el departamento.</small></label>
+                  <label class="field-span-2">Buscar colegio<input id="uSchoolSearch" placeholder="Ejemplo: PALOMINITO" /><small class="field-help">Busque por nombre y presione Enter.</small></label>
+                  <label class="field-span-2">Colegio alcance<select id="uScopeSchoolSelect" disabled><option value="">Seleccione un colegio para alcance docente</option></select><small class="field-help">Los docentes solo veran datos de su alcance asignado.</small></label>
+                </div>
+                <div id="uScopeStatus" class="status-message warn">Seleccione departamento, municipio y colegio para DOCENTE.</div>
+                <div class="form-note">
+                  <strong>Guia rapida de creacion</strong>
+                  <ul>
+                    <li>DOCENTE: requiere colegio de alcance.</li>
+                    <li>ADMIN: no requiere alcance por colegio.</li>
+                    <li>Si no aparece un colegio, revise departamento/municipio y busque por nombre.</li>
+                  </ul>
+                </div>
                 <div class="actions"><button id="uCreateBtn" class="primary-button" type="submit">Crear usuario</button><button id="uListBtn" class="ghost-button" type="button">Actualizar</button></div>
               </form>
               <div class="bulk-box">
@@ -771,7 +790,7 @@
               <pre id="uOutput" class="code-box is-collapsed">[]</pre>
             </article>
             <article class="panel">
-              <div class="panel-head"><div><h2>Conexión</h2><p>URLs de API, LAN y diagnóstico rápido.</p></div></div>
+              <div class="panel-head"><div><h2>ConexiÃ³n</h2><p>URLs de API, LAN y diagnÃ³stico rÃ¡pido.</p></div></div>
               <div id="apiText" class="summary-line"></div>
               <div id="lanText" class="summary-line"></div>
               <div id="adminText" class="summary-line"></div>
@@ -788,3 +807,5 @@
     <script src="/admin/app.js?v=20260516" defer></script>
   </body>
 </html>
+
+

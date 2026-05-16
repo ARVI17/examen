@@ -59,6 +59,17 @@ label {
   font-weight: 700;
 }
 
+.field-help {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.field-span-2 {
+  grid-column: span 2;
+}
+
 input,
 select,
 textarea {
@@ -310,6 +321,27 @@ body:not(.overlay-open) .overlay-backdrop {
   color: var(--danger);
   background: var(--danger-bg);
   border-color: #f0bec8;
+}
+
+.form-note {
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: #f8fbff;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: #334155;
+}
+
+.form-note strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.form-note ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
 }
 
 .app-shell {
@@ -1137,6 +1169,10 @@ tr:hover td {
   .filter-row,
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .field-span-2 {
+    grid-column: span 1;
   }
 
   #view-system .filter-row {

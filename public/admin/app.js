@@ -24,6 +24,10 @@
     schools: [],
     schoolDepartments: [],
     schoolMunicipalities: [],
+    formCatalog: {
+      student: { departments: [], municipalities: [], schools: [] },
+      user: { departments: [], municipalities: [], schools: [] }
+    },
     groups: [],
     students: [],
     users: [],
@@ -302,6 +306,7 @@
     classroom: 20,
     ai: 20
   };
+  const FORM_CATALOG_LIMIT = 200;
 
   const td = (label, value, extraClass = "") =>
     `<td data-label="${escapeHtml(label)}"${extraClass ? ` class="${extraClass}"` : ""}>${value}</td>`;
@@ -406,6 +411,24 @@
       option.textContent = typeof label === "function" ? label(item) : item[label] || "";
       select.appendChild(option);
     });
+  };
+
+  const setSelectDisabled = (id, disabled) => {
+    const select = $(id);
+    if (!select) return;
+    select.disabled = Boolean(disabled);
+  };
+
+  const setSelectPlaceholder = (id, placeholder, { disabled = false } = {}) => {
+    const select = $(id);
+    if (!select) return;
+    fillSelect(id, [], { placeholder });
+    setSelectDisabled(id, disabled);
+  };
+
+  const setFormCatalogStatus = (id, message, tone = "") => {
+    if (!$(id)) return;
+    setStatus(id, message, tone);
   };
 
   const loadConnectionInfo = async () => {
@@ -735,17 +758,165 @@
     const current = {
       dash: $("dashSchoolSelect").value,
       report: $("repClassSchoolSelect").value,
-      group: $("groupSchoolSelect").value,
-      student: $("stSchoolSelect").value
+      group: $("groupSchoolSelect").value
     };
     fillSelect("dashSchoolSelect", state.schools, { placeholder: "Todos los colegios", label: formatSchoolLabel });
     fillSelect("repClassSchoolSelect", state.schools, { placeholder: "Todos los colegios", label: formatSchoolLabel });
     fillSelect("groupSchoolSelect", state.schools, { placeholder: "Selecciona colegio", label: formatSchoolLabel });
-    fillSelect("stSchoolSelect", state.schools, { placeholder: "Sin asignar", label: formatSchoolLabel });
     if (current.dash) $("dashSchoolSelect").value = current.dash;
     if (current.report) $("repClassSchoolSelect").value = current.report;
     if (current.group) $("groupSchoolSelect").value = current.group;
-    if (current.student) $("stSchoolSelect").value = current.student;
+  };
+
+  const FORM_CATALOG_FIELDS = {
+    student: {
+      department: "stDepartmentSelect",
+      municipality: "stMunicipalitySelect",
+      school: "stSchoolSelect",
+      search: "stSchoolSearch",
+      status: "stSchoolCatalogStatus",
+      schoolPlaceholder: "Seleccione un colegio"
+    },
+    user: {
+      department: "uDepartmentSelect",
+      municipality: "uMunicipalitySelect",
+      school: "uScopeSchoolSelect",
+      search: "uSchoolSearch",
+      status: "uScopeStatus",
+      schoolPlaceholder: "Seleccione un colegio para alcance docente"
+    }
+  };
+
+  const updateFormScopeVisibility = () => {
+    const role = $("uRol")?.value || "DOCENTE";
+    const wrap = $("uScopeFields");
+    if (!wrap) return;
+    const showScope = role === "DOCENTE";
+    wrap.classList.toggle("is-hidden", !showScope);
+    if (!showScope) {
+      setFormCatalogStatus("uScopeStatus", "El alcance por colegio no aplica para usuarios ADMIN.", "ok");
+      setSelectPlaceholder("uDepartmentSelect", "No aplica para ADMIN", { disabled: true });
+      setSelectPlaceholder("uMunicipalitySelect", "No aplica para ADMIN", { disabled: true });
+      setSelectPlaceholder("uScopeSchoolSelect", "No aplica para ADMIN", { disabled: true });
+      if ($("uSchoolSearch")) $("uSchoolSearch").value = "";
+    } else {
+      setFormCatalogStatus("uScopeStatus", "Seleccione departamento, municipio y colegio para DOCENTE.", "warn");
+      setSelectDisabled("uDepartmentSelect", false);
+      setSelectDisabled("uMunicipalitySelect", false);
+      setSelectDisabled("uScopeSchoolSelect", false);
+      if (!state.formCatalog.user.departments.length) {
+        void loadFormCatalogDepartments("user");
+      }
+    }
+  };
+
+  const getFormCatalogSelection = (kind) => {
+    const fields = FORM_CATALOG_FIELDS[kind];
+    const departamento = normalizeUpperText($(fields.department)?.value || "");
+    const municipio = normalizeUpperText($(fields.municipality)?.value || "");
+    const q = $(fields.search)?.value?.trim() || "";
+    return { departamento, municipio, q };
+  };
+
+  const renderFormSchools = (kind, preferred = "") => {
+    const fields = FORM_CATALOG_FIELDS[kind];
+    const schools = state.formCatalog[kind].schools || [];
+    fillSelect(fields.school, schools, { placeholder: fields.schoolPlaceholder, label: formatSchoolLabel });
+    setSelectDisabled(fields.school, schools.length === 0);
+    if (preferred) {
+      $(fields.school).value = preferred;
+    }
+  };
+
+  const loadFormCatalogDepartments = async (kind, preferred = "") => {
+    const fields = FORM_CATALOG_FIELDS[kind];
+    try {
+      setFormCatalogStatus(fields.status, "Cargando departamentos...", "warn");
+      setSelectPlaceholder(fields.department, "Cargando departamentos...", { disabled: true });
+      setSelectPlaceholder(fields.municipality, "Seleccione primero un departamento", { disabled: true });
+      setSelectPlaceholder(fields.school, fields.schoolPlaceholder, { disabled: true });
+      const response = await apiRequest("/schools/departments");
+      const departments = response.data?.items || [];
+      state.formCatalog[kind].departments = departments;
+      const options = departments.map((departamento) => ({ id: departamento, name: departamento }));
+      fillSelect(fields.department, options, { placeholder: "Seleccione departamento" });
+      setSelectDisabled(fields.department, departments.length === 0);
+      if (preferred) $(fields.department).value = preferred;
+      const tone = departments.length ? "ok" : "warn";
+      setFormCatalogStatus(fields.status, departments.length ? "Departamentos cargados." : "No hay departamentos disponibles.", tone);
+    } catch (error) {
+      setSelectPlaceholder(fields.department, "No se pudo cargar departamentos", { disabled: true });
+      setSelectPlaceholder(fields.municipality, "Seleccione primero un departamento", { disabled: true });
+      setSelectPlaceholder(fields.school, fields.schoolPlaceholder, { disabled: true });
+      setFormCatalogStatus(fields.status, "No se pudo cargar departamentos.", "bad");
+    }
+  };
+
+  const loadFormCatalogMunicipalities = async (kind, preferred = "") => {
+    const fields = FORM_CATALOG_FIELDS[kind];
+    const departamento = normalizeUpperText($(fields.department)?.value || "");
+    if (!departamento) {
+      state.formCatalog[kind].municipalities = [];
+      state.formCatalog[kind].schools = [];
+      setSelectPlaceholder(fields.municipality, "Seleccione primero un departamento", { disabled: true });
+      setSelectPlaceholder(fields.school, fields.schoolPlaceholder, { disabled: true });
+      setFormCatalogStatus(fields.status, "Seleccione primero un departamento.", "warn");
+      return;
+    }
+
+    try {
+      setFormCatalogStatus(fields.status, "Cargando municipios...", "warn");
+      setSelectPlaceholder(fields.municipality, "Cargando municipios...", { disabled: true });
+      setSelectPlaceholder(fields.school, fields.schoolPlaceholder, { disabled: true });
+      const response = await apiRequest(`/schools/municipalities${toQueryString({ departamento })}`);
+      const municipalities = response.data?.items || [];
+      state.formCatalog[kind].municipalities = municipalities;
+      const options = municipalities.map((municipio) => ({ id: municipio, name: municipio }));
+      fillSelect(fields.municipality, options, { placeholder: "Seleccione municipio" });
+      setSelectDisabled(fields.municipality, municipalities.length === 0);
+      if (preferred) $(fields.municipality).value = preferred;
+      setFormCatalogStatus(fields.status, municipalities.length ? "Municipios cargados." : "No hay municipios para el departamento.", municipalities.length ? "ok" : "warn");
+    } catch {
+      setSelectPlaceholder(fields.municipality, "No se pudo cargar municipios", { disabled: true });
+      setSelectPlaceholder(fields.school, fields.schoolPlaceholder, { disabled: true });
+      setFormCatalogStatus(fields.status, "No se pudo cargar municipios.", "bad");
+    }
+  };
+
+  const loadFormCatalogSchools = async (kind, preferred = "") => {
+    const fields = FORM_CATALOG_FIELDS[kind];
+    const { departamento, municipio, q } = getFormCatalogSelection(kind);
+    if (!departamento) {
+      setFormCatalogStatus(fields.status, "Debe seleccionar un departamento.", "warn");
+      setSelectPlaceholder(fields.school, fields.schoolPlaceholder, { disabled: true });
+      return;
+    }
+    if (!municipio) {
+      setFormCatalogStatus(fields.status, "Seleccione un municipio para cargar colegios.", "warn");
+      setSelectPlaceholder(fields.school, fields.schoolPlaceholder, { disabled: true });
+      return;
+    }
+
+    try {
+      setFormCatalogStatus(fields.status, "Cargando colegios...", "warn");
+      setSelectPlaceholder(fields.school, "Cargando colegios...", { disabled: true });
+      const response = await apiRequest(
+        `/schools${toQueryString({ departamento, municipio, q, limit: FORM_CATALOG_LIMIT })}`
+      );
+      const schools = response.data?.items || [];
+      state.formCatalog[kind].schools = schools;
+      renderFormSchools(kind, preferred);
+      if (!schools.length) {
+        setFormCatalogStatus(fields.status, "No hay colegios para los filtros seleccionados.", "warn");
+        return;
+      }
+      const total = response.data?.total ?? schools.length;
+      setFormCatalogStatus(fields.status, `Colegios cargados: ${schools.length} de ${total}.`, "ok");
+    } catch {
+      state.formCatalog[kind].schools = [];
+      setSelectPlaceholder(fields.school, "No se pudo cargar colegios", { disabled: true });
+      setFormCatalogStatus(fields.status, "No se pudo cargar colegios.", "bad");
+    }
   };
 
   const listSchools = async () => {
@@ -765,7 +936,6 @@
       $("dashSchoolSelect").value = schoolId;
       $("repClassSchoolSelect").value = schoolId;
       $("groupSchoolSelect").value = schoolId;
-      $("stSchoolSelect").value = schoolId;
     }
 
     $("schoolRows").innerHTML = state.schools.length
@@ -842,6 +1012,7 @@
       fillSelect("dashGroupSelect", [], { placeholder: "Todos los salones" });
       fillSelect("repClassGroupSelect", [], { placeholder: "Todos los salones" });
       fillSelect("stGroupSelect", [], { placeholder: "Sin asignar" });
+      setSelectDisabled("stGroupSelect", true);
       $("groupRows").innerHTML = "<tr><td colspan='4'>Selecciona un colegio.</td></tr>";
       return;
     }
@@ -851,6 +1022,7 @@
     fillSelect("dashGroupSelect", state.groups, { placeholder: "Todos los salones", label: groupLabel });
     fillSelect("repClassGroupSelect", state.groups, { placeholder: "Todos los salones", label: groupLabel });
     fillSelect("stGroupSelect", state.groups, { placeholder: "Sin asignar", label: groupLabel });
+    setSelectDisabled("stGroupSelect", state.groups.length === 0);
     $("groupRows").innerHTML = state.groups
       .map(
         (group) => `<tr><td>${escapeHtml(group.name)}</td><td>${escapeHtml(group.grade || "-")}</td><td>${escapeHtml(
@@ -890,6 +1062,8 @@
       grupo: $("stGrupo").value.trim(),
       institucion: $("stInstitucion").value.trim(),
       email: $("stEmail").value.trim(),
+      departamento: normalizeUpperText($("stDepartmentSelect").value),
+      municipio: normalizeUpperText($("stMunicipalitySelect").value),
       school_id: $("stSchoolSelect").value,
       group_id: $("stGroupSelect").value
     });
@@ -902,6 +1076,11 @@
     $("stTipo").value = "TI";
     $("stGrado").value = "11";
     $("stDocumento").disabled = false;
+    if ($("stDepartmentSelect")) $("stDepartmentSelect").value = "";
+    if ($("stSchoolSearch")) $("stSchoolSearch").value = "";
+    setSelectPlaceholder("stMunicipalitySelect", "Seleccione primero un departamento", { disabled: true });
+    setSelectPlaceholder("stSchoolSelect", "Seleccione un colegio", { disabled: true });
+    setSelectPlaceholder("stGroupSelect", "Sin asignar", { disabled: true });
     setText("stCreateBtn", "Guardar estudiante");
   };
 
@@ -909,6 +1088,9 @@
     try {
       const payload = collectStudentPayload();
       if (!payload.nombres || !payload.apellidos || !payload.grado) throw new Error("Nombres, apellidos y grado son obligatorios.");
+      if (!payload.departamento) throw new Error("Debe seleccionar un departamento.");
+      if (!payload.municipio) throw new Error("Debe seleccionar un municipio.");
+      if (!payload.school_id) throw new Error("Debe seleccionar un colegio.");
       if (state.editingStudentId) {
         const { numero_identificacion, ...updatePayload } = payload;
         await apiRequest(`/students/${state.editingStudentId}`, { method: "PATCH", body: updatePayload });
@@ -968,7 +1150,7 @@
     }
   };
 
-  const fillStudentForm = (student) => {
+  const fillStudentForm = async (student) => {
     state.editingStudentId = student.id;
     $("stEditingId").value = student.id;
     $("stNombres").value = student.nombres || "";
@@ -979,7 +1161,20 @@
     $("stGrupo").value = student.grupo || "";
     $("stInstitucion").value = student.institucion || "";
     $("stEmail").value = student.email || "";
-    $("stSchoolSelect").value = student.schoolId || "";
+    const departamento = normalizeUpperText(student.departamento || student.school?.departamento || "");
+    const municipio = normalizeUpperText(student.municipio || student.school?.municipio || "");
+    if (departamento) {
+      if (!state.formCatalog.student.departments.length) {
+        await loadFormCatalogDepartments("student", departamento);
+      } else {
+        $("stDepartmentSelect").value = departamento;
+      }
+      await loadFormCatalogMunicipalities("student", municipio);
+      await loadFormCatalogSchools("student", student.schoolId || "");
+    } else if (student.schoolId) {
+      await loadFormCatalogSchools("student", student.schoolId);
+    }
+    await listGroups(student.schoolId || $("stSchoolSelect").value);
     $("stDocumento").disabled = true;
     setText("stCreateBtn", "Guardar cambios");
     setView("students");
@@ -1024,16 +1219,30 @@
 
   const createUser = async () => {
     try {
+      const role = $("uRol").value;
+      const scopeSchoolId = $("uScopeSchoolSelect")?.value || "";
+      if (role === "DOCENTE" && !scopeSchoolId) {
+        throw new Error("Debe seleccionar un colegio para el alcance del docente.");
+      }
+
       const body = cleanObject({
         name: $("uNombre").value.trim(),
         email: $("uEmail").value.trim(),
         password: $("uPassword").value,
-        role: $("uRol").value,
-        is_active: $("uActivo").value === "true"
+        role,
+        is_active: $("uActivo").value === "true",
+        scope_school_ids: role === "DOCENTE" && scopeSchoolId ? [scopeSchoolId] : undefined
       });
       await apiRequest("/users", { method: "POST", body });
       setStatus("uStatus", "Usuario creado.", "ok");
-      ["uNombre", "uEmail", "uPassword"].forEach((id) => ($(id).value = ""));
+      ["uNombre", "uEmail", "uPassword", "uSchoolSearch"].forEach((id) => {
+        if ($(id)) $(id).value = "";
+      });
+      $("uRol").value = "DOCENTE";
+      await loadFormCatalogDepartments("user");
+      setSelectPlaceholder("uMunicipalitySelect", "Seleccione primero un departamento", { disabled: true });
+      setSelectPlaceholder("uScopeSchoolSelect", "Seleccione un colegio para alcance docente", { disabled: true });
+      updateFormScopeVisibility();
       await listUsers();
     } catch (error) {
       setStatus("uStatus", error.message, "bad");
@@ -1987,7 +2196,18 @@
     await loadSchoolDepartments();
     await loadSchoolMunicipalities($("dashDepartmentSelect").value || $("schoolFilterDepartment").value);
     await listSchools();
-    await Promise.allSettled([listGroups(), listStudents(), listUsers(), listExams(), loadDashboard(), loadGeneratedQuestions()]);
+    await Promise.allSettled([
+      loadFormCatalogDepartments("student"),
+      loadFormCatalogDepartments("user"),
+      listGroups(),
+      listStudents(),
+      listUsers(),
+      listExams(),
+      loadDashboard(),
+      loadGeneratedQuestions()
+    ]);
+    resetStudentForm();
+    updateFormScopeVisibility();
     if (isSystemAdmin()) {
       await refreshSystemPanel();
     } else {
@@ -2059,6 +2279,23 @@
     });
     $("groupSchoolSelect").addEventListener("change", () => listGroups($("groupSchoolSelect").value));
     $("stSchoolSelect").addEventListener("change", () => listGroups($("stSchoolSelect").value));
+    $("stDepartmentSelect")?.addEventListener("change", async () => {
+      await loadFormCatalogMunicipalities("student");
+      await loadFormCatalogSchools("student");
+      await listGroups($("stSchoolSelect").value);
+    });
+    $("stMunicipalitySelect")?.addEventListener("change", async () => {
+      await loadFormCatalogSchools("student");
+      await listGroups($("stSchoolSelect").value);
+    });
+    $("stSchoolSearch")?.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      void loadFormCatalogSchools("student");
+    });
+    $("stSchoolSearch")?.addEventListener("blur", () => {
+      void loadFormCatalogSchools("student");
+    });
 
     $("schoolForm").addEventListener("submit", (event) => {
       event.preventDefault();
@@ -2127,7 +2364,12 @@
     $("stListRows").addEventListener("click", async (event) => {
       const editId = event.target?.dataset?.stEdit;
       const deleteId = event.target?.dataset?.stDelete;
-      if (editId) fillStudentForm(state.students.find((item) => item.id === editId));
+      if (editId) {
+        const targetStudent = state.students.find((item) => item.id === editId);
+        if (targetStudent) {
+          await fillStudentForm(targetStudent);
+        }
+      }
       if (deleteId && window.confirm("Eliminar lógicamente este estudiante?")) {
         await apiRequest(`/students/${deleteId}`, { method: "DELETE" });
         await listStudents();
@@ -2137,6 +2379,22 @@
     $("userForm").addEventListener("submit", (event) => {
       event.preventDefault();
       void createUser();
+    });
+    $("uRol")?.addEventListener("change", () => updateFormScopeVisibility());
+    $("uDepartmentSelect")?.addEventListener("change", async () => {
+      await loadFormCatalogMunicipalities("user");
+      await loadFormCatalogSchools("user");
+    });
+    $("uMunicipalitySelect")?.addEventListener("change", () => {
+      void loadFormCatalogSchools("user");
+    });
+    $("uSchoolSearch")?.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      void loadFormCatalogSchools("user");
+    });
+    $("uSchoolSearch")?.addEventListener("blur", () => {
+      void loadFormCatalogSchools("user");
     });
     $("uListBtn").addEventListener("click", listUsers);
     $("uTemplateBtn").addEventListener("click", () => downloadWithAuth("/users/bulk/template.csv", "users_bulk_template.csv"));
