@@ -97,6 +97,12 @@ const staticWebOptions = {
 };
 
 app.use(httpLogger);
+app.use((req, res, next) => {
+  if (req.id) {
+    res.setHeader("X-Request-Id", String(req.id));
+  }
+  next();
+});
 app.use(
   helmet({
     crossOriginResourcePolicy: false

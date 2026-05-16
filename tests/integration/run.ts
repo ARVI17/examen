@@ -75,6 +75,7 @@ const main = async () => {
   let studentAttemptId = "";
   let createdFileId = "";
   let selectedOptionId = "";
+  let alternateOptionId = "";
   let studentToken = "";
   let secondStudentToken = "";
   let docenteToken = "";
@@ -364,6 +365,23 @@ const main = async () => {
     selectedOptionId = response.body?.data?.options?.find((item: { esCorrecta: boolean }) => item.esCorrecta)?.id;
     ensure(Boolean(createdQuestionId), "question id no generado");
     ensure(Boolean(selectedOptionId), "opcion correcta no encontrada");
+  });
+
+  await run("Questions | Resolve alternate option", async () => {
+    const option = await prisma.questionOption.findFirst({
+      where: {
+        preguntaId: createdQuestionId,
+        id: {
+          not: selectedOptionId
+        }
+      },
+      select: {
+        id: true
+      }
+    });
+
+    alternateOptionId = option?.id || "";
+    ensure(Boolean(alternateOptionId), "opcion alternativa no encontrada");
   });
 
   await run("Exams | Create exam", async () => {
@@ -685,6 +703,42 @@ const main = async () => {
     ensure(response.status === 201, `status esperado 201, recibido ${response.status}`);
   });
 
+  await run("StudentPortal | Answer own attempt updates instead of duplicate", async () => {
+    const response = await client
+      .post(`/api/student/attempts/${studentAttemptId}/answer`)
+      .set("Authorization", `Bearer ${studentToken}`)
+      .send({
+        pregunta_id: createdQuestionId,
+        opcion_id_seleccionada: alternateOptionId
+      });
+
+    ensure(response.status === 201, `status esperado 201, recibido ${response.status}`);
+
+    const [count, answer] = await Promise.all([
+      prisma.studentAnswer.count({
+        where: {
+          intentoId: studentAttemptId,
+          preguntaId: createdQuestionId
+        }
+      }),
+      prisma.studentAnswer.findFirst({
+        where: {
+          intentoId: studentAttemptId,
+          preguntaId: createdQuestionId
+        },
+        select: {
+          opcionIdSeleccionada: true
+        }
+      })
+    ]);
+
+    ensure(count === 1, `debe existir 1 respuesta por intento/pregunta, encontrado ${count}`);
+    ensure(
+      answer?.opcionIdSeleccionada === alternateOptionId,
+      "la respuesta existente no se actualizo con la ultima opcion seleccionada"
+    );
+  });
+
   await run("StudentPortal | Submit own attempt", async () => {
     const response = await client
       .post(`/api/student/attempts/${studentAttemptId}/submit`)
@@ -693,6 +747,18 @@ const main = async () => {
 
     ensure(response.status === 200, `status esperado 200, recibido ${response.status}`);
     ensure(response.body?.data?.porcentajeTotal >= 0, "porcentaje total no retornado en submit estudiante");
+  });
+
+  await run("StudentPortal | Cannot answer finalized attempt", async () => {
+    const response = await client
+      .post(`/api/student/attempts/${studentAttemptId}/answer`)
+      .set("Authorization", `Bearer ${studentToken}`)
+      .send({
+        pregunta_id: createdQuestionId,
+        opcion_id_seleccionada: selectedOptionId
+      });
+
+    ensure(response.status === 400, `status esperado 400, recibido ${response.status}`);
   });
 
   await run("StudentPortal | Authenticated student can read own attempt", async () => {

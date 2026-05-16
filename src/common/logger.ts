@@ -49,6 +49,19 @@ export const httpLogger = pinoHttp({
         userAgent: req.headers["user-agent"]
       };
     }
+  },
+  customProps: (req) => {
+    const request = req as typeof req & {
+      user?: { id?: string; role?: string };
+      studentSession?: { studentId?: string };
+    };
+    const role = request.user?.role ?? (request.studentSession ? "ESTUDIANTE" : "ANONIMO");
+    const actorId = request.user?.id ?? request.studentSession?.studentId ?? null;
+    return {
+      requestId: req.id ?? null,
+      role,
+      actorId
+    };
   }
 });
 

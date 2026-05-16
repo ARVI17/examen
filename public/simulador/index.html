@@ -184,6 +184,11 @@
         background: var(--danger-bg);
       }
 
+      .network-banner {
+        margin-top: 0;
+        margin-bottom: 4px;
+      }
+
       .header {
         display: flex;
         justify-content: space-between;
@@ -525,6 +530,7 @@
       </section>
 
       <section id="portalView" class="hidden portal-shell">
+        <div id="networkBanner" class="status warn network-banner hidden">Sin conexion.</div>
         <header class="card header">
           <div>
             <h2>Simulador Saber 11</h2>
@@ -582,6 +588,7 @@
                 <button id="saveAnswerBtn" class="btn-soft" type="button">Guardar respuesta</button>
                 <button id="submitExamBtn" class="btn-primary" type="button">Finalizar y calificar</button>
               </div>
+              <div id="syncStatus" class="status warn">Sin intento activo.</div>
             </aside>
 
             <article class="card section">
@@ -620,6 +627,6 @@
       </section>
     </div>
 
-    <script src="/simulador/app.js"></script>
+    <script src="/simulador/app.js?v=20260516"></script>
   </body>
 </html>

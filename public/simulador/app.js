@@ -2,6 +2,8 @@
 
 (() => {
   const TOKEN_KEY = "s11_student_token";
+  const ATTEMPT_CACHE_PREFIX = "s11_attempt_cache";
+  const AUTO_SYNC_INTERVAL_MS = 15000;
 
   const state = {
     apiBase: `${window.location.origin}/api`,
@@ -21,7 +23,16 @@
       sessionIndex: -1,
       remainingSeconds: 0
     },
-    pollIntervalId: null
+    pollIntervalId: null,
+    sync: {
+      pendingQueue: {},
+      flushInProgress: false,
+      intervalId: null,
+      offline: !navigator.onLine,
+      lastSavedAt: null,
+      lastSyncedAt: null,
+      lastError: null
+    }
   };
 
   const $ = (id) => document.getElementById(id);
@@ -38,6 +49,100 @@
     if (node) {
       node.textContent = value || "";
     }
+  };
+
+  const setSyncStatus = (message, tone = "warn") => {
+    const node = $("syncStatus");
+    if (!node) return;
+    node.textContent = message;
+    node.className = `status ${tone}`;
+  };
+
+  const setNetworkBanner = () => {
+    const node = $("networkBanner");
+    if (!node) return;
+    const offline = !navigator.onLine || state.sync.offline;
+    node.classList.toggle("hidden", !offline);
+    if (!offline) return;
+    node.textContent = "Sin conexion. Tus respuestas quedan en cola local y se sincronizaran al reconectar.";
+  };
+
+  const getAttemptCacheKey = (attemptId) => `${ATTEMPT_CACHE_PREFIX}:${attemptId}`;
+
+  const persistAttemptCache = () => {
+    if (!state.attemptId) return;
+    const payload = {
+      attemptId: state.attemptId,
+      currentIndex: state.currentIndex,
+      answersByQuestionId: state.answersByQuestionId,
+      pendingQueue: state.sync.pendingQueue,
+      lastSavedAt: state.sync.lastSavedAt,
+      lastSyncedAt: state.sync.lastSyncedAt,
+      updatedAt: new Date().toISOString()
+    };
+
+    try {
+      localStorage.setItem(getAttemptCacheKey(state.attemptId), JSON.stringify(payload));
+    } catch {
+      // Si el almacenamiento local falla, se mantiene el servidor como fuente principal.
+    }
+  };
+
+  const loadAttemptCache = (attemptId) => {
+    try {
+      const raw = localStorage.getItem(getAttemptCacheKey(attemptId));
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  };
+
+  const clearAttemptCache = (attemptId) => {
+    if (!attemptId) return;
+    try {
+      localStorage.removeItem(getAttemptCacheKey(attemptId));
+    } catch {
+      // no-op
+    }
+  };
+
+  const consumeCachedAttemptState = () => {
+    if (!state.attemptId) return;
+    const cached = loadAttemptCache(state.attemptId);
+    if (!cached) return;
+    const validQuestionIds = new Set((state.questionDeck || []).map((item) => item.questionId));
+
+    const cachedAnswers = cached.answersByQuestionId && typeof cached.answersByQuestionId === "object" ? cached.answersByQuestionId : {};
+    const safeAnswers = {};
+    Object.entries(cachedAnswers).forEach(([questionId, optionId]) => {
+      if (!validQuestionIds.has(questionId)) return;
+      if (!optionId) return;
+      safeAnswers[questionId] = optionId;
+    });
+    state.answersByQuestionId = {
+      ...state.answersByQuestionId,
+      ...safeAnswers
+    };
+
+    const rawIndex = Number(cached.currentIndex);
+    if (Number.isFinite(rawIndex) && rawIndex >= 0) {
+      state.currentIndex = Math.min(rawIndex, Math.max(0, state.questionDeck.length - 1));
+    }
+
+    const pendingQueue = cached.pendingQueue && typeof cached.pendingQueue === "object" ? cached.pendingQueue : {};
+    const safeQueue = {};
+    Object.entries(pendingQueue).forEach(([questionId, payload]) => {
+      if (!validQuestionIds.has(questionId)) return;
+      if (!payload || typeof payload !== "object") return;
+      if (!payload.optionId) return;
+      safeQueue[questionId] = payload;
+    });
+    state.sync.pendingQueue = safeQueue;
+    state.sync.lastSavedAt = cached.lastSavedAt || state.sync.lastSavedAt;
+    state.sync.lastSyncedAt = cached.lastSyncedAt || state.sync.lastSyncedAt;
   };
 
   const setFocusMode = (active) => {
@@ -125,6 +230,109 @@
     return response.json();
   };
 
+  const queueAnswerSync = (questionId, optionId, { immediate = false, reason = "manual" } = {}) => {
+    if (!state.attemptId || !questionId || !optionId) return;
+    state.sync.pendingQueue[questionId] = {
+      questionId,
+      optionId,
+      queuedAt: new Date().toISOString(),
+      reason
+    };
+    state.sync.lastSavedAt = new Date().toISOString();
+    persistAttemptCache();
+
+    if (!navigator.onLine || state.sync.offline) {
+      setSyncStatus(`Sin conexion. Respuesta en cola (${Object.keys(state.sync.pendingQueue).length}).`, "warn");
+      return;
+    }
+
+    if (immediate) {
+      void flushPendingAnswers({ source: reason });
+      return;
+    }
+
+    setSyncStatus(`Respuesta en cola (${Object.keys(state.sync.pendingQueue).length}).`, "warn");
+  };
+
+  const flushPendingAnswers = async ({ source = "manual", force = false } = {}) => {
+    if (!state.attemptId) return true;
+    if (state.sync.flushInProgress) return false;
+
+    const entries = Object.values(state.sync.pendingQueue || {});
+    if (!entries.length) {
+      if (force) {
+        setSyncStatus(
+          state.sync.lastSyncedAt ? `Guardado en servidor (${new Date(state.sync.lastSyncedAt).toLocaleTimeString()}).` : "Guardado en servidor.",
+          "ok"
+        );
+      }
+      return true;
+    }
+
+    if (!navigator.onLine || state.sync.offline) {
+      setSyncStatus(`Sin conexion. Pendientes: ${entries.length}.`, "warn");
+      return false;
+    }
+
+    state.sync.flushInProgress = true;
+    setSyncStatus(`Guardando ${entries.length} respuesta(s)...`, "warn");
+    let synced = 0;
+    let failed = 0;
+
+    for (const item of entries) {
+      try {
+        await apiRequest(`/student/attempts/${state.attemptId}/answer`, {
+          method: "POST",
+          body: {
+            pregunta_id: item.questionId,
+            opcion_id_seleccionada: item.optionId
+          }
+        });
+        delete state.sync.pendingQueue[item.questionId];
+        synced += 1;
+      } catch (error) {
+        failed += 1;
+        state.sync.lastError = error instanceof Error ? error.message : "Error de sincronizacion";
+        break;
+      }
+    }
+
+    state.sync.flushInProgress = false;
+    state.sync.lastSyncedAt = synced > 0 ? new Date().toISOString() : state.sync.lastSyncedAt;
+    persistAttemptCache();
+    renderQuestionNav();
+
+    const pending = Object.keys(state.sync.pendingQueue).length;
+    if (pending === 0) {
+      setSyncStatus(
+        `Guardado en servidor (${state.sync.lastSyncedAt ? new Date(state.sync.lastSyncedAt).toLocaleTimeString() : "ahora"}).`,
+        "ok"
+      );
+      return true;
+    }
+
+    const baseMessage = failed > 0 ? `Pendiente por sincronizar (${pending}).` : `Sincronizacion parcial. Pendientes: ${pending}.`;
+    setSyncStatus(baseMessage, "warn");
+    if (force) {
+      throw new Error(state.sync.lastError || "No fue posible sincronizar todas las respuestas.");
+    }
+    return false;
+  };
+
+  const stopAutoSync = () => {
+    if (state.sync.intervalId) {
+      window.clearInterval(state.sync.intervalId);
+      state.sync.intervalId = null;
+    }
+  };
+
+  const startAutoSync = () => {
+    stopAutoSync();
+    state.sync.intervalId = window.setInterval(() => {
+      void flushPendingAnswers({ source: "interval" });
+    }, AUTO_SYNC_INTERVAL_MS);
+  };
+
   const showView = ({ login, portal }) => {
     $("loginView")?.classList.toggle("hidden", !login);
     $("portalView")?.classList.toggle("hidden", !portal);
@@ -147,6 +355,7 @@
   const resetAttempt = () => {
     stopTimer();
     stopPolling();
+    stopAutoSync();
     state.attemptId = null;
     state.questionDeck = [];
     state.currentIndex = 0;
@@ -156,11 +365,18 @@
     state.waitingForAdmin = false;
     state.timer.sessionIndex = -1;
     state.timer.remainingSeconds = 0;
+    state.sync.pendingQueue = {};
+    state.sync.flushInProgress = false;
+    state.sync.lastSavedAt = null;
+    state.sync.lastSyncedAt = null;
+    state.sync.lastError = null;
     setFocusMode(false);
     $("attemptView")?.classList.add("hidden");
     setText("timerText", "Tiempo: --:--");
     setText("progressText", "Progreso: 0/0");
     setText("sessionText", "Sesion: -");
+    setSyncStatus("Sin intento activo.", "warn");
+    setNetworkBanner();
   };
 
   const renderExamOptions = (items) => {
@@ -237,8 +453,10 @@
       }
       button.addEventListener("click", () => {
         if (outOfSession || state.waitingForAdmin) return;
+        queueCurrentAnswerBeforeNavigation("jump");
         state.currentIndex = index;
         renderCurrentQuestion();
+        persistAttemptCache();
       });
       nav.appendChild(button);
     });
@@ -296,7 +514,9 @@
           const id = node.getAttribute("data-id");
           if (!id) return;
           state.answersByQuestionId[question.questionId] = id;
+          queueAnswerSync(question.questionId, id, { immediate: true, reason: "select" });
           renderCurrentQuestion();
+          persistAttemptCache();
         });
       });
     }
@@ -450,6 +670,9 @@
         state.answersByQuestionId[question.questionId] = question.selectedOptionId;
       }
     });
+    state.sync.pendingQueue = {};
+    state.sync.lastError = null;
+    consumeCachedAttemptState();
 
     applySessionPlan(data.sessionPlan, data.attempt?.prueba);
     state.sessionControl = data.sessionControl || {};
@@ -464,6 +687,16 @@
     );
 
     renderCurrentQuestion();
+    startAutoSync();
+    const pending = Object.keys(state.sync.pendingQueue).length;
+    if (pending > 0) {
+      setSyncStatus(`Intento recuperado. Pendientes por sincronizar: ${pending}.`, "warn");
+      void flushPendingAnswers({ source: "resume" });
+    } else {
+      setSyncStatus("Intento activo sincronizado.", "ok");
+    }
+    setNetworkBanner();
+    persistAttemptCache();
   };
 
   const renderResults = (result) => {
@@ -584,6 +817,13 @@
     resetAttempt();
 
     if (data.activeAttempt?.id) {
+      const continueAttempt = window.confirm(
+        "Tienes una prueba en progreso. ¿Deseas continuarla ahora?"
+      );
+      if (!continueAttempt) {
+        setStatus("portalStatus", "Hay un intento activo pendiente. Puedes retomarlo cuando desees.", "warn");
+        return;
+      }
       const attemptPayload = await apiRequest(`/student/attempts/${data.activeAttempt.id}`);
       applyAttemptData(attemptPayload.data || {});
 
@@ -693,15 +933,8 @@
 
       const optionId = state.answersByQuestionId[question.questionId];
       if (!optionId) throw new Error("Selecciona una opcion antes de guardar.");
-
-      await apiRequest(`/student/attempts/${state.attemptId}/answer`, {
-        method: "POST",
-        body: {
-          pregunta_id: question.questionId,
-          opcion_id_seleccionada: optionId
-        }
-      });
-
+      queueAnswerSync(question.questionId, optionId, { immediate: false, reason: "manual-save" });
+      await flushPendingAnswers({ source: "manual-save", force: true });
       setStatus("examStatus", `Respuesta guardada en pregunta ${state.currentIndex + 1}.`, "ok");
       renderQuestionNav();
     } catch (error) {
@@ -722,11 +955,16 @@
         if (!confirmed) return;
       }
 
+      if (Object.keys(state.sync.pendingQueue).length > 0) {
+        await flushPendingAnswers({ source: "submit", force: true });
+      }
+
       stopTimer();
       const payload = await apiRequest(`/student/attempts/${state.attemptId}/submit`, { method: "POST" });
       const attemptId = payload.data?.attemptId || state.attemptId;
       const resultPayload = attemptId ? await apiRequest(`/student/results/${attemptId}`) : payload;
 
+      clearAttemptCache(state.attemptId);
       resetAttempt();
       renderResults(resultPayload.data || payload.data || {});
       await loadResultsHistory({ silent: true });
@@ -747,18 +985,35 @@
     }
   };
 
+  const queueCurrentAnswerBeforeNavigation = (reason = "navigate") => {
+    if (!state.questionDeck.length || !state.attemptId) return;
+    const question = state.questionDeck[state.currentIndex];
+    if (!question) return;
+    const optionId = state.answersByQuestionId[question.questionId];
+    if (!optionId) {
+      persistAttemptCache();
+      return;
+    }
+    queueAnswerSync(question.questionId, optionId, { immediate: true, reason });
+    persistAttemptCache();
+  };
+
   const prevQuestion = () => {
     if (!state.questionDeck.length || state.waitingForAdmin) return;
+    queueCurrentAnswerBeforeNavigation("prev");
     const bounds = getSessionBounds();
     state.currentIndex = Math.max(bounds.min, state.currentIndex - 1);
     renderCurrentQuestion();
+    persistAttemptCache();
   };
 
   const nextQuestion = () => {
     if (!state.questionDeck.length || state.waitingForAdmin) return;
+    queueCurrentAnswerBeforeNavigation("next");
     const bounds = getSessionBounds();
     state.currentIndex = Math.min(bounds.max, state.currentIndex + 1);
     renderCurrentQuestion();
+    persistAttemptCache();
   };
 
   const bindEvents = () => {
@@ -800,9 +1055,35 @@
     });
   };
 
+  const handleConnectivityChange = () => {
+    state.sync.offline = !navigator.onLine;
+    setNetworkBanner();
+    if (state.sync.offline) {
+      setSyncStatus(`Sin conexion. Pendientes: ${Object.keys(state.sync.pendingQueue).length}.`, "warn");
+      return;
+    }
+    setSyncStatus("Conexion restablecida. Sincronizando...", "warn");
+    void flushPendingAnswers({ source: "online" });
+  };
+
   const bootstrap = async () => {
     bindEvents();
+    setNetworkBanner();
+    setSyncStatus("Sin intento activo.", "warn");
+    window.addEventListener("online", handleConnectivityChange);
+    window.addEventListener("offline", handleConnectivityChange);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState !== "hidden") return;
+      persistAttemptCache();
+      queueCurrentAnswerBeforeNavigation("visibilitychange");
+    });
+    window.addEventListener("pagehide", () => {
+      persistAttemptCache();
+      queueCurrentAnswerBeforeNavigation("pagehide");
+    });
     window.addEventListener("beforeunload", (event) => {
+      persistAttemptCache();
+      queueCurrentAnswerBeforeNavigation("beforeunload");
       if (!state.attemptId) return;
       event.preventDefault();
       event.returnValue = "";

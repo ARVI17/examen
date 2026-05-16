@@ -2,7 +2,7 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import { spawnSync } from "child_process";
-import { Prisma } from "@prisma/client";
+import { AttemptStatus, Prisma } from "@prisma/client";
 import { AppError } from "../../common/errors/AppError";
 import prisma from "../../common/prisma";
 import { getLanUrls } from "../../common/utils/network";
@@ -491,11 +491,93 @@ export class AdminSystemService {
       }
     }
 
+    const monitoring = {
+      activeAttempts: 0,
+      submittedAttemptsLast24h: 0,
+      answersSavedLast15m: 0,
+      syncErrorsLast15m: 0,
+      stalledAttemptsOver10m: 0,
+      windows: {
+        answersMinutes: 15,
+        stalledMinutes: 10,
+        submittedHours: 24
+      }
+    };
+
+    if (databaseReady) {
+      const now = Date.now();
+      const answersWindowStart = new Date(now - 15 * 60 * 1000);
+      const stalledWindowStart = new Date(now - 10 * 60 * 1000);
+      const submittedWindowStart = new Date(now - 24 * 60 * 60 * 1000);
+
+      try {
+        const [activeAttempts, submittedAttemptsLast24h, answersSavedLast15m, syncErrorsLast15m, stalledAttemptsOver10m] = await Promise.all([
+          prisma.examAttempt.count({
+            where: {
+              estado: {
+                in: [AttemptStatus.PENDIENTE, AttemptStatus.INICIADA]
+              }
+            }
+          }),
+          prisma.examAttempt.count({
+            where: {
+              estado: AttemptStatus.CALIFICADA,
+              fechaFin: {
+                gte: submittedWindowStart
+              }
+            }
+          }),
+          prisma.studentAnswer.count({
+            where: {
+              updatedAt: {
+                gte: answersWindowStart
+              }
+            }
+          }),
+          prisma.auditLog.count({
+            where: {
+              entidad: "student_portal",
+              accion: {
+                in: ["STUDENT_ANSWER_SYNC_ERROR", "STUDENT_ATTEMPT_SUBMIT_FAILED"]
+              },
+              createdAt: {
+                gte: answersWindowStart
+              }
+            }
+          }),
+          prisma.examAttempt.count({
+            where: {
+              estado: {
+                in: [AttemptStatus.PENDIENTE, AttemptStatus.INICIADA]
+              },
+              updatedAt: {
+                lte: stalledWindowStart
+              }
+            }
+          })
+        ]);
+
+        monitoring.activeAttempts = activeAttempts;
+        monitoring.submittedAttemptsLast24h = submittedAttemptsLast24h;
+        monitoring.answersSavedLast15m = answersSavedLast15m;
+        monitoring.syncErrorsLast15m = syncErrorsLast15m;
+        monitoring.stalledAttemptsOver10m = stalledAttemptsOver10m;
+      } catch {
+        // Mantiene payload seguro aun si falla el agregado de monitoreo.
+      }
+    }
+
     const warnings: string[] = [];
     if (!databaseReady) warnings.push("Base de datos no disponible.");
     if (ollamaHost && !ollamaAvailable) warnings.push("Ollama no responde.");
     if (!parseBool(process.env.LOCAL_PRODUCTION_PREPARE)) {
       warnings.push("LOCAL_PRODUCTION_PREPARE=false: operaciones sensibles bloqueadas por seguridad.");
+    }
+    if (monitoring.syncErrorsLast15m > 0) {
+      warnings.push("Se detectaron errores recientes de sincronizacion de respuestas.");
+    }
+    if (monitoring.stalledAttemptsOver10m > 0) {
+      warnings.push("Hay intentos activos sin actividad reciente. Validar conectividad de estudiantes.");
     }
 
     const payload = {
@@ -520,11 +602,14 @@ export class AdminSystemService {
       dbResponseMs,
       ollamaAvailable,
       appVersion: process.env.npm_package_version ?? null,
+      gitCommit: process.env.APP_GIT_COMMIT ?? process.env.GIT_COMMIT ?? null,
+      buildTime: process.env.APP_BUILD_TIME ?? null,
       operationLock: {
         running: operationLock.running,
         action: operationLock.action,
         startedAt: operationLock.startedAt
       },
+      monitoring,
       warnings,
       checkDurationMs: Date.now() - started
     };
