@@ -778,4 +778,19 @@ La suite valida:
 - flujo base de intento (start/answer/submit);
 - consulta de reportes.
 
+## Manuales de uso (usuarios no tecnicos)
+
+- Indice general: [docs/manuales/README.md](docs/manuales/README.md)
+- Manual ADMIN: [docs/manuales/manual-admin.md](docs/manuales/manual-admin.md)
+- Manual DOCENTE: [docs/manuales/manual-docente.md](docs/manuales/manual-docente.md)
+- Manual ESTUDIANTE: [docs/manuales/manual-estudiante.md](docs/manuales/manual-estudiante.md)
+- Guia LAN: [docs/manuales/guia-operacion-lan.md](docs/manuales/guia-operacion-lan.md)
+- Guia de simulacro: [docs/manuales/guia-simulacro.md](docs/manuales/guia-simulacro.md)
+- Solucion de problemas: [docs/manuales/guia-solucion-problemas.md](docs/manuales/guia-solucion-problemas.md)
+- Checklist final: [docs/manuales/checklist-final-pruebas.md](docs/manuales/checklist-final-pruebas.md)
+
+Acceso LAN actual:
+- Admin: `http://192.168.1.25:4000/admin/`
+- Simulador: `http://192.168.1.25:4000/simulador/`
+
 

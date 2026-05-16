@@ -11,6 +11,28 @@
 - `88adc39`: fuente nacional por defecto `cfw5-qzt5` validada.
 - `30d8f88` + `2997d16` + `4dd9903`: operacion del sistema segura desde admin (backend/UI/docs).
 - `HEAD`: centro de monitoreo LAN permanente en Operacion del sistema (recordatorios + semaforo + guia operativa).
+- `HEAD`: correccion de selectores encadenados en creacion de usuarios/estudiantes (Departamento -> Municipio -> Colegio) con catalogo nacional completo.
+
+## Manuales para operacion guiada
+- `docs/manuales/manual-admin.md`
+- `docs/manuales/manual-docente.md`
+- `docs/manuales/manual-estudiante.md`
+- `docs/manuales/guia-operacion-lan.md`
+- `docs/manuales/guia-simulacro.md`
+- `docs/manuales/guia-solucion-problemas.md`
+- `docs/manuales/checklist-final-pruebas.md`
+- `docs/manuales/README.md`
+
+## Validacion rapida de catalogo en formularios
+- Endpoints:
+  - `GET /api/schools/departments`
+  - `GET /api/schools/municipalities?departamento=MAGDALENA`
+  - `GET /api/schools?departamento=MAGDALENA&municipio=SANTA%20MARTA&q=PALOMINITO&limit=25`
+- Flujo UI esperado:
+  - seleccionar `MAGDALENA`
+  - seleccionar `SANTA MARTA`
+  - buscar `PALOMINITO`
+  - elegir colegio para alcance docente o estudiante
 
 ## Errores cerrados
 - Ruta legacy `/api/attempts/public/*` retirada del flujo activo del portal estudiante.

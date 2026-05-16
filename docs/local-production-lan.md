@@ -5,6 +5,14 @@
 - Frontend servido desde `api/public`.
 - Servicios esperados: `api`, `db`, `ollama`.
 
+## Guias para usuario final
+- Manual ADMIN: `docs/manuales/manual-admin.md`
+- Manual DOCENTE: `docs/manuales/manual-docente.md`
+- Manual ESTUDIANTE: `docs/manuales/manual-estudiante.md`
+- Guia de simulacro: `docs/manuales/guia-simulacro.md`
+- Solucion de problemas: `docs/manuales/guia-solucion-problemas.md`
+- Checklist final: `docs/manuales/checklist-final-pruebas.md`
+
 ## URLs de acceso
 1. Obtener IP LAN del servidor:
    - PowerShell:
@@ -70,6 +78,12 @@
   - DOCENTE y ESTUDIANTE no pueden acceder.
   - Sin comandos libres ni terminal web.
   - Sin exposicion de secretos.
+
+### Creacion de usuarios/estudiantes con catalogo nacional
+- En formularios de admin se usa flujo encadenado:
+  - `Departamento -> Municipio -> Colegio`
+- Validacion funcional recomendada:
+  - `MAGDALENA -> SANTA MARTA -> PALOMINITO`
 
 ### Uso del Centro de monitoreo LAN (dia de simulacro)
 - Revisar semaforo:
